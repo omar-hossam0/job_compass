@@ -9,7 +9,8 @@ class JobDetailScreen extends StatefulWidget {
   State<JobDetailScreen> createState() => _JobDetailScreenState();
 }
 
-class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProviderStateMixin {
+class _JobDetailScreenState extends State<JobDetailScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -27,7 +28,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
   // Get job-specific data based on company
   Map<String, dynamic> _getJobData() {
     final company = widget.job['company'] as String;
-    
+
     final Map<String, Map<String, dynamic>> jobDataMap = {
       'Google': {
         'description': [
@@ -43,7 +44,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'employees': '150,000+',
           'founded': '1998',
           'website': 'www.google.com',
-          'description': 'Google is a multinational technology company that specializes in Internet-related services and products.',
+          'description':
+              'Google is a multinational technology company that specializes in Internet-related services and products.',
         },
         'requirements': [
           '5+ years of experience in product design',
@@ -52,7 +54,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'Experience with design systems',
         ],
         'salaryRange': '\$5,000 - \$7,000',
-        'benefits': ['Health Insurance', 'Dental Coverage', '401(k) Matching', 'Unlimited PTO', 'Remote Work', 'Learning Budget'],
+        'benefits': [
+          'Health Insurance',
+          'Dental Coverage',
+          '401(k) Matching',
+          'Unlimited PTO',
+          'Remote Work',
+          'Learning Budget',
+        ],
       },
       'Apple': {
         'description': [
@@ -68,7 +77,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'employees': '160,000+',
           'founded': '1976',
           'website': 'www.apple.com',
-          'description': 'Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.',
+          'description':
+              'Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.',
         },
         'requirements': [
           '6+ years of senior-level UX design experience',
@@ -77,7 +87,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'Portfolio showcasing mobile applications',
         ],
         'salaryRange': '\$6,000 - \$8,500',
-        'benefits': ['Comprehensive Health', 'Stock Purchase Plan', 'Generous PTO', 'Product Discounts', 'Wellness Programs', 'Professional Development'],
+        'benefits': [
+          'Comprehensive Health',
+          'Stock Purchase Plan',
+          'Generous PTO',
+          'Product Discounts',
+          'Wellness Programs',
+          'Professional Development',
+        ],
       },
       'Microsoft': {
         'description': [
@@ -93,7 +110,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'employees': '220,000+',
           'founded': '1975',
           'website': 'www.microsoft.com',
-          'description': 'Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.',
+          'description':
+              'Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.',
         },
         'requirements': [
           '3-5 years of UI/UX design experience',
@@ -102,7 +120,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'Understanding of accessibility standards',
         ],
         'salaryRange': '\$4,500 - \$6,000',
-        'benefits': ['Medical & Dental', 'Retirement Plan', 'Paid Time Off', 'Hybrid Work', 'Tuition Assistance', 'Technology Stipend'],
+        'benefits': [
+          'Medical & Dental',
+          'Retirement Plan',
+          'Paid Time Off',
+          'Hybrid Work',
+          'Tuition Assistance',
+          'Technology Stipend',
+        ],
       },
       'Pinterest, Inc.': {
         'description': [
@@ -118,7 +143,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'employees': '3,000+',
           'founded': '2010',
           'website': 'www.pinterest.com',
-          'description': 'Pinterest is a visual discovery engine for finding ideas like recipes, home and style inspiration, and more.',
+          'description':
+              'Pinterest is a visual discovery engine for finding ideas like recipes, home and style inspiration, and more.',
         },
         'requirements': [
           '5+ years of motion design experience',
@@ -127,7 +153,14 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'Experience with UI/UX animation',
         ],
         'salaryRange': '\$7,000 - \$9,000',
-        'benefits': ['Full Health Coverage', 'Equity Compensation', 'Flexible Schedule', 'Unlimited Vacation', 'Learning Budget', 'Home Office Stipend'],
+        'benefits': [
+          'Full Health Coverage',
+          'Equity Compensation',
+          'Flexible Schedule',
+          'Unlimited Vacation',
+          'Learning Budget',
+          'Home Office Stipend',
+        ],
       },
       'Facebook': {
         'description': [
@@ -143,7 +176,8 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'employees': '86,000+',
           'founded': '2004',
           'website': 'www.facebook.com',
-          'description': 'Facebook (Meta) builds technologies that help people connect, find communities, and grow businesses.',
+          'description':
+              'Facebook (Meta) builds technologies that help people connect, find communities, and grow businesses.',
         },
         'requirements': [
           '5+ years of UI design experience',
@@ -152,32 +186,40 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           'Data-driven design approach',
         ],
         'salaryRange': '\$8,000 - \$10,000',
-        'benefits': ['Comprehensive Healthcare', 'RSU Equity', 'Generous PTO', 'Remote Work Options', 'Professional Development', 'Free Meals'],
+        'benefits': [
+          'Comprehensive Healthcare',
+          'RSU Equity',
+          'Generous PTO',
+          'Remote Work Options',
+          'Professional Development',
+          'Free Meals',
+        ],
       },
     };
-    
-    return jobDataMap[company] ?? {
-      'description': ['Join our team and make an impact.'],
-      'skills': ['Design', 'Communication'],
-      'companyInfo': {
-        'name': company,
-        'location': widget.job['location'] as String? ?? 'Location',
-        'type': 'Technology',
-        'employees': '1,000+',
-        'founded': '2020',
-        'website': 'www.company.com',
-        'description': 'A great company to work for.',
-      },
-      'requirements': ['Relevant experience required'],
-      'salaryRange': widget.job['salary'] as String? ?? '\$5K',
-      'benefits': ['Health Insurance', 'Paid Time Off'],
-    };
+
+    return jobDataMap[company] ??
+        {
+          'description': ['Join our team and make an impact.'],
+          'skills': ['Design', 'Communication'],
+          'companyInfo': {
+            'name': company,
+            'location': widget.job['location'] as String? ?? 'Location',
+            'type': 'Technology',
+            'employees': '1,000+',
+            'founded': '2020',
+            'website': 'www.company.com',
+            'description': 'A great company to work for.',
+          },
+          'requirements': ['Relevant experience required'],
+          'salaryRange': widget.job['salary'] as String? ?? '\$5K',
+          'benefits': ['Health Insurance', 'Paid Time Off'],
+        };
   }
 
   @override
   Widget build(BuildContext context) {
     final jobData = _getJobData();
-    
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -205,7 +247,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                     ],
                   ),
                   const SizedBox(height: 30),
-                  
+
                   // Company Logo
                   Container(
                     width: 80,
@@ -221,7 +263,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Job Title
                   Text(
                     widget.job['title'] as String,
@@ -233,19 +275,16 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
-                  
+
                   // Location
                   Text(
                     jobData['companyInfo']['location'],
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
             ),
-            
+
             // Tabs
             Container(
               decoration: BoxDecoration(
@@ -271,7 +310,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                 ],
               ),
             ),
-            
+
             // Tab Content
             Expanded(
               child: TabBarView(
@@ -284,7 +323,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                 ],
               ),
             ),
-            
+
             // Bottom buttons
             Container(
               padding: const EdgeInsets.all(20),
@@ -305,7 +344,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Application submitted for ${widget.job['title']}!'),
+                            content: Text(
+                              'Application submitted for ${widget.job['title']}!',
+                            ),
                             backgroundColor: const Color(0xff3F6CDF),
                           ),
                         );
@@ -338,7 +379,9 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                       onPressed: () {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Opening chat with ${widget.job['company']}...'),
+                            content: Text(
+                              'Opening chat with ${widget.job['company']}...',
+                            ),
                             backgroundColor: const Color(0xff3F6CDF),
                           ),
                         );
@@ -407,7 +450,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
             ),
           ),
           const SizedBox(height: 24),
-          
+
           const Text(
             'Skills Needed',
             style: TextStyle(
@@ -422,7 +465,10 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
             runSpacing: 8,
             children: (jobData['skills'] as List).map((skill) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xffECF0FC),
                   borderRadius: BorderRadius.circular(20),
@@ -445,7 +491,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
 
   Widget _buildCompanyTab(Map<String, dynamic> jobData) {
     final companyInfo = jobData['companyInfo'] as Map<String, dynamic>;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -462,18 +508,15 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
           const SizedBox(height: 8),
           Text(
             companyInfo['location'],
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
           ),
           const SizedBox(height: 24),
-          
+
           _buildInfoRow('Type', companyInfo['type']),
           _buildInfoRow('Employees', companyInfo['employees']),
           _buildInfoRow('Founded', companyInfo['founded']),
           _buildInfoRow('Website', companyInfo['website']),
-          
+
           const SizedBox(height: 24),
           const Text(
             'About Company',
@@ -587,16 +630,13 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                 ),
                 const Text(
                   'Monthly',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 32),
-          
+
           const Text(
             'Benefits',
             style: TextStyle(
@@ -629,10 +669,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
                   Expanded(
                     child: Text(
                       jobData['benefits'][index],
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
                   ),
                 ],
@@ -650,13 +687,7 @@ class _JobDetailScreenState extends State<JobDetailScreen> with SingleTickerProv
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
           Text(
             value,
             style: const TextStyle(
