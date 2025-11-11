@@ -217,28 +217,26 @@ class _SavedScreenState extends State<SavedScreen> {
               // Job type and salary row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xffECF0FC),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          job['type'] as String,
-                          style: const TextStyle(
-                            color: Color(0xff3F6CDF),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xffECF0FC),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      job['type'] as String,
+                      style: const TextStyle(
+                        color: Color(0xff3F6CDF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        height: 1.2,
                       ),
-                    ],
+                    ),
                   ),
                   Text(
                     job['salary'] as String,
@@ -246,6 +244,7 @@ class _SavedScreenState extends State<SavedScreen> {
                       color: Color(0xff070C19),
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
+                      height: 1.2,
                     ),
                   ),
                 ],
