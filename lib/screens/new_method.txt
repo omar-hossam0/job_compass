@@ -1,0 +1,10 @@
+  List<Map<String, dynamic>> _getAllJobs() {
+    return JobsData.allJobs.map((job) {
+      final jobCopy = Map<String, dynamic>.from(job);
+      jobCopy['logo'] = JobsData.getCompanyLogo(job['company']);
+      jobCopy['logoColor'] = JobsData.getCompanyColor(job['company']);
+      return jobCopy;
+    }).toList();
+  }
+
+  void _toggleSaveJob
