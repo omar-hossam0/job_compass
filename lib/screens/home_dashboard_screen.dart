@@ -480,59 +480,78 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text(
-                          job['level'] as String,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
+                    Flexible(
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              job['level'] as String,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6),
-                          child: Text('•', style: TextStyle(color: Colors.grey)),
-                        ),
-                        Text(
-                          job['type'] as String,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4),
+                            child: Text('•', style: TextStyle(color: Colors.grey, fontSize: 10)),
                           ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 6),
-                          child: Text('•', style: TextStyle(color: Colors.grey)),
-                        ),
-                        Text(
-                          job['workType'] as String,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
+                          Flexible(
+                            child: Text(
+                              job['type'] as String,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 4),
+                            child: Text('•', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                          ),
+                          Flexible(
+                            child: Text(
+                              job['workType'] as String,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 12,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        Text(
-                          job['company'] as String,
-                          style: const TextStyle(
-                            color: Color(0xff3F6CDF),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              job['company'] as String,
+                              style: const TextStyle(
+                                color: Color(0xff3F6CDF),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          job['time'] as String,
-                          style: TextStyle(
-                            color: Colors.grey[500],
-                            fontSize: 11,
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              job['time'] as String,
+                              style: TextStyle(
+                                color: Colors.grey[500],
+                                fontSize: 11,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
