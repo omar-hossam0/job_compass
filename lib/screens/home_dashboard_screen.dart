@@ -301,7 +301,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => JobDetailScreen(job: job),
+                              ),
+                            );
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xff3F6CDF),
                             foregroundColor: Colors.white,
@@ -422,7 +429,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
           ),
         ),
         const SizedBox(height: 16),
-        ...recentJobs.map((job) => Container(
+        ...recentJobs.map((job) => GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => JobDetailScreen(job: job),
+              ),
+            );
+          },
+          child: Container(
           margin: const EdgeInsets.only(bottom: 12, left: 20, right: 20),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -527,6 +543,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                 size: 24,
               ),
             ],
+          ),
           ),
         )).toList(),
       ],
