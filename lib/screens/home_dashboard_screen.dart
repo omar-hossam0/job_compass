@@ -521,13 +521,27 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        job['type'] as String,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 13,
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xffECF0FC),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          job['type'] as String,
+                          style: const TextStyle(
+                            color: Color(0xff3F6CDF),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            height: 1.2,
+                          ),
                         ),
                       ),
                       const Spacer(),

@@ -332,33 +332,33 @@ class JobsData {
   static IconData getCompanyLogo(String company) {
     switch (company) {
       case 'Google':
-        return Icons.g_mobiledata;
+        return Icons.search; // Google - Search engine
       case 'Apple':
-        return Icons.apple;
+        return Icons.phone_iphone; // Apple - iPhone
       case 'Microsoft':
-        return Icons.window;
+        return Icons.laptop_windows; // Microsoft - Windows
       case 'Amazon':
-        return Icons.shopping_cart;
+        return Icons.shopping_bag; // Amazon - Shopping
       case 'Meta':
-        return Icons.facebook;
+        return Icons.groups; // Meta - Social connections
       case 'Netflix':
-        return Icons.play_arrow;
+        return Icons.movie; // Netflix - Movies/Streaming
       case 'Tesla':
-        return Icons.electric_car;
+        return Icons.electric_bolt; // Tesla - Electric power
       case 'IBM':
-        return Icons.computer;
+        return Icons.cloud; // IBM - Cloud computing
       case 'LinkedIn':
-        return Icons.business;
+        return Icons.work; // LinkedIn - Professional work
       case 'Adobe':
-        return Icons.brush;
+        return Icons.palette; // Adobe - Creative design
       case 'Spotify':
-        return Icons.music_note;
+        return Icons.headphones; // Spotify - Music streaming
       case 'Uber':
-        return Icons.directions_car;
+        return Icons.local_taxi; // Uber - Taxi service
       case 'Airbnb':
-        return Icons.home;
+        return Icons.house; // Airbnb - Houses/Homes
       case 'Slack':
-        return Icons.chat;
+        return Icons.forum; // Slack - Team communication
       default:
         return Icons.business_center;
     }
