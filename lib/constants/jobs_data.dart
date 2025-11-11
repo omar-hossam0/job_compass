@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class JobsData {
   static const List<Map<String, dynamic>> allJobs = [
@@ -332,35 +333,35 @@ class JobsData {
   static IconData getCompanyLogo(String company) {
     switch (company) {
       case 'Google':
-        return Icons.search; // Google - Search engine
+        return FontAwesomeIcons.google; // Official Google logo
       case 'Apple':
-        return Icons.phone_iphone; // Apple - iPhone
+        return FontAwesomeIcons.apple; // Official Apple logo
       case 'Microsoft':
-        return Icons.laptop_windows; // Microsoft - Windows
+        return FontAwesomeIcons.microsoft; // Official Microsoft logo
       case 'Amazon':
-        return Icons.shopping_bag; // Amazon - Shopping
+        return FontAwesomeIcons.amazon; // Official Amazon logo
       case 'Meta':
-        return Icons.groups; // Meta - Social connections
+        return FontAwesomeIcons.facebook; // Meta/Facebook logo
       case 'Netflix':
-        return Icons.movie; // Netflix - Movies/Streaming
+        return FontAwesomeIcons.play; // Netflix - Play icon
       case 'Tesla':
-        return Icons.electric_bolt; // Tesla - Electric power
+        return FontAwesomeIcons.bolt; // Tesla - Electric bolt
       case 'IBM':
-        return Icons.cloud; // IBM - Cloud computing
+        return FontAwesomeIcons.cloudArrowUp; // IBM - Cloud computing
       case 'LinkedIn':
-        return Icons.work; // LinkedIn - Professional work
+        return FontAwesomeIcons.linkedin; // Official LinkedIn logo
       case 'Adobe':
-        return Icons.palette; // Adobe - Creative design
+        return FontAwesomeIcons.brush; // Adobe - Creative design brush
       case 'Spotify':
-        return Icons.headphones; // Spotify - Music streaming
+        return FontAwesomeIcons.spotify; // Official Spotify logo
       case 'Uber':
-        return Icons.local_taxi; // Uber - Taxi service
+        return FontAwesomeIcons.uber; // Official Uber logo
       case 'Airbnb':
-        return Icons.house; // Airbnb - Houses/Homes
+        return FontAwesomeIcons.airbnb; // Official Airbnb logo
       case 'Slack':
-        return Icons.forum; // Slack - Team communication
+        return FontAwesomeIcons.slack; // Official Slack logo
       default:
-        return Icons.business_center;
+        return FontAwesomeIcons.briefcase;
     }
   }
 

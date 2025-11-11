@@ -205,7 +205,7 @@ class _JobsScreenState extends State<JobsScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 6,
+                      vertical: 8,
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xffECF0FC),
@@ -215,9 +215,10 @@ class _JobsScreenState extends State<JobsScreen> {
                       job['type'] as String,
                       style: const TextStyle(
                         color: Color(0xff3F6CDF),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        height: 1.2,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        height: 1.0,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ),
