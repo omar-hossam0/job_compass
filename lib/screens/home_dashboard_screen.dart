@@ -3,8 +3,9 @@ import 'dart:ui';
 import 'dart:async';
 import 'profile_screen.dart';
 import 'job_detail_screen.dart';
-import 'learning_path_screen.dart';
-import 'interview_assistant_screen.dart';
+import 'jobs_screen.dart';
+import 'saved_screen.dart';
+import 'chat_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -24,11 +25,81 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
   final int _targetRemoteJobs = 48300;
   final int _targetFullTimeJobs = 78300;
   final int _targetPartTimeJobs = 29500;
+  
+  // Saved jobs state
+  final Set<String> _savedJobIds = {};
+  late List<Map<String, dynamic>> _allJobs;
 
   @override
   void initState() {
     super.initState();
+    _allJobs = _getAllJobs();
     _startCounterAnimations();
+  }
+
+  List<Map<String, dynamic>> _getAllJobs() {
+    return [
+      {
+        'id': 'youtube_1',
+        'company': 'Youtube',
+        'location': 'San Bruno, California, USA',
+        'title': 'Senior UX Researcher',
+        'type': 'Full Time',
+        'salary': '\$8K - \$10K',
+        'logo': Icons.play_circle_filled,
+        'logoColor': const Color(0xffFF0000),
+      },
+      {
+        'id': 'apple_1',
+        'company': 'Apple',
+        'location': 'Cupertino, California',
+        'title': 'Junior Product Designer',
+        'type': 'Full Time',
+        'salary': '\$10K - \$15K',
+        'logo': Icons.apple,
+        'logoColor': const Color(0xff000000),
+      },
+      {
+        'id': 'facebook_1',
+        'company': 'Facebook',
+        'location': 'Menlo Park, California',
+        'title': 'UI/UX Designer',
+        'type': 'Full Time',
+        'salary': '\$8K - \$12K',
+        'logo': Icons.facebook,
+        'logoColor': const Color(0xff1877F2),
+      },
+      {
+        'id': 'google_1',
+        'company': 'Google',
+        'location': 'Mountain View, California',
+        'title': 'Product Designer',
+        'type': 'Full Time',
+        'salary': '\$7K - \$11K',
+        'logo': Icons.g_mobiledata,
+        'logoColor': const Color(0xff4285F4),
+      },
+      {
+        'id': 'microsoft_1',
+        'company': 'Microsoft',
+        'location': 'Redmond, Washington',
+        'title': 'Senior Designer',
+        'type': 'Full Time',
+        'salary': '\$9K - \$13K',
+        'logo': Icons.window,
+        'logoColor': const Color(0xff00A4EF),
+      },
+    ];
+  }
+
+  void _toggleSaveJob(String jobId) {
+    setState(() {
+      if (_savedJobIds.contains(jobId)) {
+        _savedJobIds.remove(jobId);
+      } else {
+        _savedJobIds.add(jobId);
+      }
+    });
   }
 
   void _startCounterAnimations() {
@@ -343,59 +414,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
   }
 
   Widget _buildPopularJobsSection() {
-    final popularJobs = [
-      {
-        'company': 'Youtube',
-        'location': 'San Bruno, California, USA',
-        'title': 'Senior UX Researcher',
-        'type': 'Full Time',
-        'salary': '\$8K - \$10K',
-        'logo': Icons.play_circle_filled,
-        'logoColor': const Color(0xffFF0000),
-        'bgColor': Colors.white,
-      },
-      {
-        'company': 'Apple',
-        'location': 'Cupertino, California',
-        'title': 'Junior Product Designer',
-        'type': 'Full Time',
-        'salary': '\$10K - \$15K',
-        'logo': Icons.apple,
-        'logoColor': const Color(0xff000000),
-        'bgColor': Colors.white,
-      },
-      {
-        'company': 'Facebook',
-        'location': 'Menlo Park, California',
-        'title': 'UI/UX Designer',
-        'type': 'Full Time',
-        'salary': '\$8K - \$12K',
-        'logo': Icons.facebook,
-        'logoColor': const Color(0xff1877F2),
-        'bgColor': Colors.white,
-      },
-      {
-        'company': 'Google',
-        'location': 'Mountain View, California',
-        'title': 'Product Designer',
-        'type': 'Full Time',
-        'salary': '\$7K - \$11K',
-        'logo': Icons.g_mobiledata,
-        'logoColor': const Color(0xff4285F4),
-        'bgColor': Colors.white,
-      },
-      {
-        'company': 'Microsoft',
-        'location': 'Redmond, Washington',
-        'title': 'Senior Designer',
-        'type': 'Full Time',
-        'salary': '\$9K - \$13K',
-        'logo': Icons.window,
-        'logoColor': const Color(0xff00A4EF),
-        'bgColor': Colors.white,
-      },
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -413,7 +431,31 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  setState(() => _selectedIndex = 1);
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) =>
+                          JobsScreen(
+                        savedJobIds: _savedJobIds.toList(),
+                        onToggleSave: _toggleSaveJob,
+                      ),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(0.0, 0.1);
+                        const end = Offset.zero;
+                        const curve = Curves.easeInOut;
+                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                        var offsetAnimation = animation.drive(tween);
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: FadeTransition(opacity: animation, child: child),
+                        );
+                      },
+                      transitionDuration: const Duration(milliseconds: 400),
+                    ),
+                  );
+                },
                 child: const Text(
                   'Show All',
                   style: TextStyle(
@@ -432,9 +474,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: popularJobs.length,
+            itemCount: _allJobs.length,
             itemBuilder: (context, index) {
-              final job = popularJobs[index];
+              final job = _allJobs[index];
+              final isSaved = _savedJobIds.contains(job['id']);
               return GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -447,11 +490,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
                 child: Container(
                   width: 280,
                   margin: EdgeInsets.only(
-                    right: index == popularJobs.length - 1 ? 0 : 12,
+                    right: index == _allJobs.length - 1 ? 0 : 12,
                   ),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: job['bgColor'] as Color,
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
@@ -505,10 +548,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
                               ),
                             ],
                           ),
-                          Icon(
-                            Icons.bookmark_border,
-                            color: Colors.grey[400],
-                            size: 24,
+                          GestureDetector(
+                            onTap: () => _toggleSaveJob(job['id'] as String),
+                            child: Icon(
+                              isSaved ? Icons.bookmark : Icons.bookmark_border,
+                              color: isSaved ? const Color(0xff3F6CDF) : Colors.grey[400],
+                              size: 24,
+                            ),
                           ),
                         ],
                       ),
@@ -595,8 +641,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
             children: [
               _navItem(Icons.home_rounded, 'Home', 0),
               _navItem(Icons.work_outline_rounded, 'Jobs', 1),
-              _navItem(Icons.favorite_outline_rounded, 'Saved', 2),
-              _navItem(Icons.notifications_outlined, 'Alerts', 3),
+              _navItem(Icons.bookmark_outline, 'Saved', 2),
+              _navItem(Icons.chat_bubble_outline, 'Chat', 3),
               _navItem(Icons.person_outline_rounded, 'Profile', 4),
             ],
           ),
@@ -640,16 +686,26 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
 
     setState(() => _selectedIndex = index);
 
-    Widget? destination;
+    Widget destination;
     switch (index) {
       case 0:
-        return;
+        return; // Home - already here
       case 1:
-        return; // Jobs - stay on home for now
+        destination = JobsScreen(
+          savedJobIds: _savedJobIds.toList(),
+          onToggleSave: _toggleSaveJob,
+        );
+        break;
       case 2:
-        return; // Saved - stay on home for now
+        destination = SavedScreen(
+          savedJobIds: _savedJobIds.toList(),
+          allSavedJobs: _allJobs,
+          onToggleSave: _toggleSaveJob,
+        );
+        break;
       case 3:
-        return; // Alerts - stay on home for now
+        destination = const ChatScreen();
+        break;
       case 4:
         destination = const ProfileScreen();
         break;
@@ -657,25 +713,23 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
         return;
     }
 
-    if (destination != null) {
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => destination!,
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            const begin = Offset(0.0, 0.1);
-            const end = Offset.zero;
-            const curve = Curves.easeInOut;
-            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-            var offsetAnimation = animation.drive(tween);
-            return SlideTransition(
-              position: offsetAnimation,
-              child: FadeTransition(opacity: animation, child: child),
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
-      );
-    }
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => destination,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 0.1);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+          return SlideTransition(
+            position: offsetAnimation,
+            child: FadeTransition(opacity: animation, child: child),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
   }
 }
