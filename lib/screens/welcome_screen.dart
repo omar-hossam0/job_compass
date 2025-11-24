@@ -16,11 +16,7 @@ class WelcomeScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Color(0xff1a2332),
-              Color(0xff1e3a5f),
-              Color(0xff2563eb),
-            ],
+            colors: [Color(0xff1a2332), Color(0xff1e3a5f), Color(0xff2563eb)],
           ),
         ),
         child: SafeArea(
@@ -30,12 +26,12 @@ class WelcomeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Spacer(flex: 2),
-                
+
                 // Logo
                 _buildLogo(),
-                
+
                 const SizedBox(height: 60),
-                
+
                 // App Name
                 const Text(
                   'JobCompass',
@@ -46,9 +42,9 @@ class WelcomeScreen extends StatelessWidget {
                     letterSpacing: 0.5,
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Subtitle
                 const Text(
                   'Navigate Your Career',
@@ -59,9 +55,9 @@ class WelcomeScreen extends StatelessWidget {
                     letterSpacing: 0.3,
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Description
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20),
@@ -75,14 +71,14 @@ class WelcomeScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                
+
                 const SizedBox(height: 50),
-                
+
                 // Features
                 _buildFeatures(),
-                
+
                 const Spacer(flex: 2),
-                
+
                 // Start Now Button
                 GestureDetector(
                   onTap: () {
@@ -91,15 +87,21 @@ class WelcomeScreen extends StatelessWidget {
                       PageRouteBuilder(
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             const OnboardingCareerScreen(),
-                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                          const begin = Offset(1.0, 0.0);
-                          const end = Offset.zero;
-                          const curve = Curves.easeInOut;
-                          var tween = Tween(begin: begin, end: end)
-                              .chain(CurveTween(curve: curve));
-                          var offsetAnimation = animation.drive(tween);
-                          return SlideTransition(position: offsetAnimation, child: child);
-                        },
+                        transitionsBuilder:
+                            (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+                              var tween = Tween(
+                                begin: begin,
+                                end: end,
+                              ).chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+                              return SlideTransition(
+                                position: offsetAnimation,
+                                child: child,
+                              );
+                            },
                         transitionDuration: const Duration(milliseconds: 400),
                       ),
                     );
@@ -140,7 +142,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
               ],
             ),
@@ -165,18 +167,9 @@ class WelcomeScreen extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        _buildFeatureItem(
-          icon: Icons.psychology_outlined,
-          label: 'AI Powered',
-        ),
-        _buildFeatureItem(
-          icon: Icons.trending_up,
-          label: 'Career Growth',
-        ),
-        _buildFeatureItem(
-          icon: Icons.work_outline,
-          label: 'Job Match',
-        ),
+        _buildFeatureItem(icon: Icons.psychology_outlined, label: 'AI Powered'),
+        _buildFeatureItem(icon: Icons.trending_up, label: 'Career Growth'),
+        _buildFeatureItem(icon: Icons.work_outline, label: 'Job Match'),
       ],
     );
   }
@@ -194,11 +187,7 @@ class WelcomeScreen extends StatelessWidget {
               width: 1,
             ),
           ),
-          child: Icon(
-            icon,
-            size: 32,
-            color: const Color(0xff60a5fa),
-          ),
+          child: Icon(icon, size: 32, color: const Color(0xff60a5fa)),
         ),
         const SizedBox(height: 12),
         Text(

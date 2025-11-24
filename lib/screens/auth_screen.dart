@@ -25,12 +25,12 @@ class _AuthScreenState extends State<AuthScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 40),
-                
+
                 // Profile images
                 _buildProfileImages(),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Title and subtitle
                 const Text(
                   'Discover the perfect',
@@ -71,9 +71,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 50),
-                
+
                 // Facebook button
                 _buildSocialButton(
                   onTap: () {
@@ -87,9 +87,9 @@ class _AuthScreenState extends State<AuthScreen> {
                   text: 'Continue with Facebook',
                   textColor: const Color(0xff070C19),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Google button
                 _buildSocialButton(
                   onTap: () {
@@ -103,24 +103,21 @@ class _AuthScreenState extends State<AuthScreen> {
                   text: 'Continue with Google',
                   textColor: const Color(0xff070C19),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Email button
                 _buildEmailButton(),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Create account link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -142,9 +139,9 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Terms and Privacy
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -157,7 +154,10 @@ class _AuthScreenState extends State<AuthScreen> {
                         height: 1.5,
                       ),
                       children: [
-                        TextSpan(text: 'By proceeding, you hereby agree to abide by our '),
+                        TextSpan(
+                          text:
+                              'By proceeding, you hereby agree to abide by our ',
+                        ),
                         TextSpan(
                           text: 'Terms and Conditions',
                           style: TextStyle(
@@ -178,7 +178,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
               ],
             ),
@@ -230,7 +230,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
           ),
-          
+
           // Center large circle
           Positioned(
             bottom: 0,
@@ -266,7 +266,7 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
           ),
-          
+
           // Right small circle
           Positioned(
             right: 20,
@@ -318,7 +318,7 @@ class _AuthScreenState extends State<AuthScreen> {
     required Color textColor,
   }) {
     Widget iconWidget;
-    
+
     // Use colored Google logo if it's Google and no specific color is given
     if (icon == FontAwesomeIcons.google && iconColor == null) {
       iconWidget = ShaderMask(
@@ -337,13 +337,9 @@ class _AuthScreenState extends State<AuthScreen> {
         ),
       );
     } else {
-      iconWidget = FaIcon(
-        icon,
-        size: 22,
-        color: iconColor,
-      );
+      iconWidget = FaIcon(icon, size: 22, color: iconColor);
     }
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -402,9 +398,7 @@ class _AuthScreenState extends State<AuthScreen> {
   void _navigateToHome() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(
-        builder: (context) => const HomeDashboardScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const HomeDashboardScreen()),
     );
   }
 }

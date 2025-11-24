@@ -14,12 +14,12 @@ class OnboardingCareerScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-              
+
               // Illustration
               _buildIllustration(),
-              
+
               const SizedBox(height: 50),
-              
+
               // Title
               RichText(
                 textAlign: TextAlign.center,
@@ -34,17 +34,15 @@ class OnboardingCareerScreen extends StatelessWidget {
                     TextSpan(text: '"Discover\n'),
                     TextSpan(
                       text: 'your ideal\n',
-                      style: TextStyle(
-                        color: Color(0xffFF6B35),
-                      ),
+                      style: TextStyle(color: Color(0xffFF6B35)),
                     ),
                     TextSpan(text: 'career path!"'),
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Description
               Text(
                 'Explore the best job opportunities tailored to your strengths and field of study. This keeps the messaging fresh while maintaining the focus on personalization and career growth.',
@@ -55,9 +53,9 @@ class OnboardingCareerScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const Spacer(),
-              
+
               // Next Button
               GestureDetector(
                 onTap: () {
@@ -66,15 +64,21 @@ class OnboardingCareerScreen extends StatelessWidget {
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
                           const AuthScreen(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        const begin = Offset(1.0, 0.0);
-                        const end = Offset.zero;
-                        const curve = Curves.easeInOut;
-                        var tween = Tween(begin: begin, end: end)
-                            .chain(CurveTween(curve: curve));
-                        var offsetAnimation = animation.drive(tween);
-                        return SlideTransition(position: offsetAnimation, child: child);
-                      },
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(1.0, 0.0);
+                            const end = Offset.zero;
+                            const curve = Curves.easeInOut;
+                            var tween = Tween(
+                              begin: begin,
+                              end: end,
+                            ).chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: child,
+                            );
+                          },
                       transitionDuration: const Duration(milliseconds: 400),
                     ),
                   );
@@ -100,7 +104,7 @@ class OnboardingCareerScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 50),
             ],
           ),
@@ -112,9 +116,7 @@ class OnboardingCareerScreen extends StatelessWidget {
   Widget _buildIllustration() {
     return Container(
       height: 300,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -143,7 +145,7 @@ class OnboardingCareerScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Center CV/Clipboard illustration
           Center(
             child: Container(
@@ -187,7 +189,7 @@ class OnboardingCareerScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   // CV content
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
@@ -257,7 +259,7 @@ class OnboardingCareerScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // People sitting
           Positioned(
             bottom: 0,

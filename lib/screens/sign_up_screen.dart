@@ -36,7 +36,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 20),
-                
+
                 // Back button and Sign In link
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -62,9 +62,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Title
                 const Text(
                   'Get started free.',
@@ -78,15 +78,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Free forever. No credit card needed.',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey[600],
-                  ),
+                  style: TextStyle(fontSize: 15, color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // Form
                 Form(
                   key: _formKey,
@@ -108,9 +105,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           return null;
                         },
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
+
                       // Name Field
                       _buildTextField(
                         controller: _nameController,
@@ -123,9 +120,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           return null;
                         },
                       ),
-                      
+
                       const SizedBox(height: 20),
-                      
+
                       // Password Field
                       _buildTextField(
                         controller: _passwordController,
@@ -134,7 +131,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         obscureText: _obscurePassword,
                         suffixIcon: IconButton(
                           icon: Icon(
-                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            _obscurePassword
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
                             color: Colors.grey[600],
                             size: 20,
                           ),
@@ -157,9 +156,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Sign Up Button
                 GestureDetector(
                   onTap: () {
@@ -192,39 +191,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Divider with text
                 Row(
                   children: [
                     Expanded(
-                      child: Divider(
-                        color: Colors.grey[300],
-                        thickness: 1,
-                      ),
+                      child: Divider(color: Colors.grey[300], thickness: 1),
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
                         'Or sign up with',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                        style: TextStyle(fontSize: 13, color: Colors.grey[600]),
                       ),
                     ),
                     Expanded(
-                      child: Divider(
-                        color: Colors.grey[300],
-                        thickness: 1,
-                      ),
+                      child: Divider(color: Colors.grey[300], thickness: 1),
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Social Buttons Row
                 Row(
                   children: [
@@ -247,9 +237,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 30),
-                
+
                 // Terms and Privacy
                 RichText(
                   textAlign: TextAlign.center,
@@ -260,7 +250,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       height: 1.6,
                     ),
                     children: const [
-                      TextSpan(text: 'By proceeding, you hereby agree to abide by our '),
+                      TextSpan(
+                        text:
+                            'By proceeding, you hereby agree to abide by our ',
+                      ),
                       TextSpan(
                         text: 'Terms and Conditions',
                         style: TextStyle(
@@ -280,7 +273,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
               ],
             ),
@@ -318,10 +311,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[400],
-            ),
+            hintStyle: TextStyle(fontSize: 14, color: Colors.grey[400]),
             suffixIcon: suffixIcon,
             filled: true,
             fillColor: Colors.grey[50],
@@ -335,24 +325,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xff3F6CDF),
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: Color(0xff3F6CDF), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Colors.red,
-                width: 1,
-              ),
+              borderSide: const BorderSide(color: Colors.red, width: 1),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Colors.red,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -372,7 +353,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     bool useMultiColor = false,
   }) {
     Widget iconWidget;
-    
+
     if (useMultiColor) {
       iconWidget = ShaderMask(
         shaderCallback: (bounds) => const LinearGradient(
@@ -390,13 +371,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       );
     } else {
-      iconWidget = FaIcon(
-        icon,
-        size: 20,
-        color: iconColor,
-      );
+      iconWidget = FaIcon(icon, size: 20, color: iconColor);
     }
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -428,9 +405,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _navigateToHome() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(
-        builder: (context) => const HomeDashboardScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const HomeDashboardScreen()),
       (route) => false,
     );
   }
