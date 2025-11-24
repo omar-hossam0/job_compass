@@ -28,221 +28,261 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xff070C19)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16, top: 16),
-            child: Row(
-              children: [
-                Text(
-                  'Already have an account? ',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey[700],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: const Text(
-                    'Sign In',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xff3F6CDF),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 20),
-                  
-                  // Title
-                  const Text(
-                    'Get started free.',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff070C19),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Free forever. No credit card needed.',
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Email Field
-                  _buildTextField(
-                    controller: _emailController,
-                    label: 'Email Address',
-                    hint: '',
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@')) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Name Field
-                  _buildTextField(
-                    controller: _nameController,
-                    label: 'Your name',
-                    hint: '',
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your name';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Password Field
-                  _buildTextField(
-                    controller: _passwordController,
-                    label: 'Password',
-                    hint: '',
-                    obscureText: _obscurePassword,
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                        color: Colors.grey[600],
-                        size: 20,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+                
+                // Back button and Sign In link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(
+                        Icons.arrow_back,
+                        color: Color(0xff070C19),
+                        size: 24,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscurePassword = !_obscurePassword;
-                        });
-                      },
                     ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your password';
-                      }
-                      if (value.length < 6) {
-                        return 'Password must be at least 6 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Sign Up Button
-                  GestureDetector(
-                    onTap: () {
-                      if (_formKey.currentState!.validate()) {
-                        _navigateToHome();
-                      }
-                    },
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(
-                        color: const Color(0xff3F6CDF),
-                        borderRadius: BorderRadius.circular(28),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xff3F6CDF).withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: const Text(
-                        'Sign up',
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Text(
+                        'Already have an account? Sign In',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 13,
+                          color: const Color(0xff3F6CDF),
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
                         ),
-                        textAlign: TextAlign.center,
                       ),
                     ),
+                  ],
+                ),
+                
+                const SizedBox(height: 40),
+                
+                // Title
+                const Text(
+                  'Get started free.',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff070C19),
                   ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Divider
-                  Row(
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Free forever. No credit card needed.',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey[600],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                
+                const SizedBox(height: 40),
+                
+                // Form
+                Form(
+                  key: _formKey,
+                  child: Column(
                     children: [
-                      Expanded(child: Divider(color: Colors.grey[300])),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Text(
-                          'Or sign up with',
-                          style: TextStyle(
-                            fontSize: 13,
+                      // Email Field
+                      _buildTextField(
+                        controller: _emailController,
+                        label: 'Email Address',
+                        hint: '',
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your email';
+                          }
+                          if (!value.contains('@')) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Name Field
+                      _buildTextField(
+                        controller: _nameController,
+                        label: 'Your name',
+                        hint: '',
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your name';
+                          }
+                          return null;
+                        },
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Password Field
+                      _buildTextField(
+                        controller: _passwordController,
+                        label: 'Password',
+                        hint: '',
+                        obscureText: _obscurePassword,
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                             color: Colors.grey[600],
+                            size: 20,
                           ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
                         ),
-                      ),
-                      Expanded(child: Divider(color: Colors.grey[300])),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Social Buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildSocialButton(
-                          onTap: () => _navigateToHome(),
-                          icon: FontAwesomeIcons.google,
-                          label: 'Google',
-                          useMultiColor: true,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildSocialButton(
-                          onTap: () => _navigateToHome(),
-                          icon: FontAwesomeIcons.facebook,
-                          iconColor: const Color(0xff1877F2),
-                          label: 'Facebook',
-                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter your password';
+                          }
+                          if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
                       ),
                     ],
                   ),
-                  
-                  const SizedBox(height: 40),
-                ],
-              ),
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Sign Up Button
+                GestureDetector(
+                  onTap: () {
+                    if (_formKey.currentState!.validate()) {
+                      _navigateToHome();
+                    }
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xff2C5F5D),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xff2C5F5D).withOpacity(0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: const Text(
+                      'Sign up',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Divider with text
+                Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color: Colors.grey[300],
+                        thickness: 1,
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        'Or sign up with',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: Colors.grey[300],
+                        thickness: 1,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 24),
+                
+                // Social Buttons Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildSocialButton(
+                        onTap: () => _navigateToHome(),
+                        icon: FontAwesomeIcons.facebook,
+                        iconColor: const Color(0xff1877F2),
+                        label: 'Facebook',
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildSocialButton(
+                        onTap: () => _navigateToHome(),
+                        icon: FontAwesomeIcons.google,
+                        label: 'Google',
+                        useMultiColor: true,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 30),
+                
+                // Terms and Privacy
+                RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[700],
+                      height: 1.6,
+                    ),
+                    children: const [
+                      TextSpan(text: 'By proceeding, you hereby agree to abide by our '),
+                      TextSpan(
+                        text: 'Terms and Conditions',
+                        style: TextStyle(
+                          color: Color(0xff3F6CDF),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      TextSpan(text: ' and '),
+                      TextSpan(
+                        text: 'Privacy Policy',
+                        style: TextStyle(
+                          color: Color(0xff3F6CDF),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      TextSpan(text: '.'),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 40),
+              ],
             ),
           ),
         ),
