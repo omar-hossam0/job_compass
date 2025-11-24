@@ -97,7 +97,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     _navigateToHome();
                   },
                   icon: FontAwesomeIcons.google,
-                  iconColor: const Color(0xffDB4437),
+                  iconColor: null, // Will use multicolor gradient
                   backgroundColor: Colors.white,
                   borderColor: Colors.grey[300]!,
                   text: 'Continue with Google',
@@ -311,12 +311,39 @@ class _AuthScreenState extends State<AuthScreen> {
   Widget _buildSocialButton({
     required VoidCallback onTap,
     required IconData icon,
-    required Color iconColor,
+    Color? iconColor,
     required Color backgroundColor,
     required Color borderColor,
     required String text,
     required Color textColor,
   }) {
+    Widget iconWidget;
+    
+    // Use colored Google logo if it's Google and no specific color is given
+    if (icon == FontAwesomeIcons.google && iconColor == null) {
+      iconWidget = ShaderMask(
+        shaderCallback: (bounds) => const LinearGradient(
+          colors: [
+            Color(0xff4285F4), // Blue
+            Color(0xffDB4437), // Red
+            Color(0xffF4B400), // Yellow
+            Color(0xff0F9D58), // Green
+          ],
+        ).createShader(bounds),
+        child: const FaIcon(
+          FontAwesomeIcons.google,
+          size: 22,
+          color: Colors.white,
+        ),
+      );
+    } else {
+      iconWidget = FaIcon(
+        icon,
+        size: 22,
+        color: iconColor,
+      );
+    }
+    
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -330,11 +357,7 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            FaIcon(
-              icon,
-              size: 22,
-              color: iconColor,
-            ),
+            iconWidget,
             const SizedBox(width: 12),
             Text(
               text,

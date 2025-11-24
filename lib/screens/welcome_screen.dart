@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:typed_data';
+import 'dart:async';
+import 'dart:ui' as ui;
 import 'onboarding_career_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -147,33 +151,12 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   Widget _buildLogo() {
-    return Container(
-      width: 100,
-      height: 100,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: const Color(0xff60a5fa),
-          width: 2,
-        ),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          // Compass star
-          const Icon(
-            Icons.navigation,
-            size: 50,
-            color: Color(0xff60a5fa),
-          ),
-          // Horizontal line
-          Container(
-            width: 80,
-            height: 2,
-            color: const Color(0xff60a5fa),
-          ),
-        ],
+    return SizedBox(
+      width: 160,
+      height: 160,
+      child: TransparentLogo(
+        assetPath: 'assets/images/logo.png',
+        tolerance: 40,
       ),
     );
   }
@@ -228,5 +211,120 @@ class WelcomeScreen extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// Widget that loads an image asset, detects the dominant corner background
+/// color and makes pixels close to that color fully transparent.
+class TransparentLogo extends StatefulWidget {
+  final String assetPath;
+  final int tolerance; // color tolerance (0-255)
+  const TransparentLogo({
+    super.key,
+    required this.assetPath,
+    this.tolerance = 30,
+  });
+
+  @override
+  State<TransparentLogo> createState() => _TransparentLogoState();
+}
+
+class _TransparentLogoState extends State<TransparentLogo> {
+  Uint8List? _pngBytes;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _prepare();
+  }
+
+  Future<void> _prepare() async {
+    if (_busy) return;
+    _busy = true;
+    try {
+      final data = await rootBundle.load(widget.assetPath);
+      final bytes = data.buffer.asUint8List();
+
+      // Decode into a ui.Image so we can access raw RGBA bytes reliably
+      final codec = await ui.instantiateImageCodec(bytes);
+      final frame = await codec.getNextFrame();
+      final srcImage = frame.image;
+      final width = srcImage.width;
+      final height = srcImage.height;
+
+      final bd = await srcImage.toByteData(format: ui.ImageByteFormat.rawRgba);
+      if (bd == null) return;
+      final pixels = bd.buffer.asUint8List();
+
+      int idxOf(int x, int y) => (y * width + x) * 4;
+
+      // Sample the four corners
+      final corners = [
+        idxOf(0, 0),
+        idxOf(width - 1, 0),
+        idxOf(0, height - 1),
+        idxOf(width - 1, height - 1),
+      ];
+
+      int rSum = 0, gSum = 0, bSum = 0;
+      for (final c in corners) {
+        rSum += pixels[c];
+        gSum += pixels[c + 1];
+        bSum += pixels[c + 2];
+      }
+      final rAvg = (rSum / corners.length).round();
+      final gAvg = (gSum / corners.length).round();
+      final bAvg = (bSum / corners.length).round();
+
+      final tol = widget.tolerance;
+      final tolSq = tol * tol;
+
+      for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
+          final i = idxOf(x, y);
+          final pr = pixels[i];
+          final pg = pixels[i + 1];
+          final pb = pixels[i + 2];
+          final dr = pr - rAvg;
+          final dg = pg - gAvg;
+          final db = pb - bAvg;
+          final distSq = dr * dr + dg * dg + db * db;
+          if (distSq <= tolSq) {
+            // make pixel transparent
+            pixels[i + 3] = 0;
+          }
+        }
+      }
+
+      // Re-create a ui.Image from modified RGBA bytes
+      final completer = Completer<ui.Image>();
+      ui.decodeImageFromPixels(pixels, width, height, ui.PixelFormat.rgba8888, (
+        ui.Image img,
+      ) {
+        completer.complete(img);
+      });
+      final newImg = await completer.future;
+      final pngBd = await newImg.toByteData(format: ui.ImageByteFormat.png);
+      if (pngBd != null) {
+        setState(() {
+          _pngBytes = pngBd.buffer.asUint8List();
+        });
+      }
+    } catch (e) {
+      debugPrint('TransparentLogo processing failed: $e');
+    } finally {
+      _busy = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_pngBytes != null) {
+      return Image.memory(_pngBytes!, fit: BoxFit.contain);
+    }
+
+    // while processing, show the original asset (so user doesn't see empty)
+    return Image.asset(widget.assetPath, fit: BoxFit.contain);
   }
 }
