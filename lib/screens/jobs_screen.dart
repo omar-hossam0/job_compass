@@ -89,16 +89,12 @@ class _JobsScreenState extends State<JobsScreen> {
     final bool isSaved = widget.savedJobIds.contains(job['id']);
 
     return Container(
-      margin: EdgeInsets.only(
-        bottom: index == allJobs.length - 1 ? 0 : 16,
-      ),
+      margin: EdgeInsets.only(bottom: index == allJobs.length - 1 ? 0 : 16),
       child: GestureDetector(
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => JobDetailScreen(job: job),
-            ),
+            MaterialPageRoute(builder: (context) => JobDetailScreen(job: job)),
           );
         },
         child: Container(
@@ -178,8 +174,9 @@ class _JobsScreenState extends State<JobsScreen> {
                       ),
                       child: Icon(
                         isSaved ? Icons.bookmark : Icons.bookmark_border,
-                        color:
-                            isSaved ? const Color(0xff3F6CDF) : Colors.grey[600],
+                        color: isSaved
+                            ? const Color(0xff3F6CDF)
+                            : Colors.grey[600],
                         size: 22,
                       ),
                     ),

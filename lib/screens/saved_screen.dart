@@ -84,10 +84,7 @@ class _SavedScreenState extends State<SavedScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Jobs you save will appear here',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                 ],
               ),
@@ -98,7 +95,11 @@ class _SavedScreenState extends State<SavedScreen> {
                 children: [
                   ...List.generate(
                     savedJobs.length,
-                    (index) => _buildJobCard(savedJobs[index], index, savedJobs.length),
+                    (index) => _buildJobCard(
+                      savedJobs[index],
+                      index,
+                      savedJobs.length,
+                    ),
                   ),
                 ],
               ),
@@ -106,19 +107,14 @@ class _SavedScreenState extends State<SavedScreen> {
     );
   }
 
-  Widget _buildJobCard(
-      Map<String, dynamic> job, int index, int totalLength) {
+  Widget _buildJobCard(Map<String, dynamic> job, int index, int totalLength) {
     return Container(
-      margin: EdgeInsets.only(
-        bottom: index == totalLength - 1 ? 0 : 16,
-      ),
+      margin: EdgeInsets.only(bottom: index == totalLength - 1 ? 0 : 16),
       child: GestureDetector(
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => JobDetailScreen(job: job),
-            ),
+            MaterialPageRoute(builder: (context) => JobDetailScreen(job: job)),
           );
         },
         child: Container(

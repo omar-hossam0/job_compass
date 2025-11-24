@@ -197,10 +197,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     decoration: BoxDecoration(
                       color: const Color(0xffF5F5F5),
                       borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.grey[300]!,
-                        width: 1,
-                      ),
+                      border: Border.all(color: Colors.grey[300]!, width: 1),
                     ),
                     child: TextField(
                       controller: _messageController,
@@ -251,9 +248,7 @@ class _ChatScreenState extends State<ChatScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isBotMessage
-              ? Colors.white
-              : const Color(0xff3F6CDF),
+          color: isBotMessage ? Colors.white : const Color(0xff3F6CDF),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(

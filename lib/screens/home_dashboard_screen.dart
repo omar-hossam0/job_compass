@@ -15,18 +15,19 @@ class HomeDashboardScreen extends StatefulWidget {
   State<HomeDashboardScreen> createState() => _HomeDashboardScreenState();
 }
 
-class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerProviderStateMixin {
+class _HomeDashboardScreenState extends State<HomeDashboardScreen>
+    with TickerProviderStateMixin {
   int _selectedIndex = 0;
-  
+
   // Animated counters
   int _remoteJobsCount = 0;
   int _fullTimeJobsCount = 0;
   int _partTimeJobsCount = 0;
-  
+
   final int _targetRemoteJobs = 48300;
   final int _targetFullTimeJobs = 78300;
   final int _targetPartTimeJobs = 29500;
-  
+
   // Saved jobs state
   final Set<String> _savedJobIds = {};
   late List<Map<String, dynamic>> _allJobs;
@@ -71,7 +72,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
         timer.cancel();
       }
     });
-    
+
     // Animate full time jobs counter
     Timer.periodic(const Duration(milliseconds: 15), (timer) {
       if (_fullTimeJobsCount < _targetFullTimeJobs) {
@@ -85,7 +86,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
         timer.cancel();
       }
     });
-    
+
     // Animate part time jobs counter
     Timer.periodic(const Duration(milliseconds: 25), (timer) {
       if (_partTimeJobsCount < _targetPartTimeJobs) {
@@ -218,10 +219,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text(
-                      '??',
-                      style: TextStyle(fontSize: 16),
-                    ),
+                    Text('??', style: TextStyle(fontSize: 16)),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -322,7 +320,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
     required Color iconColor,
     bool isSmall = false,
   }) {
-    final displayCount = count >= 1000 
+    final displayCount = count >= 1000
         ? '${(count / 1000).toStringAsFixed(1)}K'
         : count.toString();
 
@@ -393,20 +391,27 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) =>
                           JobsScreen(
-                        savedJobIds: _savedJobIds.toList(),
-                        onToggleSave: _toggleSaveJob,
-                      ),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        const begin = Offset(0.0, 0.1);
-                        const end = Offset.zero;
-                        const curve = Curves.easeInOut;
-                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                        var offsetAnimation = animation.drive(tween);
-                        return SlideTransition(
-                          position: offsetAnimation,
-                          child: FadeTransition(opacity: animation, child: child),
-                        );
-                      },
+                            savedJobIds: _savedJobIds.toList(),
+                            onToggleSave: _toggleSaveJob,
+                          ),
+                      transitionsBuilder:
+                          (context, animation, secondaryAnimation, child) {
+                            const begin = Offset(0.0, 0.1);
+                            const end = Offset.zero;
+                            const curve = Curves.easeInOut;
+                            var tween = Tween(
+                              begin: begin,
+                              end: end,
+                            ).chain(CurveTween(curve: curve));
+                            var offsetAnimation = animation.drive(tween);
+                            return SlideTransition(
+                              position: offsetAnimation,
+                              child: FadeTransition(
+                                opacity: animation,
+                                child: child,
+                              ),
+                            );
+                          },
                       transitionDuration: const Duration(milliseconds: 400),
                     ),
                   );
@@ -507,7 +512,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
                             onTap: () => _toggleSaveJob(job['id'] as String),
                             child: Icon(
                               isSaved ? Icons.bookmark : Icons.bookmark_border,
-                              color: isSaved ? const Color(0xff3F6CDF) : Colors.grey[400],
+                              color: isSaved
+                                  ? const Color(0xff3F6CDF)
+                                  : Colors.grey[400],
                               size: 24,
                             ),
                           ),
@@ -691,7 +698,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> with TickerPr
           const begin = Offset(0.0, 0.1);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           var offsetAnimation = animation.drive(tween);
           return SlideTransition(
             position: offsetAnimation,
