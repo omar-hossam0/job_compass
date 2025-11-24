@@ -1,4 +1,5 @@
 ﻿import 'package:flutter/material.dart';
+import 'job_application_screen.dart';
 
 class JobDetailScreen extends StatefulWidget {
   final Map<String, dynamic> job;
@@ -222,182 +223,210 @@ class _JobDetailScreenState extends State<JobDetailScreen>
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header with company logo
-            Container(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  // Back button
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey[300]!),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(Icons.arrow_back_ios_new, size: 20),
-                        ),
-                      ),
-                    ],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xff070C19), size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Application Details',
+          style: TextStyle(
+            color: Color(0xff070C19),
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_horiz, color: Color(0xff070C19)),
+            onPressed: () {},
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          // Header with company logo
+          Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Company Logo
+                Container(
+                  width: 80,
+                  height: 80,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  const SizedBox(height: 30),
+                  child: Icon(
+                    widget.job['logo'] as IconData,
+                    color: widget.job['logoColor'] as Color,
+                    size: 44,
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-                  // Company Logo
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Icon(
-                      widget.job['logo'] as IconData,
-                      color: widget.job['logoColor'] as Color,
-                      size: 40,
-                    ),
+                // Job Title
+                Text(
+                  widget.job['title'] as String,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xff070C19),
                   ),
-                  const SizedBox(height: 16),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
 
-                  // Job Title
-                  Text(
-                    widget.job['title'] as String,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xff070C19),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
+                // Company Name and Location
+                Text(
+                  'at',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${widget.job['company']}, ${jobData['companyInfo']['location']}',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[800], fontWeight: FontWeight.w500),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
 
-                  // Location
-                  Text(
-                    jobData['companyInfo']['location'],
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                  ),
-                ],
+                // Location and Salary
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.location_on_outlined, size: 16, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      jobData['companyInfo']['location'],
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.attach_money, size: 16, color: Colors.grey[600]),
+                    Text(
+                      widget.job['salary'] as String,
+                      style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Badges
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildDetailBadge(widget.job['type'] as String),
+                    const SizedBox(width: 8),
+                    _buildDetailBadge('Senior'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          // Tabs
+          Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.grey[200]!, width: 1),
               ),
             ),
+            child: TabBar(
+              controller: _tabController,
+              labelColor: const Color(0xff3F6CDF),
+              unselectedLabelColor: Colors.grey[500],
+              indicatorColor: const Color(0xff3F6CDF),
+              indicatorWeight: 2,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+              tabs: const [
+                Tab(text: 'Job Description'),
+                Tab(text: 'Reviews'),
+                Tab(text: 'About Us'),
+              ],
+            ),
+          ),
 
-            // Tabs
-            Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.grey[300]!, width: 1),
+          // Tab Content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildDescriptionTab(jobData),
+                _buildCompanyTab(jobData),
+                _buildApplicantTab(jobData),
+              ],
+            ),
+          ),
+
+          // Apply Now Button
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(color: Colors.grey[200]!, width: 1),
+              ),
+            ),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => JobApplicationScreen(job: widget.job),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xff3F6CDF),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Apply Now!',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-              child: TabBar(
-                controller: _tabController,
-                labelColor: const Color(0xff3F6CDF),
-                unselectedLabelColor: Colors.grey[600],
-                indicatorColor: const Color(0xff3F6CDF),
-                indicatorWeight: 3,
-                labelStyle: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-                tabs: const [
-                  Tab(text: 'Description'),
-                  Tab(text: 'Company'),
-                  Tab(text: 'Applicant'),
-                  Tab(text: 'Salary'),
-                ],
-              ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
 
-            // Tab Content
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildDescriptionTab(jobData),
-                  _buildCompanyTab(jobData),
-                  _buildApplicantTab(jobData),
-                  _buildSalaryTab(jobData),
-                ],
-              ),
-            ),
-
-            // Bottom buttons
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Application submitted for ${widget.job['title']}!',
-                            ),
-                            backgroundColor: const Color(0xff3F6CDF),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff3F6CDF),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: const Text(
-                        'Apply Now',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xffECF0FC),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Opening chat with ${widget.job['company']}...',
-                            ),
-                            backgroundColor: const Color(0xff3F6CDF),
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.chat_bubble_outline,
-                        color: Color(0xff3F6CDF),
-                        size: 24,
-                      ),
-                      padding: const EdgeInsets.all(12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+  Widget _buildDetailBadge(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xff3F6CDF).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Color(0xff3F6CDF),
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -409,81 +438,130 @@ class _JobDetailScreenState extends State<JobDetailScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Job Responsibilities',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xff070C19),
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...List.generate(
-            (jobData['description'] as List).length,
-            (index) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(top: 6),
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: Color(0xff3F6CDF),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      jobData['description'][index],
+          // Job Description Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Job Description',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff070C19),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {},
+                child: Row(
+                  children: [
+                    Text(
+                      'See More',
                       style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                        height: 1.6,
+                        color: const Color(0xff3F6CDF),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12,
+                      color: Color(0xff3F6CDF),
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'So, in this company is you will work as a Product Designer, at Tokopedia, Indonesia which is one of the Unicorns Indonesia.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+              height: 1.6,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'What you will do in this company is you will do some work like UI UX Designer. This is application can making sure that the application we enjoy. The application...',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+              height: 1.6,
             ),
           ),
           const SizedBox(height: 24),
 
-          const Text(
-            'Skills Needed',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xff070C19),
-            ),
+          // Requirements
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Requirements',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff070C19),
+                ),
+              ),
+              GestureDetector(
+                onTap: () {},
+                child: Row(
+                  children: [
+                    Text(
+                      'See More',
+                      style: TextStyle(
+                        color: const Color(0xff3F6CDF),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12,
+                      color: Color(0xff3F6CDF),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: (jobData['skills'] as List).map((skill) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+          ...[
+            '3 - 4 years experienced as Product Designer',
+            'Basic Graphic Design Skills',
+            'Research and Analysis Skills',
+            'Making Prototype | Invision or Zeplin |',
+          ].map((req) => Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 4),
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: Color(0xff070C19),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        req,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                          height: 1.5,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                decoration: BoxDecoration(
-                  color: const Color(0xffECF0FC),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  skill,
-                  style: const TextStyle(
-                    color: Color(0xff3F6CDF),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
+              )),
         ],
       ),
     );
@@ -549,7 +627,7 @@ class _JobDetailScreenState extends State<JobDetailScreen>
           const Text(
             'Requirements',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Color(0xff070C19),
             ),
@@ -567,7 +645,7 @@ class _JobDetailScreenState extends State<JobDetailScreen>
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: const Color(0xffECF0FC),
+                      color: const Color(0xff3F6CDF).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: const Icon(
@@ -585,91 +663,6 @@ class _JobDetailScreenState extends State<JobDetailScreen>
                         color: Colors.grey[700],
                         height: 1.6,
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSalaryTab(Map<String, dynamic> jobData) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Salary Range',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xff070C19),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: const Color(0xffECF0FC),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  jobData['salaryRange'],
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xff3F6CDF),
-                  ),
-                ),
-                const Text(
-                  'Monthly',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
-
-          const Text(
-            'Benefits',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xff070C19),
-            ),
-          ),
-          const SizedBox(height: 16),
-          ...List.generate(
-            (jobData['benefits'] as List).length,
-            (index) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: const Color(0xffECF0FC),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Icon(
-                      Icons.star,
-                      color: Color(0xff3F6CDF),
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      jobData['benefits'][index],
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
                     ),
                   ),
                 ],

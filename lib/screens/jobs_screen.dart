@@ -98,137 +98,213 @@ class _JobsScreenState extends State<JobsScreen> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.all(16),
+          height: 240,
           decoration: BoxDecoration(
-            color: Colors.white,
             borderRadius: BorderRadius.circular(16),
+            color: Colors.white,
             boxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 2),
+                color: Colors.grey.withOpacity(0.15),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
               ),
             ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with company and save button
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: const Color(0xffF5F5F5),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            job['logo'] as IconData,
-                            color: job['logoColor'] as Color,
-                            size: 28,
-                          ),
+              // Image header with bookmark
+              Container(
+                height: 100,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  gradient: LinearGradient(
+                    colors: [
+                      (job['logoColor'] as Color).withOpacity(0.8),
+                      (job['logoColor'] as Color).withOpacity(0.4),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    // Pattern overlay
+                    Positioned.fill(
+                      child: Opacity(
+                        opacity: 0.1,
+                        child: CustomPaint(
+                          painter: _PatternPainter(),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                job['company'] as String,
-                                style: const TextStyle(
-                                  color: Color(0xff070C19),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                job['location'] as String,
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    // Company logo in center
+                    Center(
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          job['logo'] as IconData,
+                          color: job['logoColor'] as Color,
+                          size: 32,
+                        ),
+                      ),
+                    ),
+                    // Bookmark button
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: () {
+                          widget.onToggleSave(job['id'] as String);
+                          setState(() {});
+                        },
+                        child: Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
                               ),
                             ],
                           ),
+                          child: Icon(
+                            isSaved ? Icons.bookmark : Icons.bookmark_border,
+                            color: isSaved
+                                ? const Color(0xff3F6CDF)
+                                : Colors.grey[600],
+                            size: 20,
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      widget.onToggleSave(job['id'] as String);
-                      setState(() {});
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isSaved
-                            ? const Color(0xff3F6CDF).withOpacity(0.1)
-                            : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        isSaved ? Icons.bookmark : Icons.bookmark_border,
-                        color: isSaved
-                            ? const Color(0xff3F6CDF)
-                            : Colors.grey[600],
-                        size: 22,
                       ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              // Job title
-              Text(
-                job['title'] as String,
-                style: const TextStyle(
-                  color: Color(0xff070C19),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+                  ],
                 ),
               ),
-              const SizedBox(height: 8),
-              // Job type and salary row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xffECF0FC),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      job['type'] as String,
-                      style: const TextStyle(
-                        color: Color(0xff3F6CDF),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        height: 1.0,
-                        letterSpacing: 0.3,
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Job title and company
+                      Text(
+                        job['title'] as String,
+                        style: const TextStyle(
+                          color: Color(0xff070C19),
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
+                      const SizedBox(height: 4),
+                      Text(
+                        job['company'] as String,
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      // Description
+                      Text(
+                        job['description'] as String? ?? 'Join our team and make an impact',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const Spacer(),
+                      // Footer with salary, views, and learn more
+                      Row(
+                        children: [
+                          // Salary
+                          Icon(
+                            Icons.attach_money,
+                            size: 16,
+                            color: Colors.grey[500],
+                          ),
+                          Text(
+                            job['salary'] as String,
+                            style: TextStyle(
+                              color: Colors.grey[700],
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          // Views count (random for demo)
+                          Icon(
+                            Icons.remove_red_eye_outlined,
+                            size: 16,
+                            color: Colors.grey[500],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            '${(index + 1) * 47}',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 13,
+                            ),
+                          ),
+                          const Spacer(),
+                          // Learn more button
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => JobDetailScreen(job: job),
+                                ),
+                              );
+                            },
+                            child: Row(
+                              children: [
+                                Text(
+                                  'learn more',
+                                  style: TextStyle(
+                                    color: const Color(0xff3F6CDF),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.arrow_forward,
+                                  color: Color(0xff3F6CDF),
+                                  size: 16,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  Text(
-                    job['salary'] as String,
-                    style: const TextStyle(
-                      color: Color(0xff070C19),
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      height: 1.2,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
@@ -236,4 +312,31 @@ class _JobsScreenState extends State<JobsScreen> {
       ),
     );
   }
+}
+
+// Pattern painter for background decoration
+class _PatternPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..strokeWidth = 2
+      ..style = PaintingStyle.stroke;
+
+    // Draw some geometric patterns
+    for (var i = 0; i < 5; i++) {
+      for (var j = 0; j < 3; j++) {
+        final x = i * 60.0;
+        final y = j * 40.0;
+        canvas.drawLine(
+          Offset(x, y),
+          Offset(x + 30, y + 20),
+          paint,
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
