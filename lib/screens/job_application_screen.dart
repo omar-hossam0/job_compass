@@ -18,7 +18,8 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
   final TextEditingController _linkedinController = TextEditingController();
   final TextEditingController _portfolioController = TextEditingController();
   final TextEditingController _coverLetterController = TextEditingController();
-  final TextEditingController _yearsOfExperienceController = TextEditingController();
+  final TextEditingController _yearsOfExperienceController =
+      TextEditingController();
 
   String? _cvFileName;
   String? _cvFilePath;
@@ -121,10 +122,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                   Text(
                     'Your application for ${widget.job['title']} at ${widget.job['company']} has been successfully sent to HR.',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -401,10 +399,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                         _cvFileName != null
                             ? 'Tap to change file'
                             : 'PDF, DOC, or DOCX (Max 5MB)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey[500],
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -428,11 +423,9 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                 controller: _coverLetterController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: 'Tell us why you\'re a great fit for this position...',
-                  hintStyle: TextStyle(
-                    color: Colors.grey[400],
-                    fontSize: 14,
-                  ),
+                  hintText:
+                      'Tell us why you\'re a great fit for this position...',
+                  hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                   filled: true,
                   fillColor: const Color(0xffF5F5F5),
                   border: OutlineInputBorder(
@@ -520,10 +513,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
           validator: validator,
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 14,
-            ),
+            hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
             prefixIcon: Icon(icon, color: Colors.grey[500], size: 22),
             filled: true,
             fillColor: const Color(0xffF5F5F5),
@@ -537,24 +527,15 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Color(0xff3F6CDF),
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: Color(0xff3F6CDF), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Colors.red,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: Colors.red,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: Colors.red, width: 2),
             ),
           ),
         ),

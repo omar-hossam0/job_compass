@@ -164,11 +164,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               color: const Color(0xff3F6CDF),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.person,
-              color: Colors.white,
-              size: 28,
-            ),
+            child: const Icon(Icons.person, color: Colors.white, size: 28),
           ),
           const Spacer(),
           // Jobs Title
@@ -187,10 +183,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: Colors.grey[200]!,
-                width: 1,
-              ),
+              border: Border.all(color: Colors.grey[200]!, width: 1),
             ),
             child: const Icon(
               Icons.notifications_outlined,
@@ -234,7 +227,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             children: [
               Expanded(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
                     borderRadius: BorderRadius.circular(12),
@@ -245,10 +241,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       const SizedBox(width: 10),
                       Text(
                         'Search for job',
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 15,
-                        ),
+                        style: TextStyle(color: Colors.grey[500], fontSize: 15),
                       ),
                     ],
                   ),
@@ -261,11 +254,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   color: const Color(0xff3F6CDF),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
-                  Icons.tune,
-                  color: Colors.white,
-                  size: 22,
-                ),
+                child: const Icon(Icons.tune, color: Colors.white, size: 22),
               ),
             ],
           ),
@@ -308,7 +297,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         final job = _allJobs[index];
         final isSaved = _savedJobIds.contains(job['id']);
         final isFirst = index == 0;
-        
+
         return _buildJobCard(
           job: job,
           isSaved: isSaved,
@@ -342,10 +331,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.grey[200]!,
-            width: 1,
-          ),
+          border: Border.all(color: Colors.grey[200]!, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -362,11 +348,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     color: Colors.grey[50],
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    job['logo'],
-                    color: job['logoColor'],
-                    size: 22,
-                  ),
+                  child: Icon(job['logo'], color: job['logoColor'], size: 22),
                 ),
                 const SizedBox(width: 12),
                 // Job Title
@@ -406,10 +388,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 const SizedBox(width: 4),
                 Text(
                   job['location'],
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
                 ),
               ],
             ),
@@ -417,17 +396,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             // Salary
             Row(
               children: [
-                Icon(
-                  Icons.attach_money,
-                  size: 14,
-                  color: Colors.grey[600],
-                ),
+                Icon(Icons.attach_money, size: 14, color: Colors.grey[600]),
                 Text(
                   job['salary'],
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
                 ),
               ],
             ),
@@ -477,7 +449,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     } else {
       badgeColor = const Color(0xff3F6CDF);
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(

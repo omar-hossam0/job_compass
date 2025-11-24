@@ -136,9 +136,7 @@ class _JobsScreenState extends State<JobsScreen> {
                     Positioned.fill(
                       child: Opacity(
                         opacity: 0.1,
-                        child: CustomPaint(
-                          painter: _PatternPainter(),
-                        ),
+                        child: CustomPaint(painter: _PatternPainter()),
                       ),
                     ),
                     // Company logo in center
@@ -220,15 +218,13 @@ class _JobsScreenState extends State<JobsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         job['company'] as String,
-                        style: TextStyle(
-                          color: Colors.grey[500],
-                          fontSize: 13,
-                        ),
+                        style: TextStyle(color: Colors.grey[500], fontSize: 13),
                       ),
                       const SizedBox(height: 8),
                       // Description
                       Text(
-                        job['description'] as String? ?? 'Join our team and make an impact',
+                        job['description'] as String? ??
+                            'Join our team and make an impact',
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 12,
@@ -277,7 +273,8 @@ class _JobsScreenState extends State<JobsScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => JobDetailScreen(job: job),
+                                  builder: (context) =>
+                                      JobDetailScreen(job: job),
                                 ),
                               );
                             },
@@ -328,11 +325,7 @@ class _PatternPainter extends CustomPainter {
       for (var j = 0; j < 3; j++) {
         final x = i * 60.0;
         final y = j * 40.0;
-        canvas.drawLine(
-          Offset(x, y),
-          Offset(x + 30, y + 20),
-          paint,
-        );
+        canvas.drawLine(Offset(x, y), Offset(x + 30, y + 20), paint);
       }
     }
   }
