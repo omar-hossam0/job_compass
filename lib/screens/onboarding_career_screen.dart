@@ -10,7 +10,7 @@ class OnboardingCareerScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
               const Spacer(),
@@ -18,17 +18,17 @@ class OnboardingCareerScreen extends StatelessWidget {
               // Illustration
               _buildIllustration(),
 
-              const SizedBox(height: 50),
+              const SizedBox(height: 30),
 
               // Title
               RichText(
                 textAlign: TextAlign.center,
                 text: const TextSpan(
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Color(0xff070C19),
-                    height: 1.3,
+                    height: 1.2,
                   ),
                   children: [
                     TextSpan(text: '"Discover\n'),
@@ -41,15 +41,15 @@ class OnboardingCareerScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 14),
 
               // Description
               Text(
                 'Explore the best job opportunities tailored to your strengths and field of study. This keeps the messaging fresh while maintaining the focus on personalization and career growth.',
                 style: TextStyle(
-                  fontSize: 15,
+                  fontSize: 13,
                   color: Colors.grey[600],
-                  height: 1.6,
+                  height: 1.4,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -84,8 +84,8 @@ class OnboardingCareerScreen extends StatelessWidget {
                   );
                 },
                 child: Container(
-                  width: 70,
-                  height: 70,
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
                     color: const Color(0xff3F6CDF),
                     shape: BoxShape.circle,
@@ -100,12 +100,12 @@ class OnboardingCareerScreen extends StatelessWidget {
                   child: const Icon(
                     Icons.arrow_forward,
                     color: Colors.white,
-                    size: 30,
+                    size: 26,
                   ),
                 ),
               ),
 
-              const SizedBox(height: 50),
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -115,7 +115,7 @@ class OnboardingCareerScreen extends StatelessWidget {
 
   Widget _buildIllustration() {
     return Container(
-      height: 300,
+      height: 250,
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
       child: Stack(
         alignment: Alignment.center,

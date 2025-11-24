@@ -31,11 +31,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
 
                 // Back button and Sign In link
                 Row(
@@ -54,7 +54,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: Text(
                         'Already have an account? Sign In',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           color: const Color(0xff3F6CDF),
                           fontWeight: FontWeight.w600,
                         ),
@@ -63,26 +63,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   ],
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
 
                 // Title
                 const Text(
                   'Get started free.',
                   style: TextStyle(
-                    fontSize: 32,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Color(0xff070C19),
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   'Free forever. No credit card needed.',
-                  style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 32),
 
                 // Form
                 Form(
@@ -106,7 +106,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         },
                       ),
 
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 16),
 
                       // Name Field
                       _buildTextField(

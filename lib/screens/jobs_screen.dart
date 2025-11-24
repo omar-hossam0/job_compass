@@ -42,17 +42,17 @@ class _JobsScreenState extends State<JobsScreen> {
           'All Jobs',
           style: TextStyle(
             color: Color(0xff070C19),
-            fontSize: 24,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
         leading: GestureDetector(
           onTap: () => Navigator.pop(context),
           child: Container(
-            margin: const EdgeInsets.only(left: 16, top: 8, bottom: 8),
+            margin: const EdgeInsets.only(left: 14, top: 8, bottom: 8),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.1),
@@ -64,7 +64,7 @@ class _JobsScreenState extends State<JobsScreen> {
             child: const Icon(
               Icons.arrow_back_ios_new,
               color: Color(0xff070C19),
-              size: 20,
+              size: 18,
             ),
           ),
         ),
@@ -72,7 +72,7 @@ class _JobsScreenState extends State<JobsScreen> {
         leadingWidth: 40,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+        padding: const EdgeInsets.fromLTRB(16, 14, 16, 100),
         child: Column(
           children: [
             ...List.generate(
@@ -89,7 +89,7 @@ class _JobsScreenState extends State<JobsScreen> {
     final bool isSaved = widget.savedJobIds.contains(job['id']);
 
     return Container(
-      margin: EdgeInsets.only(bottom: index == allJobs.length - 1 ? 0 : 16),
+      margin: EdgeInsets.only(bottom: index == allJobs.length - 1 ? 0 : 14),
       child: GestureDetector(
         onTap: () {
           Navigator.push(
@@ -98,7 +98,7 @@ class _JobsScreenState extends State<JobsScreen> {
           );
         },
         child: Container(
-          height: 240,
+          height: 220,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: Colors.white,
@@ -115,11 +115,11 @@ class _JobsScreenState extends State<JobsScreen> {
             children: [
               // Image header with bookmark
               Container(
-                height: 100,
+                height: 90,
                 decoration: BoxDecoration(
                   borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    topRight: Radius.circular(16),
+                    topLeft: Radius.circular(14),
+                    topRight: Radius.circular(14),
                   ),
                   gradient: LinearGradient(
                     colors: [
@@ -142,11 +142,11 @@ class _JobsScreenState extends State<JobsScreen> {
                     // Company logo in center
                     Center(
                       child: Container(
-                        width: 60,
-                        height: 60,
+                        width: 52,
+                        height: 52,
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
@@ -158,22 +158,22 @@ class _JobsScreenState extends State<JobsScreen> {
                         child: Icon(
                           job['logo'] as IconData,
                           color: job['logoColor'] as Color,
-                          size: 32,
+                          size: 28,
                         ),
                       ),
                     ),
                     // Bookmark button
                     Positioned(
-                      top: 12,
-                      right: 12,
+                      top: 10,
+                      right: 10,
                       child: GestureDetector(
                         onTap: () {
                           widget.onToggleSave(job['id'] as String);
                           setState(() {});
                         },
                         child: Container(
-                          width: 36,
-                          height: 36,
+                          width: 32,
+                          height: 32,
                           decoration: BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
@@ -189,7 +189,7 @@ class _JobsScreenState extends State<JobsScreen> {
                             color: isSaved
                                 ? const Color(0xff3F6CDF)
                                 : Colors.grey[600],
-                            size: 20,
+                            size: 18,
                           ),
                         ),
                       ),
@@ -200,7 +200,7 @@ class _JobsScreenState extends State<JobsScreen> {
               // Content
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -209,26 +209,26 @@ class _JobsScreenState extends State<JobsScreen> {
                         job['title'] as String,
                         style: const TextStyle(
                           color: Color(0xff070C19),
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 3),
                       Text(
                         job['company'] as String,
-                        style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                        style: TextStyle(color: Colors.grey[500], fontSize: 12),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       // Description
                       Text(
                         job['description'] as String? ??
                             'Join our team and make an impact',
                         style: TextStyle(
                           color: Colors.grey[600],
-                          fontSize: 12,
-                          height: 1.4,
+                          fontSize: 11,
+                          height: 1.3,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -240,30 +240,30 @@ class _JobsScreenState extends State<JobsScreen> {
                           // Salary
                           Icon(
                             Icons.attach_money,
-                            size: 16,
+                            size: 15,
                             color: Colors.grey[500],
                           ),
                           Text(
                             job['salary'] as String,
                             style: TextStyle(
                               color: Colors.grey[700],
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(width: 14),
                           // Views count (random for demo)
                           Icon(
                             Icons.remove_red_eye_outlined,
-                            size: 16,
+                            size: 15,
                             color: Colors.grey[500],
                           ),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 3),
                           Text(
                             '${(index + 1) * 47}',
                             style: TextStyle(
                               color: Colors.grey[600],
-                              fontSize: 13,
+                              fontSize: 12,
                             ),
                           ),
                           const Spacer(),
@@ -284,15 +284,15 @@ class _JobsScreenState extends State<JobsScreen> {
                                   'learn more',
                                   style: TextStyle(
                                     color: const Color(0xff3F6CDF),
-                                    fontSize: 13,
+                                    fontSize: 12,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
+                                const SizedBox(width: 3),
                                 const Icon(
                                   Icons.arrow_forward,
                                   color: Color(0xff3F6CDF),
-                                  size: 16,
+                                  size: 14,
                                 ),
                               ],
                             ),

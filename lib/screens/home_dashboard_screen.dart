@@ -105,7 +105,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).size.height * 0.12;
+    final navHeight = 65.0;
+    final bottomPadding =
+        navHeight + 24 + MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       extendBody: true,
@@ -121,11 +123,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
                     _buildSearchSection(),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 18),
                     _buildTabSection(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 12),
                     _buildJobsList(),
                   ],
                 ),
@@ -134,15 +136,29 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
+      floatingActionButton: GestureDetector(
+        onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const ChatBotScreen()),
           );
         },
-        backgroundColor: const Color(0xff3F6CDF),
-        child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+        child: Container(
+          width: 56,
+          height: 56,
+          decoration: BoxDecoration(
+            color: const Color(0xff3F6CDF),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.chat_bubble_outline, color: Colors.white),
+        ),
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -153,18 +169,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Row(
         children: [
           // Profile Image
           Container(
-            width: 50,
-            height: 50,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
               color: const Color(0xff3F6CDF),
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.person, color: Colors.white, size: 28),
+            child: const Icon(Icons.person, color: Colors.white, size: 20),
           ),
           const Spacer(),
           // Jobs Title
@@ -172,23 +188,23 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             'Jobs',
             style: TextStyle(
               color: Color(0xff070C19),
-              fontSize: 20,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
           ),
           const Spacer(),
           // Notification Icon
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(color: Colors.grey[200]!, width: 1),
             ),
             child: const Icon(
               Icons.notifications_outlined,
               color: Color(0xff070C19),
-              size: 24,
+              size: 18,
             ),
           ),
         ],
@@ -198,7 +214,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   Widget _buildSearchSection() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -207,7 +223,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             'Find Your',
             style: TextStyle(
               color: Color(0xff070C19),
-              fontSize: 28,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               height: 1.2,
             ),
@@ -216,45 +232,45 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             'Dream Job',
             style: TextStyle(
               color: Color(0xff070C19),
-              fontSize: 28,
+              fontSize: 22,
               fontWeight: FontWeight.bold,
               height: 1.2,
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 12),
           // Search Bar
           Row(
             children: [
               Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
+                    horizontal: 14,
+                    vertical: 12,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.grey[100],
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.search, color: Colors.grey[500], size: 22),
-                      const SizedBox(width: 10),
+                      Icon(Icons.search, color: Colors.grey[500], size: 18),
+                      const SizedBox(width: 6),
                       Text(
                         'Search for job',
-                        style: TextStyle(color: Colors.grey[500], fontSize: 15),
+                        style: TextStyle(color: Colors.grey[500], fontSize: 13),
                       ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: const Color(0xff3F6CDF),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Icon(Icons.tune, color: Colors.white, size: 22),
+                child: const Icon(Icons.tune, color: Colors.white, size: 18),
               ),
             ],
           ),
@@ -265,11 +281,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   Widget _buildTabSection() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
           _buildTab('Recent Jobs', isSelected: true),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           _buildTab('Best Matches', isSelected: false),
         ],
       ),
@@ -281,7 +297,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       text,
       style: TextStyle(
         color: isSelected ? const Color(0xff070C19) : Colors.grey[500],
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
       ),
     );
@@ -291,7 +307,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       itemCount: _allJobs.length,
       itemBuilder: (context, index) {
         final job = _allJobs[index];
@@ -326,11 +342,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: Colors.grey[200]!, width: 1),
         ),
         child: Column(
@@ -341,42 +357,42 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               children: [
                 // Company Logo
                 Container(
-                  width: 44,
-                  height: 44,
-                  padding: const EdgeInsets.all(10),
+                  width: 36,
+                  height: 36,
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
                     color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(6),
                   ),
-                  child: Icon(job['logo'], color: job['logoColor'], size: 22),
+                  child: Icon(job['logo'], color: job['logoColor'], size: 18),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 // Job Title
                 Expanded(
                   child: Text(
                     job['title'],
                     style: const TextStyle(
                       color: Color(0xff070C19),
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 // Bookmark Icon
                 GestureDetector(
                   onTap: onSave,
                   child: Icon(
                     isSaved ? Icons.bookmark : Icons.bookmark_outline,
                     color: isSaved ? const Color(0xff3F6CDF) : Colors.grey[400],
-                    size: 20,
+                    size: 18,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             // Location
             Row(
               children: [
@@ -388,7 +404,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 const SizedBox(width: 4),
                 Text(
                   job['location'],
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
             ),
@@ -399,7 +415,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 Icon(Icons.attach_money, size: 14, color: Colors.grey[600]),
                 Text(
                   job['salary'],
-                  style: TextStyle(color: Colors.grey[600], fontSize: 13),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ],
             ),
@@ -408,7 +424,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             Row(
               children: [
                 _buildJobBadge(job['type'], false),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 _buildJobBadge(job['location'], false),
                 const Spacer(),
                 GestureDetector(
@@ -419,14 +435,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         'Requirements',
                         style: TextStyle(
                           color: const Color(0xff3F6CDF),
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 3),
                       const Icon(
                         Icons.arrow_forward_ios,
-                        size: 12,
+                        size: 11,
                         color: Color(0xff3F6CDF),
                       ),
                     ],
@@ -451,16 +467,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
         color: badgeColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(5),
       ),
       child: Text(
         text,
         style: TextStyle(
           color: badgeColor,
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -473,10 +489,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
         child: Container(
-          height: 70,
+          height: 65,
           decoration: BoxDecoration(
             color: const Color(0xff070C19).withOpacity(0.95),
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(28),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xff070C19).withOpacity(0.2),
@@ -504,23 +520,23 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final selected = _selectedIndex == index;
     return InkWell(
       onTap: () => _onNavTap(index),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
               color: selected ? const Color(0xff3F6CDF) : Colors.white60,
-              size: 24,
+              size: 22,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
                 color: selected ? const Color(0xff3F6CDF) : Colors.white60,
-                fontSize: 10,
+                fontSize: 9,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

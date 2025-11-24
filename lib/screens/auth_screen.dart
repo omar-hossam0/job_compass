@@ -20,43 +20,43 @@ class _AuthScreenState extends State<AuthScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: 24),
 
                 // Profile images
                 _buildProfileImages(),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 28),
 
                 // Title and subtitle
                 const Text(
                   'Discover the perfect',
                   style: TextStyle(
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Color(0xff070C19),
-                    height: 1.3,
+                    height: 1.2,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const Text(
                   'job tailored just for you',
                   style: TextStyle(
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Color(0xff070C19),
-                    height: 1.3,
+                    height: 1.2,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Text(
                   'Tailored job search: find your perfect fit',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: Colors.grey[600],
                     height: 1.4,
                   ),
@@ -72,7 +72,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   textAlign: TextAlign.center,
                 ),
 
-                const SizedBox(height: 50),
+                const SizedBox(height: 32),
 
                 // Facebook button
                 _buildSocialButton(
@@ -88,7 +88,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   textColor: const Color(0xff070C19),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
                 // Google button
                 _buildSocialButton(
@@ -104,12 +104,12 @@ class _AuthScreenState extends State<AuthScreen> {
                   textColor: const Color(0xff070C19),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // Email button
                 _buildEmailButton(),
 
-                const SizedBox(height: 30),
+                const SizedBox(height: 20),
 
                 // Create account link
                 Row(
@@ -117,7 +117,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   children: [
                     Text(
                       "Don't have an account? ",
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                      style: TextStyle(fontSize: 13, color: Colors.grey[700]),
                     ),
                     GestureDetector(
                       onTap: () {
@@ -131,7 +131,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       child: const Text(
                         'Create Account',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: Color(0xff3F6CDF),
                           fontWeight: FontWeight.w600,
                         ),
@@ -179,7 +179,7 @@ class _AuthScreenState extends State<AuthScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 18),
               ],
             ),
           ),
@@ -190,17 +190,17 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Widget _buildProfileImages() {
     return SizedBox(
-      height: 180,
+      height: 160,
       child: Stack(
         alignment: Alignment.center,
         children: [
           // Left small circle
           Positioned(
             left: 20,
-            top: 20,
+            top: 10,
             child: Container(
-              width: 80,
-              height: 80,
+              width: 75,
+              height: 75,
               decoration: BoxDecoration(
                 color: const Color(0xffC8F5E8),
                 shape: BoxShape.circle,
@@ -235,8 +235,8 @@ class _AuthScreenState extends State<AuthScreen> {
           Positioned(
             bottom: 0,
             child: Container(
-              width: 140,
-              height: 140,
+              width: 135,
+              height: 135,
               decoration: BoxDecoration(
                 color: const Color(0xffC8F5E8),
                 shape: BoxShape.circle,
@@ -270,7 +270,7 @@ class _AuthScreenState extends State<AuthScreen> {
           // Right small circle
           Positioned(
             right: 20,
-            top: 10,
+            top: 8,
             child: Container(
               width: 70,
               height: 70,
@@ -294,7 +294,7 @@ class _AuthScreenState extends State<AuthScreen> {
                       color: const Color(0xffFFE5D9),
                       child: const Icon(
                         Icons.person,
-                        size: 35,
+                        size: 36,
                         color: Color(0xff070C19),
                       ),
                     );
@@ -317,29 +317,41 @@ class _AuthScreenState extends State<AuthScreen> {
     required String text,
     required Color textColor,
   }) {
-    Widget iconWidget;
-
-    // Use colored Google logo if it's Google and no specific color is given
+    // Build icon inside a white circular badge
+    Widget iconBadge;
     if (icon == FontAwesomeIcons.google && iconColor == null) {
-      iconWidget = ShaderMask(
-        shaderCallback: (bounds) => const LinearGradient(
-          colors: [
-            Color(0xff4285F4), // Blue
-            Color(0xffDB4437), // Red
-            Color(0xffF4B400), // Yellow
-            Color(0xff0F9D58), // Green
-          ],
-        ).createShader(bounds),
-        child: const FaIcon(
-          FontAwesomeIcons.google,
-          size: 22,
-          color: Colors.white,
+      iconBadge = Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+        child: Center(
+          child: ShaderMask(
+            shaderCallback: (bounds) => const LinearGradient(
+              colors: [
+                Color(0xff4285F4),
+                Color(0xffDB4437),
+                Color(0xffF4B400),
+                Color(0xff0F9D58),
+              ],
+            ).createShader(bounds),
+            child: const FaIcon(
+              FontAwesomeIcons.google,
+              size: 22,
+              color: Colors.white,
+            ),
+          ),
         ),
       );
     } else {
-      iconWidget = FaIcon(icon, size: 22, color: iconColor);
+      iconBadge = Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+        child: Center(child: FaIcon(icon, size: 22, color: iconColor)),
+      );
     }
 
+    // Use a Stack so the icon appears on the left while text remains centered
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -350,19 +362,20 @@ class _AuthScreenState extends State<AuthScreen> {
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: borderColor, width: 1.5),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
+          alignment: Alignment.center,
           children: [
-            iconWidget,
-            const SizedBox(width: 12),
+            // Centered text
             Text(
               text,
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: textColor,
               ),
             ),
+            // Left icon
+            Positioned(left: 14, child: iconBadge),
           ],
         ),
       ),
@@ -377,19 +390,28 @@ class _AuthScreenState extends State<AuthScreen> {
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        height: 52,
         decoration: BoxDecoration(
-          color: const Color(0xff2C5F5D),
+          color: const Color(0xff2C7A77),
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-        child: const Text(
-          'Continue with email',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+        child: const Center(
+          child: Text(
+            'Continue with email',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
         ),
       ),
     );

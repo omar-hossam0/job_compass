@@ -21,7 +21,7 @@ class WelcomeScreen extends StatelessWidget {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -30,49 +30,49 @@ class WelcomeScreen extends StatelessWidget {
                 // Logo
                 _buildLogo(),
 
-                const SizedBox(height: 60),
+                const SizedBox(height: 50),
 
                 // App Name
                 const Text(
                   'JobCompass',
                   style: TextStyle(
-                    fontSize: 38,
+                    fontSize: 34,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     letterSpacing: 0.5,
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 // Subtitle
                 const Text(
                   'Navigate Your Career',
                   style: TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w500,
                     color: Color(0xff60a5fa),
                     letterSpacing: 0.3,
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
 
                 // Description
                 const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
                     'AI-powered CV matching that finds your perfect career path with intelligent job recommendations',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       color: Color(0xffcbd5e1),
-                      height: 1.5,
+                      height: 1.4,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ),
 
-                const SizedBox(height: 50),
+                const SizedBox(height: 40),
 
                 // Features
                 _buildFeatures(),
@@ -108,10 +108,10 @@ class WelcomeScreen extends StatelessWidget {
                   },
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
                     decoration: BoxDecoration(
                       color: const Color(0xff3b82f6),
-                      borderRadius: BorderRadius.circular(30),
+                      borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xff3b82f6).withOpacity(0.4),
@@ -126,7 +126,7 @@ class WelcomeScreen extends StatelessWidget {
                         Text(
                           'Start Now',
                           style: TextStyle(
-                            fontSize: 18,
+                            fontSize: 17,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                             letterSpacing: 0.5,
@@ -136,7 +136,7 @@ class WelcomeScreen extends StatelessWidget {
                         Icon(
                           Icons.arrow_forward,
                           color: Colors.white,
-                          size: 22,
+                          size: 20,
                         ),
                       ],
                     ),
@@ -154,8 +154,8 @@ class WelcomeScreen extends StatelessWidget {
 
   Widget _buildLogo() {
     return SizedBox(
-      width: 160,
-      height: 160,
+      width: 140,
+      height: 140,
       child: TransparentLogo(
         assetPath: 'assets/images/logo.png',
         tolerance: 40,
@@ -178,22 +178,22 @@ class WelcomeScreen extends StatelessWidget {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: Colors.white.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: const Color(0xff60a5fa).withOpacity(0.3),
               width: 1,
             ),
           ),
-          child: Icon(icon, size: 32, color: const Color(0xff60a5fa)),
+          child: Icon(icon, size: 28, color: const Color(0xff60a5fa)),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         Text(
           label,
           style: const TextStyle(
-            fontSize: 13,
+            fontSize: 12,
             color: Color(0xffcbd5e1),
             fontWeight: FontWeight.w500,
           ),
