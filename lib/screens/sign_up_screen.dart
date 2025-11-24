@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'sign_in_screen.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'auth_screen.dart';
 import 'home_dashboard_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -91,7 +92,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             PageRouteBuilder(
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
-                                      const SignInScreen(),
+                                      const AuthScreen(),
                               transitionsBuilder:
                                   (
                                     context,
@@ -395,10 +396,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () {},
-                                icon: Image.network(
-                                  'https://www.google.com/favicon.ico',
-                                  width: 20,
-                                  height: 20,
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.google,
+                                  color: Color(0xffDB4437),
+                                  size: 20,
                                 ),
                                 label: const Text(
                                   'Google',
@@ -422,10 +423,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () {},
-                                icon: const Icon(
-                                  Icons.facebook,
+                                icon: const FaIcon(
+                                  FontAwesomeIcons.facebook,
                                   color: Color(0xff1877f2),
-                                  size: 24,
+                                  size: 20,
                                 ),
                                 label: const Text(
                                   'Facebook',

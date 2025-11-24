@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:typed_data';
 import 'dart:async';
 import 'dart:ui' as ui;
+import 'screens/welcome_screen.dart';
 import 'screens/onboarding_screen.dart';
 
 void main() {
@@ -18,10 +19,10 @@ class MyApp extends StatelessWidget {
       title: 'Job Compass',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xff3b82f6)),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+      home: const WelcomeScreen(),
     );
   }
 }

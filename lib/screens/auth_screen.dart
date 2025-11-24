@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'home_dashboard_screen.dart';
+import 'sign_up_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -123,9 +124,12 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        setState(() {
-                          isLogin = !isLogin;
-                        });
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SignUpScreen(),
+                          ),
+                        );
                       },
                       child: const Text(
                         'Create Account',
