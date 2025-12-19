@@ -38,7 +38,7 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
       final response = await _apiService.startInterviewSession({
         'jobTitle': 'General Interview',
       });
-      
+
       setState(() {
         _session = InterviewSession.fromJson(response);
         _currentQuestionIndex = 0;
@@ -60,7 +60,7 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
     try {
       // Simulate AI response
       await Future.delayed(const Duration(seconds: 2));
-      
+
       setState(() {
         _currentQuestionIndex++;
         _answerController.clear();
@@ -97,8 +97,8 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
             child: _session == null
                 ? _buildWelcome()
                 : _currentQuestionIndex < _session!.questions.length
-                    ? _buildInterview()
-                    : _buildComplete(),
+                ? _buildInterview()
+                : _buildComplete(),
           ),
         ),
       ),
@@ -131,13 +131,24 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
                   Container(
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(colors: [AppColors.primaryGreen, AppColors.primaryTeal]),
+                      gradient: LinearGradient(
+                        colors: [AppColors.primaryGreen, AppColors.primaryTeal],
+                      ),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.psychology, color: Colors.white, size: 80),
+                    child: const Icon(
+                      Icons.psychology,
+                      color: Colors.white,
+                      size: 80,
+                    ),
                   ),
                   const SizedBox(height: 32),
-                  Text('AI Interview Simulator', style: AppStyles.heading1.copyWith(color: AppColors.textPrimary)),
+                  Text(
+                    'AI Interview Simulator',
+                    style: AppStyles.heading1.copyWith(
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
                   const SizedBox(height: 16),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -152,11 +163,17 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
-                        _buildFeatureRow(Icons.check_circle, 'Common interview questions'),
+                        _buildFeatureRow(
+                          Icons.check_circle,
+                          'Common interview questions',
+                        ),
                         const SizedBox(height: 12),
                         _buildFeatureRow(Icons.feedback, 'AI-powered feedback'),
                         const SizedBox(height: 12),
-                        _buildFeatureRow(Icons.analytics, 'Strengths & weaknesses'),
+                        _buildFeatureRow(
+                          Icons.analytics,
+                          'Strengths & weaknesses',
+                        ),
                       ],
                     ),
                   ),
@@ -188,7 +205,7 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
 
   Widget _buildInterview() {
     final question = _session!.questions[_currentQuestionIndex];
-    
+
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -206,15 +223,24 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: LinearProgressIndicator(
-                    value: (_currentQuestionIndex + 1) / _session!.questions.length,
+                    value:
+                        (_currentQuestionIndex + 1) /
+                        _session!.questions.length,
                     backgroundColor: Colors.white.withOpacity(0.3),
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primaryGreen),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.primaryGreen,
+                    ),
                     minHeight: 8,
                   ),
                 ),
               ),
               const SizedBox(width: 16),
-              Text('${_currentQuestionIndex + 1}/${_session!.questions.length}', style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+              Text(
+                '${_currentQuestionIndex + 1}/${_session!.questions.length}',
+                style: AppStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -235,19 +261,36 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
                                 color: AppColors.primaryGreen,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.question_answer, color: Colors.white, size: 20),
+                              child: const Icon(
+                                Icons.question_answer,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                             const SizedBox(width: 12),
-                            Text('Question ${_currentQuestionIndex + 1}', style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold)),
+                            Text(
+                              'Question ${_currentQuestionIndex + 1}',
+                              style: AppStyles.bodyMedium.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        Text(question.question, style: AppStyles.heading3.copyWith(height: 1.5)),
+                        Text(
+                          question.question,
+                          style: AppStyles.heading3.copyWith(height: 1.5),
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Text('Your Answer', style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                  Text(
+                    'Your Answer',
+                    style: AppStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   GlassCard(
                     padding: const EdgeInsets.all(16),
@@ -257,7 +300,9 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
                       decoration: InputDecoration(
                         hintText: 'Type your answer here...',
                         border: InputBorder.none,
-                        hintStyle: AppStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+                        hintStyle: AppStyles.bodyMedium.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                       style: AppStyles.bodyMedium,
                     ),
@@ -268,7 +313,9 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
           ),
           const SizedBox(height: 20),
           PrimaryButton(
-            text: _currentQuestionIndex < _session!.questions.length - 1 ? 'Next Question' : 'Finish Interview',
+            text: _currentQuestionIndex < _session!.questions.length - 1
+                ? 'Next Question'
+                : 'Finish Interview',
             onPressed: _submitAnswer,
             isLoading: _isLoading,
             icon: Icons.arrow_forward,
@@ -289,15 +336,28 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
             Container(
               padding: const EdgeInsets.all(32),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [AppColors.success, AppColors.success.withOpacity(0.7)]),
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.success,
+                    AppColors.success.withOpacity(0.7),
+                  ],
+                ),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.check_circle, color: Colors.white, size: 80),
+              child: const Icon(
+                Icons.check_circle,
+                color: Colors.white,
+                size: 80,
+              ),
             ),
             const SizedBox(height: 32),
             Text('Interview Complete!', style: AppStyles.heading1),
             const SizedBox(height: 16),
-            Text('Great job completing the practice session', style: AppStyles.bodyMedium, textAlign: TextAlign.center),
+            Text(
+              'Great job completing the practice session',
+              style: AppStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 48),
             PrimaryButton(
               text: 'View Feedback',
@@ -323,7 +383,8 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
       strengths: ['Clear communication', 'Good examples', 'Confident delivery'],
       weaknesses: ['Could provide more details', 'Practice technical terms'],
       overallScore: 85,
-      summary: 'You demonstrated strong communication skills and provided relevant examples.',
+      summary:
+          'You demonstrated strong communication skills and provided relevant examples.',
     );
 
     return Container(
@@ -357,7 +418,10 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
               children: [
                 Text('Overall Score:', style: AppStyles.bodyMedium),
                 const Spacer(),
-                Text('${feedback.overallScore}%', style: AppStyles.heading1.copyWith(color: AppColors.success)),
+                Text(
+                  '${feedback.overallScore}%',
+                  style: AppStyles.heading1.copyWith(color: AppColors.success),
+                ),
               ],
             ),
           ),
@@ -373,31 +437,43 @@ class _InterviewPrepScreenState extends State<InterviewPrepScreen> {
                   const SizedBox(height: 24),
                   Text('Strengths', style: AppStyles.heading3),
                   const SizedBox(height: 12),
-                  ...feedback.strengths.map((s) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.check_circle, color: AppColors.success, size: 20),
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(s, style: AppStyles.bodyMedium)),
-                      ],
+                  ...feedback.strengths.map(
+                    (s) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            color: AppColors.success,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text(s, style: AppStyles.bodyMedium)),
+                        ],
+                      ),
                     ),
-                  )),
+                  ),
                   const SizedBox(height: 24),
                   Text('Areas to Improve', style: AppStyles.heading3),
                   const SizedBox(height: 12),
-                  ...feedback.weaknesses.map((w) => Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Icon(Icons.warning_amber, color: AppColors.warning, size: 20),
-                        const SizedBox(width: 12),
-                        Expanded(child: Text(w, style: AppStyles.bodyMedium)),
-                      ],
+                  ...feedback.weaknesses.map(
+                    (w) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.warning_amber,
+                            color: AppColors.warning,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(child: Text(w, style: AppStyles.bodyMedium)),
+                        ],
+                      ),
                     ),
-                  )),
+                  ),
                 ],
               ),
             ),

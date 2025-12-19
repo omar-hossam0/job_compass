@@ -6,7 +6,7 @@ class InterviewSession {
   final DateTime startedAt;
   final DateTime? completedAt;
   final InterviewFeedback? feedback;
-  
+
   InterviewSession({
     required this.id,
     required this.studentId,
@@ -16,7 +16,7 @@ class InterviewSession {
     this.completedAt,
     this.feedback,
   });
-  
+
   factory InterviewSession.fromJson(Map<String, dynamic> json) {
     return InterviewSession(
       id: json['id'] ?? json['_id'] ?? '',
@@ -24,8 +24,8 @@ class InterviewSession {
       jobTitle: json['jobTitle'] ?? '',
       questions: json['questions'] != null
           ? (json['questions'] as List)
-              .map((q) => InterviewQuestion.fromJson(q))
-              .toList()
+                .map((q) => InterviewQuestion.fromJson(q))
+                .toList()
           : [],
       startedAt: json['startedAt'] != null
           ? DateTime.parse(json['startedAt'])
@@ -45,14 +45,14 @@ class InterviewQuestion {
   final String? answer;
   final String? aiResponse;
   final int? rating; // 1-5
-  
+
   InterviewQuestion({
     required this.question,
     this.answer,
     this.aiResponse,
     this.rating,
   });
-  
+
   factory InterviewQuestion.fromJson(Map<String, dynamic> json) {
     return InterviewQuestion(
       question: json['question'] ?? '',
@@ -61,7 +61,7 @@ class InterviewQuestion {
       rating: json['rating'],
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'question': question,
@@ -77,14 +77,14 @@ class InterviewFeedback {
   final List<String> weaknesses;
   final double overallScore;
   final String summary;
-  
+
   InterviewFeedback({
     required this.strengths,
     required this.weaknesses,
     required this.overallScore,
     required this.summary,
   });
-  
+
   factory InterviewFeedback.fromJson(Map<String, dynamic> json) {
     return InterviewFeedback(
       strengths: json['strengths'] != null

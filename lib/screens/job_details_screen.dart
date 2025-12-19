@@ -10,7 +10,7 @@ import '../widgets/skill_widgets.dart';
 
 class JobDetailsScreen extends StatefulWidget {
   final String jobId;
-  
+
   const JobDetailsScreen({Key? key, required this.jobId}) : super(key: key);
 
   @override
@@ -60,37 +60,37 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             child: _error != null
                 ? _buildError()
                 : _job == null
-                    ? const SizedBox()
-                    : Column(
-                        children: [
-                          _buildAppBar(),
-                          Expanded(
-                            child: SingleChildScrollView(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildJobHeader(),
-                                    const SizedBox(height: 24),
-                                    _buildMatchScore(),
-                                    const SizedBox(height: 24),
-                                    _buildJobInfo(),
-                                    const SizedBox(height: 24),
-                                    _buildDescription(),
-                                    const SizedBox(height: 24),
-                                    _buildRequiredSkills(),
-                                    const SizedBox(height: 24),
-                                    _buildMissingSkills(),
-                                    const SizedBox(height: 100),
-                                  ],
-                                ),
-                              ),
+                ? const SizedBox()
+                : Column(
+                    children: [
+                      _buildAppBar(),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildJobHeader(),
+                                const SizedBox(height: 24),
+                                _buildMatchScore(),
+                                const SizedBox(height: 24),
+                                _buildJobInfo(),
+                                const SizedBox(height: 24),
+                                _buildDescription(),
+                                const SizedBox(height: 24),
+                                _buildRequiredSkills(),
+                                const SizedBox(height: 24),
+                                _buildMissingSkills(),
+                                const SizedBox(height: 100),
+                              ],
                             ),
                           ),
-                          _buildBottomActions(),
-                        ],
+                        ),
                       ),
+                      _buildBottomActions(),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -108,9 +108,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             const SizedBox(height: 16),
             Text('Failed to load job details', style: AppStyles.heading3),
             const SizedBox(height: 8),
-            Text(_error ?? 'Unknown error', style: AppStyles.bodyMedium, textAlign: TextAlign.center),
+            Text(
+              _error ?? 'Unknown error',
+              style: AppStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
-            PrimaryButton(text: 'Retry', onPressed: _loadJobDetails, icon: Icons.refresh),
+            PrimaryButton(
+              text: 'Retry',
+              onPressed: _loadJobDetails,
+              icon: Icons.refresh,
+            ),
           ],
         ),
       ),
@@ -135,7 +143,9 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             icon: _isSaved ? Icons.bookmark : Icons.bookmark_border,
             onPressed: () => setState(() => _isSaved = !_isSaved),
             backgroundColor: Colors.white.withOpacity(0.3),
-            iconColor: _isSaved ? AppColors.primaryGreen : AppColors.textPrimary,
+            iconColor: _isSaved
+                ? AppColors.primaryGreen
+                : AppColors.textPrimary,
           ),
         ],
       ),
@@ -161,7 +171,11 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                 : Icon(Icons.business, color: AppColors.primaryGreen, size: 40),
           ),
           const SizedBox(height: 16),
-          Text(_job!.title, style: AppStyles.heading2, textAlign: TextAlign.center),
+          Text(
+            _job!.title,
+            style: AppStyles.heading2,
+            textAlign: TextAlign.center,
+          ),
           const SizedBox(height: 8),
           Text(_job!.company, style: AppStyles.bodyMedium),
           const SizedBox(height: 16),
@@ -171,12 +185,20 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             alignment: WrapAlignment.center,
             children: _job!.employmentType.map((type) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primaryGreen.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Text(type, style: AppStyles.bodySmall.copyWith(color: AppColors.primaryGreen)),
+                child: Text(
+                  type,
+                  style: AppStyles.bodySmall.copyWith(
+                    color: AppColors.primaryGreen,
+                  ),
+                ),
               );
             }).toList(),
           ),
@@ -190,29 +212,55 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       child: Row(
         children: [
           Expanded(
-            child: _buildInfoColumn('Match Score', '${_job!.matchScore.toInt()}%', Icons.show_chart, AppColors.success),
+            child: _buildInfoColumn(
+              'Match Score',
+              '${_job!.matchScore.toInt()}%',
+              Icons.show_chart,
+              AppColors.success,
+            ),
           ),
           Container(width: 1, height: 50, color: Colors.white.withOpacity(0.3)),
           Expanded(
-            child: _buildInfoColumn('Salary', '\$${(_job!.salary / 1000).toStringAsFixed(0)}k${_job!.salaryPeriod}', Icons.attach_money, AppColors.primaryGreen),
+            child: _buildInfoColumn(
+              'Salary',
+              '\$${(_job!.salary / 1000).toStringAsFixed(0)}k${_job!.salaryPeriod}',
+              Icons.attach_money,
+              AppColors.primaryGreen,
+            ),
           ),
           Container(width: 1, height: 50, color: Colors.white.withOpacity(0.3)),
           Expanded(
-            child: _buildInfoColumn('Experience', '${_job!.experienceYears} Years', Icons.work_history, AppColors.info),
+            child: _buildInfoColumn(
+              'Experience',
+              '${_job!.experienceYears} Years',
+              Icons.work_history,
+              AppColors.info,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoColumn(String label, String value, IconData icon, Color color) {
+  Widget _buildInfoColumn(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Icon(icon, color: color, size: 24),
         const SizedBox(height: 8),
         Text(label, style: AppStyles.bodySmall),
         const SizedBox(height: 4),
-        Text(value, style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.bold, color: color)),
+        Text(
+          value,
+          style: AppStyles.bodyMedium.copyWith(
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
       ],
     );
   }
@@ -228,9 +276,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             children: [
               _buildInfoRow(Icons.location_on, 'Location', _job!.location),
               const Divider(height: 24),
-              _buildInfoRow(Icons.calendar_today, 'Posted', _formatDate(_job!.postedAt)),
+              _buildInfoRow(
+                Icons.calendar_today,
+                'Posted',
+                _formatDate(_job!.postedAt),
+              ),
               const Divider(height: 24),
-              _buildInfoRow(Icons.people, 'Applicants', '${_job!.applicantsCount}+'),
+              _buildInfoRow(
+                Icons.people,
+                'Applicants',
+                '${_job!.applicantsCount}+',
+              ),
             ],
           ),
         ),
@@ -245,7 +301,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         const SizedBox(width: 12),
         Text(label, style: AppStyles.bodyMedium),
         const Spacer(),
-        Text(value, style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+        Text(
+          value,
+          style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+        ),
       ],
     );
   }
@@ -257,7 +316,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
         Text('Description', style: AppStyles.heading3),
         const SizedBox(height: 16),
         GlassCard(
-          child: Text(_job!.description, style: AppStyles.bodyMedium.copyWith(height: 1.6)),
+          child: Text(
+            _job!.description,
+            style: AppStyles.bodyMedium.copyWith(height: 1.6),
+          ),
         ),
       ],
     );
@@ -272,8 +334,17 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
           children: [
             Text('Required Skills', style: AppStyles.heading3),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/skill-gap', arguments: widget.jobId),
-              child: Text('View Gap Analysis', style: AppStyles.bodySmall.copyWith(color: AppColors.primaryGreen)),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/skill-gap',
+                arguments: widget.jobId,
+              ),
+              child: Text(
+                'View Gap Analysis',
+                style: AppStyles.bodySmall.copyWith(
+                  color: AppColors.primaryGreen,
+                ),
+              ),
             ),
           ],
         ),
@@ -282,7 +353,9 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _job!.requiredSkills.map((skill) => SkillChip(label: skill)).toList(),
+            children: _job!.requiredSkills
+                .map((skill) => SkillChip(label: skill))
+                .toList(),
           ),
         ),
       ],
@@ -306,16 +379,28 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                   color: AppColors.warning.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.warning_amber, color: AppColors.warning, size: 32),
+                child: Icon(
+                  Icons.warning_amber,
+                  color: AppColors.warning,
+                  size: 32,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${_job!.missingSkillsCount} skills to improve', style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                    Text(
+                      '${_job!.missingSkillsCount} skills to improve',
+                      style: AppStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Check learning path for recommendations', style: AppStyles.bodySmall),
+                    Text(
+                      'Check learning path for recommendations',
+                      style: AppStyles.bodySmall,
+                    ),
                   ],
                 ),
               ),
@@ -331,7 +416,13 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, -5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -5),
+          ),
+        ],
       ),
       child: SafeArea(
         child: Row(
@@ -339,7 +430,11 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
             Expanded(
               child: SecondaryButton(
                 text: 'View Gap',
-                onPressed: () => Navigator.pushNamed(context, '/skill-gap', arguments: widget.jobId),
+                onPressed: () => Navigator.pushNamed(
+                  context,
+                  '/skill-gap',
+                  arguments: widget.jobId,
+                ),
                 icon: Icons.analytics_outlined,
               ),
             ),
@@ -350,7 +445,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                 text: 'Apply Now',
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Application submitted!'), backgroundColor: AppColors.success),
+                    const SnackBar(
+                      content: Text('Application submitted!'),
+                      backgroundColor: AppColors.success,
+                    ),
                   );
                 },
                 icon: Icons.send,
@@ -365,7 +463,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final diff = now.difference(date);
-    
+
     if (diff.inDays == 0) return 'Today';
     if (diff.inDays == 1) return 'Yesterday';
     if (diff.inDays < 7) return '${diff.inDays} days ago';

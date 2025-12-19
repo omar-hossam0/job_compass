@@ -11,7 +11,7 @@ class ApiService {
 
   // Backend Base URL
   static const String baseUrl = 'http://192.168.1.10:5000/api';
-  
+
   String? _token;
 
   // Initialize token from storage
@@ -47,10 +47,7 @@ class ApiService {
   Future<Map<String, dynamic>> get(String endpoint) async {
     try {
       final response = await http
-          .get(
-            Uri.parse('$baseUrl$endpoint'),
-            headers: _getHeaders(),
-          )
+          .get(Uri.parse('$baseUrl$endpoint'), headers: _getHeaders())
           .timeout(const Duration(seconds: 10));
 
       return _handleResponse(response);
@@ -60,7 +57,10 @@ class ApiService {
   }
 
   // Generic POST request
-  Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> post(
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
     try {
       final response = await http
           .post(
@@ -77,7 +77,10 @@ class ApiService {
   }
 
   // Generic PUT request
-  Future<Map<String, dynamic>> put(String endpoint, Map<String, dynamic> body) async {
+  Future<Map<String, dynamic>> put(
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
     try {
       final response = await http
           .put(
@@ -97,10 +100,7 @@ class ApiService {
   Future<Map<String, dynamic>> delete(String endpoint) async {
     try {
       final response = await http
-          .delete(
-            Uri.parse('$baseUrl$endpoint'),
-            headers: _getHeaders(),
-          )
+          .delete(Uri.parse('$baseUrl$endpoint'), headers: _getHeaders())
           .timeout(const Duration(seconds: 10));
 
       return _handleResponse(response);
@@ -112,31 +112,39 @@ class ApiService {
   // Handle response
   Map<String, dynamic> _handleResponse(http.Response response) {
     final data = jsonDecode(response.body);
-    
+
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return {'success': true, ...data};
     } else {
-      return {
-        'success': false,
-        'message': data['message'] ?? 'Request failed',
-      };
+      return {'success': false, 'message': data['message'] ?? 'Request failed'};
     }
   }
 
   // File upload
-  Future<Map<String, dynamic>> uploadFile(String endpoint, File file, {String fieldName = 'cv'}) async {
+  Future<Map<String, dynamic>> uploadFile(
+    String endpoint,
+    File file, {
+    String fieldName = 'cv',
+  }) async {
     try {
-      final request = http.MultipartRequest('POST', Uri.parse('$baseUrl$endpoint'));
-      
+      final request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl$endpoint'),
+      );
+
       if (_token != null) {
         request.headers['Authorization'] = 'Bearer $_token';
       }
-      
-      request.files.add(await http.MultipartFile.fromPath(fieldName, file.path));
-      
-      final streamedResponse = await request.send().timeout(const Duration(seconds: 30));
+
+      request.files.add(
+        await http.MultipartFile.fromPath(fieldName, file.path),
+      );
+
+      final streamedResponse = await request.send().timeout(
+        const Duration(seconds: 30),
+      );
       final response = await http.Response.fromStream(streamedResponse);
-      
+
       return _handleResponse(response);
     } catch (e) {
       return {'success': false, 'message': 'Upload error: ${e.toString()}'};
@@ -146,7 +154,7 @@ class ApiService {
   // ============================================
   // AUTH ENDPOINTS
   // ============================================
-  
+
   static Future<Map<String, dynamic>> register({
     required String email,
     required String password,
@@ -261,7 +269,9 @@ class ApiService {
     return await get('/student/learning-path');
   }
 
-  Future<Map<String, dynamic>> startInterviewSession(Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> startInterviewSession(
+    Map<String, dynamic> data,
+  ) async {
     return await post('/student/interview-session', data);
   }
 
@@ -273,7 +283,10 @@ class ApiService {
     return await put('/student/profile', data);
   }
 
-  Future<Map<String, dynamic>> changePassword(String oldPassword, String newPassword) async {
+  Future<Map<String, dynamic>> changePassword(
+    String oldPassword,
+    String newPassword,
+  ) async {
     return await put('/student/change-password', {
       'oldPassword': oldPassword,
       'newPassword': newPassword,

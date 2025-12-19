@@ -9,7 +9,7 @@ class GlassCard extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final VoidCallback? onTap;
-  
+
   const GlassCard({
     Key? key,
     required this.child,
@@ -51,7 +51,7 @@ class SolidCard extends StatelessWidget {
   final EdgeInsets? padding;
   final EdgeInsets? margin;
   final VoidCallback? onTap;
-  
+
   const SolidCard({
     Key? key,
     required this.child,

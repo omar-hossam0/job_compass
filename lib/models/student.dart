@@ -8,7 +8,7 @@ class Student {
   final String? cvUrl;
   final DateTime? cvUploadedAt;
   final List<String> skills;
-  
+
   Student({
     required this.id,
     required this.name,
@@ -20,7 +20,7 @@ class Student {
     this.cvUploadedAt,
     this.skills = const [],
   });
-  
+
   factory Student.fromJson(Map<String, dynamic> json) {
     return Student(
       id: json['id'] ?? json['_id'] ?? '',
@@ -30,15 +30,13 @@ class Student {
       profileCompletion: json['profileCompletion'] ?? 0,
       skillMatchScore: (json['skillMatchScore'] ?? 0).toDouble(),
       cvUrl: json['cvUrl'],
-      cvUploadedAt: json['cvUploadedAt'] != null 
-          ? DateTime.parse(json['cvUploadedAt']) 
+      cvUploadedAt: json['cvUploadedAt'] != null
+          ? DateTime.parse(json['cvUploadedAt'])
           : null,
-      skills: json['skills'] != null 
-          ? List<String>.from(json['skills']) 
-          : [],
+      skills: json['skills'] != null ? List<String>.from(json['skills']) : [],
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -59,19 +57,21 @@ class DashboardData {
   final List<Job> topMatchedJobs;
   final int totalJobMatches;
   final int skillsCount;
-  
+
   DashboardData({
     required this.student,
     required this.topMatchedJobs,
     required this.totalJobMatches,
     required this.skillsCount,
   });
-  
+
   factory DashboardData.fromJson(Map<String, dynamic> json) {
     return DashboardData(
       student: Student.fromJson(json['student'] ?? {}),
       topMatchedJobs: json['topMatchedJobs'] != null
-          ? (json['topMatchedJobs'] as List).map((j) => Job.fromJson(j)).toList()
+          ? (json['topMatchedJobs'] as List)
+                .map((j) => Job.fromJson(j))
+                .toList()
           : [],
       totalJobMatches: json['totalJobMatches'] ?? 0,
       skillsCount: json['skillsCount'] ?? 0,
@@ -95,7 +95,7 @@ class Job {
   final int missingSkillsCount;
   final DateTime postedAt;
   final int applicantsCount;
-  
+
   Job({
     required this.id,
     required this.title,
@@ -113,7 +113,7 @@ class Job {
     required this.postedAt,
     required this.applicantsCount,
   });
-  
+
   factory Job.fromJson(Map<String, dynamic> json) {
     return Job(
       id: json['id'] ?? json['_id'] ?? '',

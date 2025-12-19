@@ -51,9 +51,11 @@
 ## 📱 Screen-by-Screen Flow
 
 ### Screen 1: Student Dashboard
+
 **Entry Point**: Main home after login
 
 **User Actions**:
+
 1. View profile completion → Navigate to Profile
 2. See skill match score → Navigate to Skills Analysis
 3. Tap job card → Navigate to Job Details
@@ -64,6 +66,7 @@
 8. Tap notification bell → Navigate to Notifications
 
 **Data Loaded**:
+
 - Student info (name, email, profile pic)
 - Profile completion %
 - Skill match score
@@ -74,9 +77,11 @@
 ---
 
 ### Screen 2: Profile & CV Management
+
 **Navigation From**: Dashboard, Settings
 
 **User Actions**:
+
 1. Upload PDF CV → Opens file picker → Uploads to server
 2. Update existing CV → Same as upload
 3. View extracted skills → Shows first 10 skills
@@ -84,6 +89,7 @@
 5. Click settings icon → Navigate to Settings
 
 **Data Loaded**:
+
 - Personal information
 - CV status (uploaded/not uploaded)
 - Upload date
@@ -92,14 +98,17 @@
 ---
 
 ### Screen 3: Skill Analysis
+
 **Navigation From**: Dashboard, Profile
 
 **User Actions**:
+
 1. Filter by category (All/Technical/Soft) → Updates list
 2. View skill details → Shows proficiency, level, explanation
 3. Pull to refresh → Reloads skills
 
 **Data Loaded**:
+
 - All extracted skills
 - Technical skills list
 - Soft skills list
@@ -110,14 +119,17 @@
 ---
 
 ### Screen 4: Job Matches
+
 **Navigation From**: Dashboard
 
 **User Actions**:
+
 1. Sort by match/salary/date → Reorders list
 2. Tap job card → Navigate to Job Details (with jobId)
 3. Pull to refresh → Reloads matches
 
 **Data Loaded**:
+
 - All matched jobs
 - Match percentages
 - Job details (title, company, salary, etc.)
@@ -126,15 +138,18 @@
 ---
 
 ### Screen 5: Job Details
+
 **Navigation From**: Job Matches, Dashboard
 
 **User Actions**:
+
 1. Bookmark job → Saves job locally
 2. Click "View Gap" → Navigate to Skill Gap Analysis (with jobId)
 3. Click "Apply Now" → Shows success message
 4. Back → Returns to Job Matches
 
 **Data Loaded**:
+
 - Complete job information
 - Required skills
 - Match score
@@ -144,15 +159,18 @@
 ---
 
 ### Screen 6: Skill Gap Analysis
+
 **Navigation From**: Job Details
 
 **User Actions**:
+
 1. View skill comparisons → See required vs current levels
 2. Review missing skills → See what to learn
 3. Read suggestions → Get improvement tips
 4. Click "View Learning Path" → Navigate to Learning Path
 
 **Data Loaded**:
+
 - Overall match percentage
 - Skill-by-skill comparison
 - Required vs current proficiency
@@ -162,15 +180,18 @@
 ---
 
 ### Screen 7: Learning Path
+
 **Navigation From**: Dashboard, Skill Gap Analysis
 
 **User Actions**:
+
 1. View weekly modules → See organized learning path
 2. Tap course → Opens external URL (YouTube/Coursera/Udemy)
 3. Mark module complete → Updates progress
 4. Pull to refresh → Reloads path
 
 **Data Loaded**:
+
 - AI-generated learning modules
 - Weekly organization
 - Course recommendations
@@ -181,9 +202,11 @@
 ---
 
 ### Screen 8: Interview Preparation
+
 **Navigation From**: Dashboard
 
 **User Actions**:
+
 1. Start session → Begins interview simulation
 2. Answer questions → Type responses
 3. Submit answers → Get AI feedback
@@ -191,6 +214,7 @@
 5. Start new session → Repeat practice
 
 **Data Loaded**:
+
 - Interview questions
 - AI responses
 - Performance feedback
@@ -200,14 +224,17 @@
 ---
 
 ### Screen 9: Notifications
+
 **Navigation From**: Dashboard (bell icon)
 
 **User Actions**:
+
 1. Tap notification → Navigate to related screen
 2. Mark all as read → Updates read status
 3. Pull to refresh → Loads new notifications
 
 **Data Loaded**:
+
 - Job match notifications
 - Learning path updates
 - Interview reminders
@@ -217,9 +244,11 @@
 ---
 
 ### Screen 10: Settings
+
 **Navigation From**: Profile
 
 **User Actions**:
+
 1. Edit profile → Navigate to Profile
 2. Change password → Shows dialog
 3. Select language → Updates app language
@@ -228,6 +257,7 @@
 6. Delete account → Shows confirmation
 
 **Data Loaded**:
+
 - Current settings
 - Language preference
 - Notification preferences
@@ -237,6 +267,7 @@
 ## 🔄 Data Flow
 
 ### 1. API Service Layer
+
 ```dart
 ApiService (Singleton)
   ├─ Token Management
@@ -263,6 +294,7 @@ ApiService (Singleton)
 ```
 
 ### 2. State Management Flow
+
 ```dart
 Screen Load
   ↓
@@ -276,6 +308,7 @@ Error → setState({ error, isLoading: false }) → Show Error Screen
 ```
 
 ### 3. Error Handling Pattern
+
 ```dart
 try {
   final response = await _apiService.method();
@@ -315,20 +348,24 @@ GradientBackground
 ## 📦 Dependencies Usage
 
 ### 1. http (^1.1.0)
+
 - All API calls
 - GET, POST, PUT, DELETE
 - Multipart file upload
 
 ### 2. shared_preferences (^2.2.2)
+
 - Token storage
 - User preferences
 - Language selection
 
 ### 3. file_picker (^6.1.1)
+
 - CV upload (PDF only)
 - File selection dialog
 
 ### 4. url_launcher (^6.2.2)
+
 - Open course URLs
 - External links (Coursera, YouTube, Udemy)
 
@@ -396,6 +433,7 @@ MaterialApp(
 ## ✅ Testing Checklist
 
 ### Per Screen:
+
 - [ ] Loads without errors
 - [ ] API call succeeds
 - [ ] Data displays correctly
@@ -407,6 +445,7 @@ MaterialApp(
 - [ ] UI matches design
 
 ### Overall:
+
 - [ ] Token persists across app restarts
 - [ ] Logout clears token
 - [ ] All navigation routes work
@@ -419,16 +458,19 @@ MaterialApp(
 ## 🚀 Deployment Steps
 
 1. **Update Backend URL**:
+
    ```dart
    static const String baseUrl = 'http://YOUR_BACKEND_IP:3000/api';
    ```
 
 2. **Test All Screens**:
+
    - Run through complete user journey
    - Test error cases
    - Verify API responses
 
 3. **Build APK**:
+
    ```bash
    flutter build apk --release
    ```

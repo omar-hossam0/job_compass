@@ -5,7 +5,7 @@
 ### **13 Complete Screens** with Modern Glassmorphic Design
 
 1. ✅ Student Dashboard (Main Home)
-2. ✅ Profile & CV Management  
+2. ✅ Profile & CV Management
 3. ✅ Skill Analysis
 4. ✅ Job Matching
 5. ✅ Job Details
@@ -16,6 +16,7 @@
 10. ✅ Settings
 
 ### **Complete Architecture**
+
 - ✅ Models (Student, Job, Skill, LearningPath, etc.)
 - ✅ API Service (Token handling, all endpoints)
 - ✅ Reusable Widgets (Cards, Buttons, Chips)
@@ -26,18 +27,23 @@
 ## 🚀 Quick Start (3 Steps)
 
 ### Step 1: Update Backend URL
+
 Open `lib/services/api_service.dart` and update line 7:
+
 ```dart
 static const String baseUrl = 'http://YOUR_IP:3000/api';
 ```
+
 Replace `YOUR_IP` with your backend server IP address.
 
 ### Step 2: Install Dependencies
+
 ```bash
 flutter pub get
 ```
 
 ### Step 3: Run the App
+
 ```bash
 flutter run
 ```
@@ -47,6 +53,7 @@ flutter run
 ## 📱 Testing the Screens
 
 ### Test Flow:
+
 1. **Login** → Gets token
 2. **Dashboard** → Shows welcome, stats, top 3 jobs
 3. **Profile** → Upload CV (PDF file)
@@ -64,6 +71,7 @@ flutter run
 ## 🎨 Design Features
 
 ### Glassmorphic Style (like reference images):
+
 - Semi-transparent cards
 - Blur effects (backdrop filter)
 - Gradient backgrounds (teal → beige)
@@ -72,6 +80,7 @@ flutter run
 - Clean typography
 
 ### Colors:
+
 - **Primary Green**: #5A9B8A
 - **Teal**: #6BA89F
 - **Gold Accent**: #D4A574
@@ -123,6 +132,7 @@ lib/
 ## 🔧 Key Features Implemented
 
 ### 1. API Integration
+
 - ✅ Token-based authentication
 - ✅ Auto-save token in SharedPreferences
 - ✅ All 10 API endpoints connected
@@ -130,6 +140,7 @@ lib/
 - ✅ Error handling
 
 ### 2. UI/UX
+
 - ✅ Loading states (spinners, overlays)
 - ✅ Error states (retry buttons)
 - ✅ Empty states (helpful messages)
@@ -137,6 +148,7 @@ lib/
 - ✅ Smooth navigation
 
 ### 3. Components
+
 - ✅ Glassmorphic cards
 - ✅ Gradient buttons
 - ✅ Skill chips with levels
@@ -144,6 +156,7 @@ lib/
 - ✅ Job cards with match scores
 
 ### 4. Functionality
+
 - ✅ CV upload with file picker
 - ✅ Skill filtering (Technical/Soft)
 - ✅ Job sorting (Match/Salary/Date)
@@ -173,6 +186,7 @@ GET  /student/notifications    → Notifications list
 ## ⚙️ Dependencies Required
 
 Add to `pubspec.yaml`:
+
 ```yaml
 dependencies:
   http: ^1.1.0
@@ -188,6 +202,7 @@ Then run: `flutter pub get`
 ## 🎯 Navigation Setup
 
 Add to your `main.dart`:
+
 ```dart
 MaterialApp(
   routes: {
@@ -226,19 +241,25 @@ MaterialApp(
 ## 🐛 Common Issues & Solutions
 
 ### Issue 1: API calls fail
+
 **Solution**: Update `baseUrl` in `api_service.dart` with correct IP
 
 ### Issue 2: Token not persisting
+
 **Solution**: Call `await apiService.initToken()` on app start
 
 ### Issue 3: File picker not working
+
 **Solution**: Add permissions in AndroidManifest.xml:
+
 ```xml
 <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 ```
 
 ### Issue 4: URLs not opening
+
 **Solution**: Add to AndroidManifest.xml:
+
 ```xml
 <queries>
   <intent>
@@ -253,6 +274,7 @@ MaterialApp(
 ## 📸 Screenshots Expected
 
 Your app should look similar to the reference images with:
+
 - Gradient background (teal → beige)
 - Semi-transparent glass cards
 - Job cards with company logo, match %, salary
@@ -266,6 +288,7 @@ Your app should look similar to the reference images with:
 ## ✅ Production Checklist
 
 Before deploying:
+
 - [ ] Update backend URL
 - [ ] Test all API calls
 - [ ] Test file upload
@@ -291,6 +314,7 @@ Before deploying:
 ## 🎉 You're Ready!
 
 All 13 screens are production-ready with:
+
 - ✅ Modern glassmorphic design
 - ✅ Complete API integration
 - ✅ Full error handling
@@ -302,6 +326,7 @@ Just update the backend URL and run!
 ---
 
 **Need Help?**
+
 1. Check the code comments
 2. Review the guide files
 3. Test API endpoints with Postman first

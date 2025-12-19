@@ -5,6 +5,7 @@
 ### ✅ تم تحديث الملفات التالية:
 
 #### 1. **main.dart**
+
 - ✅ إضافة imports لجميع الصفحات الجديدة (13 صفحة)
 - ✅ إضافة `initToken()` للـ API Service عند بدء التطبيق
 - ✅ إضافة routes لجميع الصفحات:
@@ -21,14 +22,17 @@
   - `/skill-gap` (يستقبل jobId)
 
 #### 2. **auth_screen.dart**
+
 - ✅ تغيير import من `home_dashboard_screen.dart` إلى `student_dashboard_screen.dart`
 - ✅ تحديث دالة `_navigateToHome()` للذهاب إلى StudentDashboardScreen
 
 #### 3. **sign_in_screen.dart**
+
 - ✅ تغيير import من `home_dashboard_screen.dart` إلى `student_dashboard_screen.dart`
 - ✅ تحديث navigation بعد login ناجح للذهاب إلى StudentDashboardScreen
 
 #### 4. **sign_up_screen.dart**
+
 - ✅ تغيير import من `home_dashboard_screen.dart` إلى `student_dashboard_screen.dart`
 - ✅ تحديث دالة `_navigateToHome()` للذهاب إلى StudentDashboardScreen
 
@@ -70,10 +74,12 @@ StudentDashboardScreen (الصفحة الرئيسية الجديدة) ✨
 ## 🎨 الصفحات الجديدة التي حلت محل القديمة
 
 ### الصفحة الرئيسية:
+
 ❌ ~~HomeDashboardScreen~~ (القديمة)  
 ✅ **StudentDashboardScreen** (الجديدة)
 
 ### صفحات الطالب الجديدة (13 صفحة):
+
 1. ✅ **StudentDashboardScreen** - الصفحة الرئيسية مع إحصائيات
 2. ✅ **ProfileCVScreen** - الملف الشخصي ورفع السيرة الذاتية
 3. ✅ **SkillAnalysisScreen** - تحليل المهارات بالـ AI
@@ -99,7 +105,7 @@ Navigator.pushNamed(context, '/skills-analysis');
 
 // للصفحات مع parameters
 Navigator.pushNamed(
-  context, 
+  context,
   '/job-details',
   arguments: jobId,
 );
@@ -134,6 +140,7 @@ Navigator.push(
 ## 📱 التصميم
 
 جميع الصفحات الجديدة تستخدم:
+
 - ✨ تصميم Glassmorphic
 - 🎨 ألوان Teal/Beige gradient
 - 📊 Cards شبه شفافة

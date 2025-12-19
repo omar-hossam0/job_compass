@@ -4,7 +4,7 @@ class LearningPath {
   final List<LearningModule> modules;
   final DateTime createdAt;
   final DateTime? lastUpdated;
-  
+
   LearningPath({
     required this.id,
     required this.studentId,
@@ -12,13 +12,15 @@ class LearningPath {
     required this.createdAt,
     this.lastUpdated,
   });
-  
+
   factory LearningPath.fromJson(Map<String, dynamic> json) {
     return LearningPath(
       id: json['id'] ?? json['_id'] ?? '',
       studentId: json['studentId'] ?? '',
       modules: json['modules'] != null
-          ? (json['modules'] as List).map((m) => LearningModule.fromJson(m)).toList()
+          ? (json['modules'] as List)
+                .map((m) => LearningModule.fromJson(m))
+                .toList()
           : [],
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
@@ -37,7 +39,7 @@ class LearningModule {
   final String level; // Beginner, Intermediate, Advanced
   final List<Course> courses;
   final bool isCompleted;
-  
+
   LearningModule({
     required this.id,
     required this.skillName,
@@ -46,7 +48,7 @@ class LearningModule {
     required this.courses,
     this.isCompleted = false,
   });
-  
+
   factory LearningModule.fromJson(Map<String, dynamic> json) {
     return LearningModule(
       id: json['id'] ?? json['_id'] ?? '',
@@ -68,7 +70,7 @@ class Course {
   final String difficulty; // Beginner, Intermediate, Advanced
   final int durationMinutes;
   final String? thumbnail;
-  
+
   Course({
     required this.title,
     required this.platform,
@@ -77,7 +79,7 @@ class Course {
     required this.durationMinutes,
     this.thumbnail,
   });
-  
+
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
       title: json['title'] ?? '',

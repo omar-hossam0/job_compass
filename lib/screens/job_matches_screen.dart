@@ -36,8 +36,10 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
 
     try {
       final response = await _apiService.getJobMatches();
-      final jobsList = (response['jobs'] as List).map((j) => Job.fromJson(j)).toList();
-      
+      final jobsList = (response['jobs'] as List)
+          .map((j) => Job.fromJson(j))
+          .toList();
+
       setState(() {
         _jobs = jobsList;
         _sortJobs();
@@ -90,24 +92,28 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
                           child: _jobs.isEmpty
                               ? _buildEmptyState()
                               : SingleChildScrollView(
-                                  physics: const AlwaysScrollableScrollPhysics(),
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
                                   child: Padding(
                                     padding: const EdgeInsets.all(20),
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         _buildHeader(),
                                         const SizedBox(height: 24),
                                         _buildSortOptions(),
                                         const SizedBox(height: 24),
-                                        ..._jobs.map((job) => JobCard(
-                                          job: job,
-                                          onTap: () => Navigator.pushNamed(
-                                            context,
-                                            '/job-details',
-                                            arguments: job.id,
+                                        ..._jobs.map(
+                                          (job) => JobCard(
+                                            job: job,
+                                            onTap: () => Navigator.pushNamed(
+                                              context,
+                                              '/job-details',
+                                              arguments: job.id,
+                                            ),
                                           ),
-                                        )),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -133,9 +139,17 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
             const SizedBox(height: 16),
             Text('Failed to load job matches', style: AppStyles.heading3),
             const SizedBox(height: 8),
-            Text(_error ?? 'Unknown error', style: AppStyles.bodyMedium, textAlign: TextAlign.center),
+            Text(
+              _error ?? 'Unknown error',
+              style: AppStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
-            PrimaryButton(text: 'Retry', onPressed: _loadJobMatches, icon: Icons.refresh),
+            PrimaryButton(
+              text: 'Retry',
+              onPressed: _loadJobMatches,
+              icon: Icons.refresh,
+            ),
           ],
         ),
       ),
@@ -149,7 +163,11 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.work_off_outlined, size: 80, color: AppColors.textSecondary.withOpacity(0.5)),
+            Icon(
+              Icons.work_off_outlined,
+              size: 80,
+              color: AppColors.textSecondary.withOpacity(0.5),
+            ),
             const SizedBox(height: 24),
             Text('No Job Matches Yet', style: AppStyles.heading2),
             const SizedBox(height: 12),
@@ -195,7 +213,9 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [AppColors.primaryGreen, AppColors.primaryTeal]),
+              gradient: LinearGradient(
+                colors: [AppColors.primaryGreen, AppColors.primaryTeal],
+              ),
               borderRadius: BorderRadius.circular(16),
             ),
             child: const Icon(Icons.work, color: Colors.white, size: 32),
@@ -207,7 +227,12 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
               children: [
                 Text('Total Matches', style: AppStyles.bodyMedium),
                 const SizedBox(height: 4),
-                Text('${_jobs.length}', style: AppStyles.heading1.copyWith(color: AppColors.primaryGreen)),
+                Text(
+                  '${_jobs.length}',
+                  style: AppStyles.heading1.copyWith(
+                    color: AppColors.primaryGreen,
+                  ),
+                ),
               ],
             ),
           ),
@@ -218,7 +243,10 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
               const SizedBox(height: 4),
               Text(
                 '${_calculateAvgMatch()}%',
-                style: AppStyles.bodyMedium.copyWith(color: AppColors.success, fontWeight: FontWeight.bold),
+                style: AppStyles.bodyMedium.copyWith(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -244,7 +272,7 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
 
   Widget _buildSortChip(String label, String value, IconData icon) {
     final isSelected = _sortBy == value;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -255,14 +283,26 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          gradient: isSelected ? LinearGradient(colors: [AppColors.primaryGreen, AppColors.primaryTeal]) : null,
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: [AppColors.primaryGreen, AppColors.primaryTeal],
+                )
+              : null,
           color: isSelected ? null : Colors.white.withOpacity(0.3),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: isSelected ? Colors.transparent : Colors.white.withOpacity(0.5)),
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : Colors.white.withOpacity(0.5),
+          ),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: isSelected ? Colors.white : AppColors.textPrimary),
+            Icon(
+              icon,
+              size: 18,
+              color: isSelected ? Colors.white : AppColors.textPrimary,
+            ),
             const SizedBox(width: 8),
             Text(
               label,

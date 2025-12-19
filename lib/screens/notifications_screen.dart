@@ -37,7 +37,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       final notifList = (response['notifications'] as List)
           .map((n) => NotificationModel.fromJson(n))
           .toList();
-      
+
       setState(() {
         _notifications = notifList;
         _isLoading = false;
@@ -64,17 +64,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   child: _error != null
                       ? _buildError()
                       : _notifications.isEmpty
-                          ? _buildEmptyState()
-                          : RefreshIndicator(
-                              onRefresh: _loadNotifications,
-                              color: AppColors.primaryGreen,
-                              child: ListView.builder(
-                                padding: const EdgeInsets.all(20),
-                                itemCount: _notifications.length,
-                                itemBuilder: (context, index) =>
-                                    _buildNotificationCard(_notifications[index]),
-                              ),
-                            ),
+                      ? _buildEmptyState()
+                      : RefreshIndicator(
+                          onRefresh: _loadNotifications,
+                          color: AppColors.primaryGreen,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(20),
+                            itemCount: _notifications.length,
+                            itemBuilder: (context, index) =>
+                                _buildNotificationCard(_notifications[index]),
+                          ),
+                        ),
                 ),
               ],
             ),
@@ -95,7 +95,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             const SizedBox(height: 16),
             Text('Failed to load notifications', style: AppStyles.heading3),
             const SizedBox(height: 24),
-            PrimaryButton(text: 'Retry', onPressed: _loadNotifications, icon: Icons.refresh),
+            PrimaryButton(
+              text: 'Retry',
+              onPressed: _loadNotifications,
+              icon: Icons.refresh,
+            ),
           ],
         ),
       ),
@@ -109,11 +113,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.notifications_none, size: 80, color: AppColors.textSecondary.withOpacity(0.5)),
+            Icon(
+              Icons.notifications_none,
+              size: 80,
+              color: AppColors.textSecondary.withOpacity(0.5),
+            ),
             const SizedBox(height: 24),
             Text('No Notifications', style: AppStyles.heading2),
             const SizedBox(height: 12),
-            Text('You\'re all caught up!', style: AppStyles.bodyMedium, textAlign: TextAlign.center),
+            Text(
+              'You\'re all caught up!',
+              style: AppStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -143,7 +155,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   }
                 });
               },
-              child: Text('Mark all read', style: AppStyles.bodySmall.copyWith(color: AppColors.primaryGreen)),
+              child: Text(
+                'Mark all read',
+                style: AppStyles.bodySmall.copyWith(
+                  color: AppColors.primaryGreen,
+                ),
+              ),
             ),
         ],
       ),
@@ -162,7 +179,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               color: _getTypeColor(notification.type).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(_getTypeIcon(notification.type), color: _getTypeColor(notification.type), size: 24),
+            child: Icon(
+              _getTypeIcon(notification.type),
+              color: _getTypeColor(notification.type),
+              size: 24,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -175,7 +196,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       child: Text(
                         notification.title,
                         style: AppStyles.bodyMedium.copyWith(
-                          fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+                          fontWeight: notification.isRead
+                              ? FontWeight.normal
+                              : FontWeight.bold,
                         ),
                       ),
                     ),
@@ -193,7 +216,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 const SizedBox(height: 4),
                 Text(notification.message, style: AppStyles.bodySmall),
                 const SizedBox(height: 8),
-                Text(_formatTime(notification.createdAt), style: AppStyles.bodySmall.copyWith(color: AppColors.textSecondary)),
+                Text(
+                  _formatTime(notification.createdAt),
+                  style: AppStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -204,26 +232,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   IconData _getTypeIcon(String type) {
     switch (type) {
-      case 'job_match': return Icons.work;
-      case 'learning_update': return Icons.school;
-      case 'interview_reminder': return Icons.event;
-      default: return Icons.notifications;
+      case 'job_match':
+        return Icons.work;
+      case 'learning_update':
+        return Icons.school;
+      case 'interview_reminder':
+        return Icons.event;
+      default:
+        return Icons.notifications;
     }
   }
 
   Color _getTypeColor(String type) {
     switch (type) {
-      case 'job_match': return AppColors.success;
-      case 'learning_update': return AppColors.info;
-      case 'interview_reminder': return AppColors.warning;
-      default: return AppColors.primaryGreen;
+      case 'job_match':
+        return AppColors.success;
+      case 'learning_update':
+        return AppColors.info;
+      case 'interview_reminder':
+        return AppColors.warning;
+      default:
+        return AppColors.primaryGreen;
     }
   }
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);
-    
+
     if (diff.inMinutes < 1) return 'Just now';
     if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
     if (diff.inHours < 24) return '${diff.inHours}h ago';

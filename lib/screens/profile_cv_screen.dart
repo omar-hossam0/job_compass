@@ -99,36 +99,36 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
             child: _error != null
                 ? _buildError()
                 : _student == null
-                    ? const SizedBox()
-                    : Column(
-                        children: [
-                          _buildAppBar(),
-                          Expanded(
-                            child: RefreshIndicator(
-                              onRefresh: _loadProfile,
-                              color: AppColors.primaryGreen,
-                              child: SingleChildScrollView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _buildProfileHeader(),
-                                      const SizedBox(height: 24),
-                                      _buildPersonalInfo(),
-                                      const SizedBox(height: 24),
-                                      _buildCVSection(),
-                                      const SizedBox(height: 24),
-                                      _buildExtractedSkills(),
-                                    ],
-                                  ),
-                                ),
+                ? const SizedBox()
+                : Column(
+                    children: [
+                      _buildAppBar(),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: _loadProfile,
+                          color: AppColors.primaryGreen,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildProfileHeader(),
+                                  const SizedBox(height: 24),
+                                  _buildPersonalInfo(),
+                                  const SizedBox(height: 24),
+                                  _buildCVSection(),
+                                  const SizedBox(height: 24),
+                                  _buildExtractedSkills(),
+                                ],
                               ),
                             ),
                           ),
-                        ],
+                        ),
                       ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -146,7 +146,11 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
             const SizedBox(height: 16),
             Text('Failed to load profile', style: AppStyles.heading3),
             const SizedBox(height: 8),
-            Text(_error ?? 'Unknown error', style: AppStyles.bodyMedium, textAlign: TextAlign.center),
+            Text(
+              _error ?? 'Unknown error',
+              style: AppStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
             PrimaryButton(
               text: 'Retry',
@@ -209,7 +213,9 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
               backgroundColor: AppColors.primaryGreen,
               child: _student!.profilePicture == null
                   ? Text(
-                      _student!.name.isNotEmpty ? _student!.name[0].toUpperCase() : 'U',
+                      _student!.name.isNotEmpty
+                          ? _student!.name[0].toUpperCase()
+                          : 'U',
                       style: AppStyles.heading1.copyWith(color: Colors.white),
                     )
                   : null,
@@ -233,7 +239,9 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
                   children: [
                     Text(
                       'Profile Completion',
-                      style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                      style: AppStyles.bodyMedium.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     Text(
                       '${_student!.profileCompletion}%',
@@ -250,7 +258,9 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
                   child: LinearProgressIndicator(
                     value: _student!.profileCompletion / 100,
                     backgroundColor: Colors.white,
-                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+                    valueColor: const AlwaysStoppedAnimation<Color>(
+                      AppColors.success,
+                    ),
                     minHeight: 8,
                   ),
                 ),
@@ -301,7 +311,9 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
               const SizedBox(height: 4),
               Text(
                 value,
-                style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                style: AppStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),
@@ -328,7 +340,11 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
                         color: AppColors.success.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.check_circle, color: AppColors.success, size: 32),
+                      child: const Icon(
+                        Icons.check_circle,
+                        color: AppColors.success,
+                        size: 32,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -337,7 +353,9 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
                         children: [
                           Text(
                             'CV Uploaded',
-                            style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+                            style: AppStyles.bodyMedium.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                           const SizedBox(height: 4),
                           Text(
@@ -357,14 +375,18 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
                 text: _student!.cvUrl != null ? 'Update CV' : 'Upload CV',
                 onPressed: _pickAndUploadCV,
                 isLoading: _isUploading,
-                icon: _student!.cvUrl != null ? Icons.refresh : Icons.upload_file,
+                icon: _student!.cvUrl != null
+                    ? Icons.refresh
+                    : Icons.upload_file,
                 width: double.infinity,
               ),
               if (_student!.cvUrl == null) ...[
                 const SizedBox(height: 12),
                 Text(
                   'Upload your CV to get personalized job matches',
-                  style: AppStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+                  style: AppStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -402,7 +424,10 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: _student!.skills.take(10).map((skill) => SkillChip(label: skill)).toList(),
+            children: _student!.skills
+                .take(10)
+                .map((skill) => SkillChip(label: skill))
+                .toList(),
           ),
         ),
       ],
@@ -410,7 +435,20 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
   }
 
   String _formatDate(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }

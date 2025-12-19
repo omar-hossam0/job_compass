@@ -57,31 +57,31 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             child: _error != null
                 ? _buildError()
                 : _dashboardData == null
-                    ? const SizedBox()
-                    : RefreshIndicator(
-                        onRefresh: _loadDashboard,
-                        color: AppColors.primaryGreen,
-                        child: SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildHeader(),
-                                const SizedBox(height: 24),
-                                _buildSearchBar(),
-                                const SizedBox(height: 24),
-                                _buildStatsCards(),
-                                const SizedBox(height: 24),
-                                _buildQuickActions(),
-                                const SizedBox(height: 24),
-                                _buildTopMatchedJobs(),
-                              ],
-                            ),
-                          ),
+                ? const SizedBox()
+                : RefreshIndicator(
+                    onRefresh: _loadDashboard,
+                    color: AppColors.primaryGreen,
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _buildHeader(),
+                            const SizedBox(height: 24),
+                            _buildSearchBar(),
+                            const SizedBox(height: 24),
+                            _buildStatsCards(),
+                            const SizedBox(height: 24),
+                            _buildQuickActions(),
+                            const SizedBox(height: 24),
+                            _buildTopMatchedJobs(),
+                          ],
                         ),
                       ),
+                    ),
+                  ),
           ),
         ),
       ),
@@ -94,16 +94,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(
-            Icons.error_outline,
-            size: 64,
-            color: AppColors.error,
-          ),
+          const Icon(Icons.error_outline, size: 64, color: AppColors.error),
           const SizedBox(height: 16),
-          Text(
-            'Failed to load dashboard',
-            style: AppStyles.heading3,
-          ),
+          Text('Failed to load dashboard', style: AppStyles.heading3),
           const SizedBox(height: 8),
           Text(
             _error ?? 'Unknown error',
@@ -123,7 +116,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   Widget _buildHeader() {
     final student = _dashboardData!.student;
-    
+
     return Row(
       children: [
         // Profile Picture
@@ -148,7 +141,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             backgroundColor: AppColors.primaryGreen,
             child: student.profilePicture == null
                 ? Text(
-                    student.name.isNotEmpty ? student.name[0].toUpperCase() : 'U',
+                    student.name.isNotEmpty
+                        ? student.name[0].toUpperCase()
+                        : 'U',
                     style: AppStyles.heading2.copyWith(color: Colors.white),
                   )
                 : null,
@@ -199,10 +194,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          const Icon(
-            Icons.search,
-            color: AppColors.textSecondary,
-          ),
+          const Icon(Icons.search, color: AppColors.textSecondary),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
@@ -225,7 +217,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   Widget _buildStatsCards() {
     final student = _dashboardData!.student;
-    
+
     return Row(
       children: [
         Expanded(
@@ -249,7 +241,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, double progress) {
+  Widget _buildStatCard(
+    String title,
+    String value,
+    IconData icon,
+    double progress,
+  ) {
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,9 +274,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           const SizedBox(height: 12),
           Text(
             title,
-            style: AppStyles.bodyMedium.copyWith(
-              color: AppColors.textPrimary,
-            ),
+            style: AppStyles.bodyMedium.copyWith(color: AppColors.textPrimary),
           ),
           const SizedBox(height: 8),
           ClipRRect(
@@ -300,10 +295,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick Actions',
-          style: AppStyles.heading3,
-        ),
+        Text('Quick Actions', style: AppStyles.heading3),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -360,18 +352,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               color: Colors.white.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              icon,
-              color: AppColors.primaryGreen,
-              size: 28,
-            ),
+            child: Icon(icon, color: AppColors.primaryGreen, size: 28),
           ),
           const SizedBox(height: 8),
           Text(
             label,
-            style: AppStyles.bodySmall.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: AppStyles.bodySmall.copyWith(fontWeight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
         ],
@@ -381,17 +367,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   Widget _buildTopMatchedJobs() {
     final jobs = _dashboardData!.topMatchedJobs;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Top Matched Jobs',
-              style: AppStyles.heading3,
-            ),
+            Text('Top Matched Jobs', style: AppStyles.heading3),
             TextButton(
               onPressed: () => Navigator.pushNamed(context, '/job-matches'),
               child: Text(
@@ -418,10 +401,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                       color: AppColors.textSecondary,
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      'No matched jobs yet',
-                      style: AppStyles.bodyMedium,
-                    ),
+                    Text('No matched jobs yet', style: AppStyles.bodyMedium),
                     const SizedBox(height: 8),
                     Text(
                       'Upload your CV to get started',
@@ -434,14 +414,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ),
           )
         else
-          ...jobs.map((job) => JobCard(
-                job: job,
-                onTap: () => Navigator.pushNamed(
-                  context,
-                  '/job-details',
-                  arguments: job.id,
-                ),
-              )),
+          ...jobs.map(
+            (job) => JobCard(
+              job: job,
+              onTap: () => Navigator.pushNamed(
+                context,
+                '/job-details',
+                arguments: job.id,
+              ),
+            ),
+          ),
       ],
     );
   }

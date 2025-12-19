@@ -178,7 +178,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildSettingItem(IconData icon, String title, String subtitle, VoidCallback? onTap) {
+  Widget _buildSettingItem(
+    IconData icon,
+    String title,
+    String subtitle,
+    VoidCallback? onTap,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -199,21 +204,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                  Text(
+                    title,
+                    style: AppStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(subtitle, style: AppStyles.bodySmall),
                 ],
               ),
             ),
             if (onTap != null)
-              const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSwitchItem(IconData icon, String title, bool value, Function(bool) onChanged) {
+  Widget _buildSwitchItem(
+    IconData icon,
+    String title,
+    bool value,
+    Function(bool) onChanged,
+  ) {
     return Row(
       children: [
         Container(
@@ -226,7 +245,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: Text(title, style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+          child: Text(
+            title,
+            style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+          ),
         ),
         Switch(
           value: value,
@@ -251,20 +273,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: AppColors.primaryGreen.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(Icons.language, color: AppColors.primaryGreen, size: 20),
+              child: const Icon(
+                Icons.language,
+                color: AppColors.primaryGreen,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Language', style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600)),
+                  Text(
+                    'Language',
+                    style: AppStyles.bodyMedium.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 4),
                   Text(_selectedLanguage, style: AppStyles.bodySmall),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.textSecondary),
+            const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
           ],
         ),
       ),
@@ -365,7 +400,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -378,7 +416,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               );
             },
-            child: Text('Change', style: TextStyle(color: AppColors.primaryGreen)),
+            child: Text(
+              'Change',
+              style: TextStyle(color: AppColors.primaryGreen),
+            ),
           ),
         ],
       ),
@@ -390,17 +431,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Logout', style: AppStyles.heading3),
-        content: Text('Are you sure you want to logout?', style: AppStyles.bodyMedium),
+        content: Text(
+          'Are you sure you want to logout?',
+          style: AppStyles.bodyMedium,
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () async {
               await _apiService.clearToken();
               if (mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil('/login', (route) => false);
               }
             },
             child: Text('Logout', style: TextStyle(color: AppColors.error)),
@@ -422,7 +471,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Cancel', style: TextStyle(color: AppColors.textSecondary)),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
           ),
           TextButton(
             onPressed: () {

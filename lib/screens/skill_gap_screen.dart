@@ -8,7 +8,7 @@ import '../constants/app_styles.dart';
 
 class SkillGapScreen extends StatefulWidget {
   final String jobId;
-  
+
   const SkillGapScreen({super.key, required this.jobId});
 
   @override
@@ -17,7 +17,7 @@ class SkillGapScreen extends StatefulWidget {
 
 class _SkillGapScreenState extends State<SkillGapScreen> {
   final ApiService _apiService = ApiService();
-  
+
   bool _isLoading = true;
   SkillGap? _skillGap;
   String? _error;
@@ -71,10 +71,14 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
               // Content
               Expanded(
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator(color: AppColors.primaryGreen))
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryGreen,
+                        ),
+                      )
                     : _error != null
-                        ? _buildErrorState()
-                        : _buildContent(),
+                    ? _buildErrorState()
+                    : _buildContent(),
               ),
             ],
           ),
@@ -90,7 +94,10 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
         children: [
           IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: AppColors.textPrimary,
+            ),
           ),
           const Text('Skill Gap Analysis', style: AppStyles.heading2),
         ],
@@ -107,10 +114,7 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
           const SizedBox(height: 16),
           Text(_error ?? 'Error', style: AppStyles.bodyLarge),
           const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: _loadSkillGap,
-            child: const Text('Retry'),
-          ),
+          ElevatedButton(onPressed: _loadSkillGap, child: const Text('Retry')),
         ],
       ),
     );
@@ -176,8 +180,8 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
                       matchPercentage >= 70
                           ? AppColors.success
                           : matchPercentage >= 50
-                              ? AppColors.warning
-                              : AppColors.error,
+                          ? AppColors.warning
+                          : AppColors.error,
                     ),
                   ),
                 ),
@@ -234,7 +238,10 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Your Level', style: AppStyles.bodySmall),
+                            const Text(
+                              'Your Level',
+                              style: AppStyles.bodySmall,
+                            ),
                             const SizedBox(height: 4),
                             LinearProgressIndicator(
                               value: comparison.currentLevel / 100,
@@ -269,7 +276,10 @@ class _SkillGapScreenState extends State<SkillGapScreen> {
             runSpacing: 8,
             children: _skillGap!.missingSkills.map((skill) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.error.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(16),

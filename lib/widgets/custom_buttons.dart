@@ -9,7 +9,7 @@ class PrimaryButton extends StatelessWidget {
   final IconData? icon;
   final double? width;
   final double height;
-  
+
   const PrimaryButton({
     Key? key,
     required this.text,
@@ -54,10 +54,7 @@ class PrimaryButton extends StatelessWidget {
                         Icon(icon, color: Colors.white, size: 20),
                         const SizedBox(width: 8),
                       ],
-                      Text(
-                        text,
-                        style: AppStyles.buttonText,
-                      ),
+                      Text(text, style: AppStyles.buttonText),
                     ],
                   ),
           ),
@@ -73,7 +70,7 @@ class SecondaryButton extends StatelessWidget {
   final IconData? icon;
   final double? width;
   final double height;
-  
+
   const SecondaryButton({
     Key? key,
     required this.text,
@@ -127,7 +124,7 @@ class IconButtonCircular extends StatelessWidget {
   final Color? backgroundColor;
   final Color? iconColor;
   final double size;
-  
+
   const IconButtonCircular({
     Key? key,
     required this.icon,
@@ -158,11 +155,7 @@ class IconButtonCircular extends StatelessWidget {
         child: InkWell(
           onTap: onPressed,
           borderRadius: BorderRadius.circular(size / 2),
-          child: Icon(
-            icon,
-            color: iconColor ?? Colors.white,
-            size: size * 0.5,
-          ),
+          child: Icon(icon, color: iconColor ?? Colors.white, size: size * 0.5),
         ),
       ),
     );

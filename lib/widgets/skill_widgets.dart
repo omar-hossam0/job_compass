@@ -7,7 +7,7 @@ class SkillChip extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final VoidCallback? onTap;
-  
+
   const SkillChip({
     Key? key,
     required this.label,
@@ -43,11 +43,8 @@ class SkillChip extends StatelessWidget {
 
 class SkillLevelIndicator extends StatelessWidget {
   final String level; // Beginner, Intermediate, Advanced
-  
-  const SkillLevelIndicator({
-    Key? key,
-    required this.level,
-  }) : super(key: key);
+
+  const SkillLevelIndicator({Key? key, required this.level}) : super(key: key);
 
   Color _getLevelColor() {
     switch (level.toLowerCase()) {
@@ -85,7 +82,7 @@ class ProficiencyBar extends StatelessWidget {
   final double value; // 0-100
   final Color? color;
   final double height;
-  
+
   const ProficiencyBar({
     Key? key,
     required this.value,

@@ -6,7 +6,7 @@ class NotificationModel {
   final DateTime createdAt;
   final bool isRead;
   final Map<String, dynamic>? metadata;
-  
+
   NotificationModel({
     required this.id,
     required this.type,
@@ -16,7 +16,7 @@ class NotificationModel {
     this.isRead = false,
     this.metadata,
   });
-  
+
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
       id: json['id'] ?? json['_id'] ?? '',
@@ -30,7 +30,7 @@ class NotificationModel {
       metadata: json['metadata'],
     );
   }
-  
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,

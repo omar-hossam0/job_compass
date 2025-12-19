@@ -50,7 +50,7 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
 
   List<Skill> _getFilteredSkills() {
     if (_analysis == null) return [];
-    
+
     switch (_selectedCategory) {
       case 'Technical':
         return _analysis!.technicalSkills;
@@ -71,34 +71,34 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
             child: _error != null
                 ? _buildError()
                 : _analysis == null
-                    ? const SizedBox()
-                    : Column(
-                        children: [
-                          _buildAppBar(),
-                          Expanded(
-                            child: RefreshIndicator(
-                              onRefresh: _loadSkillAnalysis,
-                              color: AppColors.primaryGreen,
-                              child: SingleChildScrollView(
-                                physics: const AlwaysScrollableScrollPhysics(),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(20),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      _buildHeader(),
-                                      const SizedBox(height: 24),
-                                      _buildCategoryFilter(),
-                                      const SizedBox(height: 24),
-                                      _buildSkillsList(),
-                                    ],
-                                  ),
-                                ),
+                ? const SizedBox()
+                : Column(
+                    children: [
+                      _buildAppBar(),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: _loadSkillAnalysis,
+                          color: AppColors.primaryGreen,
+                          child: SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: Padding(
+                              padding: const EdgeInsets.all(20),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildHeader(),
+                                  const SizedBox(height: 24),
+                                  _buildCategoryFilter(),
+                                  const SizedBox(height: 24),
+                                  _buildSkillsList(),
+                                ],
                               ),
                             ),
                           ),
-                        ],
+                        ),
                       ),
+                    ],
+                  ),
           ),
         ),
       ),
@@ -116,7 +116,11 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
             const SizedBox(height: 16),
             Text('Failed to load skill analysis', style: AppStyles.heading3),
             const SizedBox(height: 8),
-            Text(_error ?? 'Unknown error', style: AppStyles.bodyMedium, textAlign: TextAlign.center),
+            Text(
+              _error ?? 'Unknown error',
+              style: AppStyles.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 24),
             PrimaryButton(
               text: 'Retry',
@@ -166,10 +170,7 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Total Skills Extracted',
-                  style: AppStyles.bodyMedium,
-                ),
+                Text('Total Skills Extracted', style: AppStyles.bodyMedium),
                 const SizedBox(height: 4),
                 Text(
                   '${_analysis!.totalSkills}',
@@ -183,9 +184,15 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('Technical: ${_analysis!.technicalSkills.length}', style: AppStyles.bodySmall),
+              Text(
+                'Technical: ${_analysis!.technicalSkills.length}',
+                style: AppStyles.bodySmall,
+              ),
               const SizedBox(height: 4),
-              Text('Soft: ${_analysis!.softSkills.length}', style: AppStyles.bodySmall),
+              Text(
+                'Soft: ${_analysis!.softSkills.length}',
+                style: AppStyles.bodySmall,
+              ),
             ],
           ),
         ],
@@ -207,19 +214,23 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
 
   Widget _buildFilterChip(String category) {
     final isSelected = _selectedCategory == category;
-    
+
     return GestureDetector(
       onTap: () => setState(() => _selectedCategory = category),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         decoration: BoxDecoration(
           gradient: isSelected
-              ? LinearGradient(colors: [AppColors.primaryGreen, AppColors.primaryTeal])
+              ? LinearGradient(
+                  colors: [AppColors.primaryGreen, AppColors.primaryTeal],
+                )
               : null,
           color: isSelected ? null : Colors.white.withOpacity(0.3),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? Colors.transparent : Colors.white.withOpacity(0.5),
+            color: isSelected
+                ? Colors.transparent
+                : Colors.white.withOpacity(0.5),
           ),
         ),
         child: Text(
@@ -243,7 +254,11 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
             padding: const EdgeInsets.all(40),
             child: Column(
               children: [
-                Icon(Icons.search_off, size: 48, color: AppColors.textSecondary),
+                Icon(
+                  Icons.search_off,
+                  size: 48,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(height: 12),
                 Text('No skills found', style: AppStyles.bodyMedium),
               ],
@@ -267,12 +282,7 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: Text(
-                  skill.name,
-                  style: AppStyles.heading3,
-                ),
-              ),
+              Expanded(child: Text(skill.name, style: AppStyles.heading3)),
               SkillLevelIndicator(level: skill.level),
             ],
           ),
@@ -288,8 +298,8 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
             child: Text(
               skill.category,
               style: AppStyles.bodySmall.copyWith(
-                color: skill.category == 'Technical' 
-                    ? AppColors.primaryGreen 
+                color: skill.category == 'Technical'
+                    ? AppColors.primaryGreen
                     : AppColors.accentGold,
                 fontWeight: FontWeight.w600,
               ),
@@ -298,12 +308,7 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  'Proficiency',
-                  style: AppStyles.bodySmall,
-                ),
-              ),
+              Expanded(child: Text('Proficiency', style: AppStyles.bodySmall)),
               Text(
                 '${skill.proficiency.toInt()}%',
                 style: AppStyles.bodySmall.copyWith(

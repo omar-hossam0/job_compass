@@ -7,12 +7,9 @@ import 'glass_card.dart';
 class JobCard extends StatelessWidget {
   final Job job;
   final VoidCallback onTap;
-  
-  const JobCard({
-    Key? key,
-    required this.job,
-    required this.onTap,
-  }) : super(key: key);
+
+  const JobCard({Key? key, required this.job, required this.onTap})
+    : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -45,10 +42,7 @@ class JobCard extends StatelessWidget {
                           ),
                         ),
                       )
-                    : Icon(
-                        Icons.business,
-                        color: AppColors.primaryGreen,
-                      ),
+                    : Icon(Icons.business, color: AppColors.primaryGreen),
               ),
               const SizedBox(width: 12),
               // Title and Company
@@ -81,14 +75,17 @@ class JobCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Employment types
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: job.employmentType.map((type) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.cardBackgroundLight,
                   borderRadius: BorderRadius.circular(16),
@@ -103,7 +100,7 @@ class JobCard extends StatelessWidget {
             }).toList(),
           ),
           const SizedBox(height: 16),
-          
+
           // Salary and Match Score
           Row(
             children: [
@@ -128,7 +125,10 @@ class JobCard extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
@@ -159,7 +159,7 @@ class JobCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Applicants count
           Row(
             children: [
@@ -193,10 +193,7 @@ class JobCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(
-                '${job.applicantsCount}+ Apply',
-                style: AppStyles.bodySmall,
-              ),
+              Text('${job.applicantsCount}+ Apply', style: AppStyles.bodySmall),
               const Spacer(),
               // Arrow button
               Container(
