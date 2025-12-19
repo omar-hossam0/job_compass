@@ -43,7 +43,7 @@ class _SignInScreenState extends State<SignInScreen> {
         final userRole = response['user']?['role'] ?? _selectedRole;
 
         // Navigate based on role
-        if (userRole == 'user') {
+        if (userRole == 'user' || userRole == 'employee') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const StudentDashboardScreen()),

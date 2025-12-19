@@ -97,7 +97,10 @@ export const login = async (req, res) => {
     }
     const { email, password, role } = req.body;
 
+    console.log("🔐 Login attempt for:", email);
+
     if (!email || !password) {
+      console.log("❌ Missing email or password");
       return res.status(400).json({
         success: false,
         message: "Please provide email and password",
@@ -118,15 +121,21 @@ export const login = async (req, res) => {
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
+      console.log("❌ User not found:", email);
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
 
+    console.log("✅ User found:", user.email, "Role:", user.role);
+
     const isPasswordValid = await user.comparePassword(password);
 
+    console.log("🔑 Password valid?", isPasswordValid);
+
     if (!isPasswordValid) {
+      console.log("❌ Invalid password for:", email);
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
@@ -137,9 +146,8 @@ export const login = async (req, res) => {
     if (role && user.role !== role) {
       return res.status(403).json({
         success: false,
-        message: `This account is registered as ${
-          user.role === "hr" ? "HR" : "Student"
-        }. Please select the correct account type.`,
+        message: `This account is registered as ${user.role === "hr" ? "HR" : "Student"
+          }. Please select the correct account type.`,
       });
     }
 
@@ -554,9 +562,8 @@ export const uploadProfileImage = async (req, res) => {
     }
 
     // Convert image to base64
-    const imageBase64 = `data:${
-      req.file.mimetype
-    };base64,${req.file.buffer.toString("base64")}`;
+    const imageBase64 = `data:${req.file.mimetype
+      };base64,${req.file.buffer.toString("base64")}`;
 
     // Update user with profile image
     const user = await User.findByIdAndUpdate(

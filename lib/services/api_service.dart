@@ -10,7 +10,7 @@ class ApiService {
   ApiService._internal();
 
   // Backend Base URL
-  static const String baseUrl = 'http://localhost:5000/api';
+  static const String baseUrl = 'http://192.168.1.7:5000/api';
 
   String? _token;
 
