@@ -5,8 +5,22 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'screens/welcome_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/student_dashboard_screen.dart';
+import 'screens/profile_cv_screen.dart';
+import 'screens/skill_analysis_screen.dart';
+import 'screens/job_matches_screen.dart';
+import 'screens/job_details_screen.dart';
+import 'screens/skill_gap_screen.dart';
+import 'screens/learning_path_screen.dart';
+import 'screens/interview_prep_screen.dart';
+import 'screens/notifications_screen.dart';
+import 'screens/settings_screen.dart';
+import 'services/api_service.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize API service token
+  await ApiService().initToken();
   runApp(const MyApp());
 }
 
@@ -23,6 +37,36 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const WelcomeScreen(),
+      routes: {
+        '/dashboard': (_) => const StudentDashboardScreen(),
+        '/profile': (_) => const ProfileCVScreen(),
+        '/skills-analysis': (_) => const SkillAnalysisScreen(),
+        '/job-matches': (_) => const JobMatchesScreen(),
+        '/learning-path': (_) => const LearningPathScreen(),
+        '/interview-prep': (_) => const InterviewPrepScreen(),
+        '/notifications': (_) => const NotificationsScreen(),
+        '/settings': (_) => const SettingsScreen(),
+      },
+      onGenerateRoute: (settings) {
+        // For routes with parameters
+        if (settings.name == '/job-details') {
+          final jobId = settings.arguments as String?;
+          if (jobId != null) {
+            return MaterialPageRoute(
+              builder: (_) => JobDetailsScreen(jobId: jobId),
+            );
+          }
+        }
+        if (settings.name == '/skill-gap') {
+          final jobId = settings.arguments as String?;
+          if (jobId != null) {
+            return MaterialPageRoute(
+              builder: (_) => SkillGapScreen(jobId: jobId),
+            );
+          }
+        }
+        return null;
+      },
     );
   }
 }

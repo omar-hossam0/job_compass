@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'home_dashboard_screen.dart';
+import 'student_dashboard_screen.dart';
 import 'sign_up_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -420,7 +420,7 @@ class _AuthScreenState extends State<AuthScreen> {
   void _navigateToHome() {
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const HomeDashboardScreen()),
+      MaterialPageRoute(builder: (context) => const StudentDashboardScreen()),
     );
   }
 }

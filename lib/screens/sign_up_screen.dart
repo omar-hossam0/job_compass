@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'home_dashboard_screen.dart';
+import 'student_dashboard_screen.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -405,7 +405,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _navigateToHome() {
     Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (context) => const HomeDashboardScreen()),
+      MaterialPageRoute(builder: (context) => const StudentDashboardScreen()),
       (route) => false,
     );
   }

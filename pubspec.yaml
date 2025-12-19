@@ -34,6 +34,15 @@ dependencies:
   # HTTP client for making API requests
   http: ^1.1.0
 
+  # Shared preferences for token storage
+  shared_preferences: ^2.2.2
+
+  # File picker for uploading CV
+  file_picker: ^8.1.6
+
+  # URL launcher for opening external links
+  url_launcher: ^6.2.2
+
   # Image processing used to remove the baked-in background at runtime
   image: ^4.0.17
 
@@ -43,9 +52,6 @@ dependencies:
 
   # Font Awesome icons for company logos
   font_awesome_flutter: ^10.7.0
-
-  # File picker for uploading CV
-  file_picker: ^8.1.6
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'sign_up_screen.dart';
-import 'home_dashboard_screen.dart';
+import 'student_dashboard_screen.dart';
 import '../services/api_service.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -308,12 +308,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                               ),
                                             ),
                                           );
-                                          // Navigate to home dashboard
+                                          // Navigate to student dashboard
                                           Navigator.pushReplacement(
                                             context,
                                             MaterialPageRoute(
                                               builder: (_) =>
-                                                  const HomeDashboardScreen(),
+                                                  const StudentDashboardScreen(),
                                             ),
                                           );
                                         }
