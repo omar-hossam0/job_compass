@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
@@ -20,6 +21,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   bool _isLoading = true;
   DashboardData? _dashboardData;
   String? _error;
+  int _currentNavIndex = 0;
 
   @override
   void initState() {
@@ -429,48 +431,81 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _buildBottomNav() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(Icons.home, true, () {}),
-              _buildNavItem(Icons.folder_outlined, false, () {}),
-              _buildNavItem(Icons.bookmark_border, false, () {}),
-              _buildNavItem(Icons.person_outline, false, () {
-                Navigator.pushNamed(context, '/profile');
-              }),
-            ],
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildNavItemIcon(Icons.home_rounded, 0, () {
+                    setState(() => _currentNavIndex = 0);
+                  }),
+                  _buildNavItemIcon(Icons.work_outline_rounded, 1, () {
+                    setState(() => _currentNavIndex = 1);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Jobs screen coming soon')),
+                    );
+                  }),
+                  _buildNavItemIcon(Icons.bookmark_outline_rounded, 2, () {
+                    setState(() => _currentNavIndex = 2);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Saved jobs screen coming soon'),
+                      ),
+                    );
+                  }),
+                  _buildNavItemIcon(Icons.person_outline_rounded, 3, () {
+                    setState(() => _currentNavIndex = 3);
+                    Navigator.pushNamed(context, '/profile');
+                  }),
+                ],
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, bool isActive, VoidCallback onTap) {
+  Widget _buildNavItemIcon(IconData icon, int index, VoidCallback onTap) {
+    final isActive = _currentNavIndex == index;
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primaryGreen : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          color: isActive
+              ? AppColors.primaryGreen.withOpacity(0.25)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Icon(
           icon,
-          color: isActive ? Colors.white : AppColors.textSecondary,
+          color: isActive ? AppColors.primaryGreen : AppColors.textSecondary,
           size: 24,
         ),
       ),

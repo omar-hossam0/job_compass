@@ -10,6 +10,7 @@ class AppColors {
   static const primaryGreen = Color(0xFF5A9B8A);
   static const primaryTeal = Color(0xFF6BA89F);
   static const accentGold = Color(0xFFD4A574);
+  static const primaryBlue = Color(0xFF4299E1);
 
   // Text colors
   static const textPrimary = Color(0xFF2D3748);

@@ -10,7 +10,7 @@ class ApiService {
   ApiService._internal();
 
   // Backend Base URL
-  static const String baseUrl = 'http://192.168.1.10:5000/api';
+  static const String baseUrl = 'http://localhost:5000/api';
 
   String? _token;
 
@@ -291,5 +291,62 @@ class ApiService {
       'oldPassword': oldPassword,
       'newPassword': newPassword,
     });
+  }
+
+  // ============================================
+  // HR DASHBOARD ENDPOINTS
+  // ============================================
+
+  Future<Map<String, dynamic>> getHRDashboard() async {
+    return await get('/hr/dashboard');
+  }
+
+  Future<Map<String, dynamic>> getHRJobs() async {
+    return await get('/hr/jobs');
+  }
+
+  Future<Map<String, dynamic>> createJob(Map<String, dynamic> jobData) async {
+    return await post('/hr/jobs', jobData);
+  }
+
+  Future<Map<String, dynamic>> getJobById(String jobId) async {
+    return await get('/hr/jobs/$jobId');
+  }
+
+  Future<Map<String, dynamic>> updateJob(
+    String jobId,
+    Map<String, dynamic> jobData,
+  ) async {
+    return await put('/hr/jobs/$jobId', jobData);
+  }
+
+  Future<Map<String, dynamic>> closeJob(String jobId) async {
+    return await put('/hr/jobs/$jobId/close', {});
+  }
+
+  Future<Map<String, dynamic>> getJobCandidates(String jobId) async {
+    return await get('/hr/jobs/$jobId/candidates');
+  }
+
+  Future<Map<String, dynamic>> getCandidateDetails(String candidateId) async {
+    return await get('/hr/candidates/$candidateId');
+  }
+
+  Future<Map<String, dynamic>> saveCandidate(String candidateId) async {
+    return await post('/hr/candidates/$candidateId/save', {});
+  }
+
+  Future<Map<String, dynamic>> getHRNotifications() async {
+    return await get('/hr/notifications');
+  }
+
+  Future<Map<String, dynamic>> getHRProfile() async {
+    return await get('/hr/profile');
+  }
+
+  Future<Map<String, dynamic>> updateHRProfile(
+    Map<String, dynamic> data,
+  ) async {
+    return await put('/hr/profile', data);
   }
 }

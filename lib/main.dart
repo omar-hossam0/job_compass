@@ -15,6 +15,15 @@ import 'screens/learning_path_screen.dart';
 import 'screens/interview_prep_screen.dart';
 import 'screens/notifications_screen.dart';
 import 'screens/settings_screen.dart';
+import 'screens/hr_dashboard_screen.dart';
+import 'screens/job_list_screen.dart';
+import 'screens/post_job_screen.dart';
+import 'screens/hr_job_details_screen.dart';
+import 'screens/candidate_list_screen.dart';
+import 'screens/candidate_details_screen.dart';
+import 'screens/hr_notifications_screen.dart';
+import 'screens/hr_settings_screen.dart';
+import 'screens/auth_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -38,6 +47,7 @@ class MyApp extends StatelessWidget {
       ),
       home: const WelcomeScreen(),
       routes: {
+        '/auth': (_) => const AuthScreen(),
         '/dashboard': (_) => const StudentDashboardScreen(),
         '/profile': (_) => const ProfileCVScreen(),
         '/skills-analysis': (_) => const SkillAnalysisScreen(),
@@ -46,6 +56,11 @@ class MyApp extends StatelessWidget {
         '/interview-prep': (_) => const InterviewPrepScreen(),
         '/notifications': (_) => const NotificationsScreen(),
         '/settings': (_) => const SettingsScreen(),
+        '/hr/dashboard': (_) => const HRDashboardScreen(),
+        '/hr/jobs': (_) => const JobListScreen(),
+        '/hr/post-job': (_) => const PostJobScreen(),
+        '/hr/notifications': (_) => const HRNotificationsScreen(),
+        '/hr/settings': (_) => const HRSettingsScreen(),
       },
       onGenerateRoute: (settings) {
         // For routes with parameters
@@ -62,6 +77,30 @@ class MyApp extends StatelessWidget {
           if (jobId != null) {
             return MaterialPageRoute(
               builder: (_) => SkillGapScreen(jobId: jobId),
+            );
+          }
+        }
+        if (settings.name == '/hr/job-details') {
+          final jobId = settings.arguments as String?;
+          if (jobId != null) {
+            return MaterialPageRoute(
+              builder: (_) => HRJobDetailsScreen(jobId: jobId),
+            );
+          }
+        }
+        if (settings.name == '/hr/candidates') {
+          final jobId = settings.arguments as String?;
+          if (jobId != null) {
+            return MaterialPageRoute(
+              builder: (_) => CandidateListScreen(jobId: jobId),
+            );
+          }
+        }
+        if (settings.name == '/hr/candidate-details') {
+          final candidateId = settings.arguments as String?;
+          if (candidateId != null) {
+            return MaterialPageRoute(
+              builder: (_) => CandidateDetailsScreen(candidateId: candidateId),
             );
           }
         }
