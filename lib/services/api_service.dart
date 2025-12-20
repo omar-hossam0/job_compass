@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,8 +11,14 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  // Backend Base URL
-  static const String baseUrl = 'http://192.168.1.7:5000/api';
+  // Backend Base URLs (primary LAN IP, fallback localhost for local testing)
+  static const List<String> baseUrls = [
+    'http://localhost:5000/api', // Localhost (for web & desktop dev)
+    'http://192.168.1.7:5000/api', // LAN IP (for physical devices)
+  ];
+
+  // Backwards-compatible single baseUrl getter used by existing methods
+  static String get baseUrl => baseUrls.first;
 
   String? _token;
 
@@ -161,76 +169,101 @@ class ApiService {
     required String name,
     required String role,
   }) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/auth/register'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({
-              'email': email,
-              'password': password,
-              'name': name,
-              'role': role,
-            }),
-          )
-          .timeout(const Duration(seconds: 10));
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 201) {
-        // Save token
-        if (data['token'] != null) {
-          await ApiService().saveToken(data['token']);
-        }
-        return {
-          'success': true,
-          'message': data['message'] ?? 'Registration successful',
-          'token': data['token'],
-          'user': data['user'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Registration failed',
-        };
-      }
-    } catch (e) {
-      return {'success': false, 'message': 'Error: ${e.toString()}'};
-    }
+    return await _postWithFallback('/auth/register', {
+      'email': email,
+      'password': password,
+      'name': name,
+      'role': role,
+    }, expectCreated: true);
   }
 
   static Future<Map<String, dynamic>> login({
     required String email,
     required String password,
+    String? role,
   }) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse('$baseUrl/auth/login'),
-            headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'email': email, 'password': password}),
-          )
-          .timeout(const Duration(seconds: 10));
+    final body = {'email': email, 'password': password};
+    if (role != null) body['role'] = role;
+    return await _postWithFallback('/auth/login', body, expectOK: true);
+  }
 
-      final data = jsonDecode(response.body);
+  // Helper: try POST against each base URL until one succeeds
+  static Future<Map<String, dynamic>> _postWithFallback(
+    String endpoint,
+    Map<String, dynamic> body, {
+    bool expectOK = false,
+    bool expectCreated = false,
+  }) async {
+    Exception? lastError;
 
-      if (response.statusCode == 200) {
-        // Save token
-        if (data['token'] != null) {
-          await ApiService().saveToken(data['token']);
+    // Build an ordered list of base URLs depending on runtime.
+    // Android emulators must use 10.0.2.2 to reach host localhost.
+    final List<String> orderedBases = [];
+    if (kIsWeb) {
+      orderedBases.addAll(baseUrls);
+    } else {
+      try {
+        if (Platform.isAndroid) {
+          // prefer emulator loopback first
+          orderedBases.add('http://10.0.2.2:5000/api');
         }
-        return {
-          'success': true,
-          'message': data['message'] ?? 'Login successful',
-          'token': data['token'],
-          'user': data['user'],
-        };
-      } else {
-        return {'success': false, 'message': data['message'] ?? 'Login failed'};
+      } catch (_) {
+        // Platform may not be available in some runtimes; fall back gracefully
       }
-    } catch (e) {
-      return {'success': false, 'message': 'Error: ${e.toString()}'};
+      // then add configured bases (LAN IP, localhost)
+      for (final b in baseUrls) {
+        if (!orderedBases.contains(b)) orderedBases.add(b);
+      }
     }
+
+    for (final base in orderedBases) {
+      try {
+        final uri = Uri.parse('$base$endpoint');
+        final response = await http
+            .post(
+              uri,
+              headers: {'Content-Type': 'application/json'},
+              body: jsonEncode(body),
+            )
+            .timeout(const Duration(seconds: 10));
+
+        final data = jsonDecode(response.body);
+
+        if ((expectOK && response.statusCode == 200) ||
+            (expectCreated && response.statusCode == 201) ||
+            (!expectOK &&
+                !expectCreated &&
+                response.statusCode >= 200 &&
+                response.statusCode < 300)) {
+          // Save token automatically if present
+          if (data is Map && data['token'] != null) {
+            await ApiService().saveToken(data['token']);
+          }
+          return {'success': true, ...data};
+        } else {
+          return {
+            'success': false,
+            'message': data['message'] ?? 'Request failed',
+          };
+        }
+      } on TimeoutException catch (e) {
+        lastError = e;
+        continue; // try next base URL
+      } on SocketException catch (e) {
+        lastError = e;
+        continue; // try next base URL
+      } catch (e) {
+        lastError = Exception(e.toString());
+        continue;
+      }
+    }
+
+    return {
+      'success': false,
+      'message': lastError != null
+          ? 'Error: ${lastError.toString()}'
+          : 'Unknown error',
+    };
   }
 
   // ============================================

@@ -433,57 +433,27 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   Widget _buildBottomNav() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItemIcon(Icons.home_rounded, 0, () {
-                    setState(() => _currentNavIndex = 0);
-                  }),
-                  _buildNavItemIcon(Icons.work_outline_rounded, 1, () {
-                    setState(() => _currentNavIndex = 1);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Jobs screen coming soon')),
-                    );
-                  }),
-                  _buildNavItemIcon(Icons.bookmark_outline_rounded, 2, () {
-                    setState(() => _currentNavIndex = 2);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Saved jobs screen coming soon'),
-                      ),
-                    );
-                  }),
-                  _buildNavItemIcon(Icons.person_outline_rounded, 3, () {
-                    setState(() => _currentNavIndex = 3);
-                    Navigator.pushNamed(context, '/profile');
-                  }),
-                ],
-              ),
-            ),
-          ),
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildNavItemIcon(Icons.home_rounded, 0, () {
+            setState(() => _currentNavIndex = 0);
+          }),
+          _buildNavItemIcon(Icons.work_outline_rounded, 1, () {
+            setState(() => _currentNavIndex = 1);
+            Navigator.pushNamed(context, '/job-matches');
+          }),
+          _buildNavItemIcon(Icons.bookmark_outline_rounded, 2, () {
+            setState(() => _currentNavIndex = 2);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Saved jobs screen coming soon')),
+            );
+          }),
+          _buildNavItemIcon(Icons.person_outline_rounded, 3, () {
+            setState(() => _currentNavIndex = 3);
+            Navigator.pushNamed(context, '/profile');
+          }),
+        ],
       ),
     );
   }
@@ -496,17 +466,38 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(12),
+        width: 62,
+        height: 44,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.primaryGreen.withOpacity(0.25)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          gradient: isActive
+              ? const LinearGradient(
+                  colors: [AppColors.primaryTeal, AppColors.primaryGreen],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          // Inactive state: transparent background (no white tray behind icons)
+          color: isActive ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
+          // Keep a subtle white border only for active state if desired
+          border: isActive
+              ? Border.all(color: Colors.white.withOpacity(0.6), width: 0.6)
+              : null,
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: AppColors.primaryTeal.withOpacity(0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Icon(
           icon,
-          color: isActive ? AppColors.primaryGreen : AppColors.textSecondary,
-          size: 24,
+          color: isActive ? Colors.white : AppColors.textSecondary,
+          size: 26,
         ),
       ),
     );

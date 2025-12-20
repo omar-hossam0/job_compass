@@ -24,6 +24,7 @@ import 'screens/candidate_details_screen.dart';
 import 'screens/hr_notifications_screen.dart';
 import 'screens/hr_settings_screen.dart';
 import 'screens/auth_screen.dart';
+import 'screens/profile_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -49,7 +50,8 @@ class MyApp extends StatelessWidget {
       routes: {
         '/auth': (_) => const AuthScreen(),
         '/dashboard': (_) => const StudentDashboardScreen(),
-        '/profile': (_) => const ProfileCVScreen(),
+        '/profile': (_) => const ProfileScreen(),
+        '/profile-cv': (_) => const ProfileCVScreen(),
         '/skills-analysis': (_) => const SkillAnalysisScreen(),
         '/job-matches': (_) => const JobMatchesScreen(),
         '/learning-path': (_) => const LearningPathScreen(),

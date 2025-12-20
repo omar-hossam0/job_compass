@@ -92,11 +92,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             () => Navigator.pushNamed(context, '/profile'),
           ),
           const Divider(height: 24),
-          _buildSettingItem(
-            Icons.email_outlined,
-            'Email',
-            'student@example.com',
-            null,
+          FutureBuilder<Map<String, dynamic>>(
+            future: _apiService.get('/auth/me'),
+            builder: (context, snapshot) {
+              final email = snapshot.data?['user']?['email'] ?? 'Loading...';
+              return _buildSettingItem(
+                Icons.email_outlined,
+                'Email',
+                email,
+                null,
+              );
+            },
           ),
         ],
       ),

@@ -39,10 +39,10 @@ export const register = async (req, res) => {
       });
     }
 
-    if (password.length < 6) {
+    if (password.length < 4) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 6 characters long",
+        message: "Password must be at least 4 characters long",
       });
     }
 
@@ -142,13 +142,11 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if role matches (if role is provided)
+    // Check if role matches (if role is provided) - but allow login with warning
     if (role && user.role !== role) {
-      return res.status(403).json({
-        success: false,
-        message: `This account is registered as ${user.role === "hr" ? "HR" : "Student"
-          }. Please select the correct account type.`,
-      });
+      console.log(`⚠️ Role mismatch: requested ${role}, actual ${user.role}`);
+      // Return success but with the actual role so frontend can handle it
+      // Don't block login - just inform frontend of the actual role
     }
 
     const token = jwt.sign(
@@ -209,7 +207,7 @@ export const getMyProfile = async (req, res) => {
 
 export const updateMyProfile = async (req, res) => {
   try {
-    const { name, email, avatar, phone, location } = req.body;
+    const { name, email, avatar, phone, location, profileImage } = req.body;
     const userId = req.user._id;
 
     const user = await User.findById(userId);
@@ -236,6 +234,7 @@ export const updateMyProfile = async (req, res) => {
     if (typeof avatar !== "undefined") user.avatar = avatar;
     if (typeof phone !== "undefined") user.phone = phone;
     if (typeof location !== "undefined") user.location = location;
+    if (typeof profileImage !== "undefined") user.profileImage = profileImage;
 
     await user.save();
 
@@ -248,6 +247,8 @@ export const updateMyProfile = async (req, res) => {
         email: user.email,
         role: user.role,
         avatar: user.avatar || null,
+        profileImage: user.profileImage || null,
+        phone: user.phone || null,
       },
     });
   } catch (error) {
@@ -276,10 +277,10 @@ export const updateMyPassword = async (req, res) => {
       });
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < 4) {
       return res.status(400).json({
         success: false,
-        message: "New password must be at least 6 characters long",
+        message: "New password must be at least 4 characters long",
       });
     }
 
@@ -562,8 +563,9 @@ export const uploadProfileImage = async (req, res) => {
     }
 
     // Convert image to base64
-    const imageBase64 = `data:${req.file.mimetype
-      };base64,${req.file.buffer.toString("base64")}`;
+    const imageBase64 = `data:${
+      req.file.mimetype
+    };base64,${req.file.buffer.toString("base64")}`;
 
     // Update user with profile image
     const user = await User.findByIdAndUpdate(

@@ -115,28 +115,106 @@ class Job {
   });
 
   factory Job.fromJson(Map<String, dynamic> json) {
-    return Job(
-      id: json['id'] ?? json['_id'] ?? '',
-      title: json['title'] ?? '',
-      company: json['company'] ?? '',
-      companyLogo: json['companyLogo'],
-      description: json['description'] ?? '',
-      location: json['location'] ?? '',
-      employmentType: json['employmentType'] != null
-          ? List<String>.from(json['employmentType'])
-          : [],
-      salary: (json['salary'] ?? 0).toDouble(),
-      salaryPeriod: json['salaryPeriod'] ?? '/year',
-      experienceYears: json['experienceYears'] ?? 0,
-      requiredSkills: json['requiredSkills'] != null
-          ? List<String>.from(json['requiredSkills'])
-          : [],
-      matchScore: (json['matchScore'] ?? 0).toDouble(),
-      missingSkillsCount: json['missingSkillsCount'] ?? 0,
-      postedAt: json['postedAt'] != null
-          ? DateTime.parse(json['postedAt'])
-          : DateTime.now(),
-      applicantsCount: json['applicantsCount'] ?? 0,
-    );
+    try {
+      // Handle salary - can be object {min, max, currency} or number
+      double salaryValue = 0.0;
+      if (json['salary'] != null) {
+        if (json['salary'] is Map) {
+          // If salary is an object, use min value or 0
+          final salaryMap = json['salary'] as Map;
+          salaryValue = (salaryMap['min'] ?? salaryMap['max'] ?? 0).toDouble();
+        } else if (json['salary'] is num) {
+          salaryValue = (json['salary'] as num).toDouble();
+        }
+      }
+
+      // Handle employmentType - backend uses jobType instead
+      List<String> employmentTypes = [];
+      if (json['employmentType'] != null && json['employmentType'] is List) {
+        employmentTypes = List<String>.from(json['employmentType']);
+      } else if (json['jobType'] != null) {
+        employmentTypes = [json['jobType'].toString()];
+      }
+      if (employmentTypes.isEmpty) {
+        employmentTypes = ['Full-time'];
+      }
+
+      // Handle postedAt - backend uses createdAt
+      DateTime postedDate = DateTime.now();
+      try {
+        if (json['postedAt'] != null) {
+          postedDate = DateTime.parse(json['postedAt'].toString());
+        } else if (json['createdAt'] != null) {
+          postedDate = DateTime.parse(json['createdAt'].toString());
+        }
+      } catch (e) {
+        postedDate = DateTime.now();
+      }
+
+      // Handle matchScore safely
+      double matchScoreValue = 0.0;
+      if (json['matchScore'] != null) {
+        if (json['matchScore'] is num) {
+          matchScoreValue = (json['matchScore'] as num).toDouble();
+        } else if (json['matchScore'] is String) {
+          matchScoreValue = double.tryParse(json['matchScore']) ?? 0.0;
+        }
+      }
+
+      // Handle applicantsCount
+      int applicantsCountValue = 0;
+      if (json['applicants'] != null && json['applicants'] is List) {
+        applicantsCountValue = (json['applicants'] as List).length;
+      } else if (json['applicantsCount'] != null) {
+        applicantsCountValue = (json['applicantsCount'] is num)
+            ? (json['applicantsCount'] as num).toInt()
+            : 0;
+      }
+
+      return Job(
+        id: (json['id'] ?? json['_id'] ?? '').toString(),
+        title: (json['title'] ?? '').toString(),
+        company: (json['company'] ?? 'Company').toString(),
+        companyLogo: json['companyLogo']?.toString(),
+        description: (json['description'] ?? '').toString(),
+        location: (json['location'] ?? 'Remote').toString(),
+        employmentType: employmentTypes,
+        salary: salaryValue,
+        salaryPeriod: (json['salaryPeriod'] ?? '/year').toString(),
+        experienceYears: (json['experienceYears'] ?? 0) is num
+            ? (json['experienceYears'] as num).toInt()
+            : 0,
+        requiredSkills: json['requiredSkills'] != null
+            ? List<String>.from(json['requiredSkills'])
+            : [],
+        matchScore: matchScoreValue,
+        missingSkillsCount: (json['missingSkillsCount'] ?? 0) is num
+            ? (json['missingSkillsCount'] as num).toInt()
+            : 0,
+        postedAt: postedDate,
+        applicantsCount: applicantsCountValue,
+      );
+    } catch (e) {
+      // Fallback with default values if parsing fails
+      print('Error parsing job: $e');
+      print('Job data: $json');
+      return Job(
+        id: (json['id'] ?? json['_id'] ?? '').toString(),
+        title: (json['title'] ?? 'Unknown Job').toString(),
+        company: (json['company'] ?? 'Company').toString(),
+        companyLogo: null,
+        description: (json['description'] ?? '').toString(),
+        location: 'Remote',
+        employmentType: ['Full-time'],
+        salary: 0.0,
+        salaryPeriod: '/year',
+        experienceYears: 0,
+        requiredSkills: [],
+        matchScore: 0.0,
+        missingSkillsCount: 0,
+        postedAt: DateTime.now(),
+        applicantsCount: 0,
+      );
+    }
   }
 }
