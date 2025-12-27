@@ -120,9 +120,15 @@ class Job {
       double salaryValue = 0.0;
       if (json['salary'] != null) {
         if (json['salary'] is Map) {
-          // If salary is an object, use min value or 0
+          // If salary is an object, use min value or max or 0
           final salaryMap = json['salary'] as Map;
-          salaryValue = (salaryMap['min'] ?? salaryMap['max'] ?? 0).toDouble();
+          final minVal = salaryMap['min'];
+          final maxVal = salaryMap['max'];
+          if (minVal != null && minVal is num) {
+            salaryValue = minVal.toDouble();
+          } else if (maxVal != null && maxVal is num) {
+            salaryValue = maxVal.toDouble();
+          }
         } else if (json['salary'] is num) {
           salaryValue = (json['salary'] as num).toDouble();
         }

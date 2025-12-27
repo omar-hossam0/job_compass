@@ -47,6 +47,10 @@ const candidateSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    cvUrl: {
+      type: String,
+      default: "",
+    },
     resumeText: {
       type: String,
       default: "",

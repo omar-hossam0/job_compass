@@ -20,131 +20,134 @@ class WelcomeScreen extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(flex: 2),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 40),
 
-                // Logo
-                _buildLogo(),
+                  // Logo
+                  _buildLogo(),
 
-                const SizedBox(height: 50),
+                  const SizedBox(height: 50),
 
-                // App Name
-                const Text(
-                  'JobCompass',
-                  style: TextStyle(
-                    fontSize: 34,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Subtitle
-                const Text(
-                  'Navigate Your Career',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Color(0xff60a5fa),
-                    letterSpacing: 0.3,
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                // Description
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'AI-powered CV matching that finds your perfect career path with intelligent job recommendations',
+                  // App Name
+                  const Text(
+                    'JobCompass',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xffcbd5e1),
-                      height: 1.4,
+                      fontSize: 34,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                ),
 
-                const SizedBox(height: 40),
+                  const SizedBox(height: 20),
 
-                // Features
-                _buildFeatures(),
+                  // Subtitle
+                  const Text(
+                    'Navigate Your Career',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xff60a5fa),
+                      letterSpacing: 0.3,
+                    ),
+                  ),
 
-                const Spacer(flex: 2),
+                  const SizedBox(height: 14),
 
-                // Start Now Button
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      PageRouteBuilder(
-                        pageBuilder: (context, animation, secondaryAnimation) =>
-                            const OnboardingCareerScreen(),
-                        transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                              const begin = Offset(1.0, 0.0);
-                              const end = Offset.zero;
-                              const curve = Curves.easeInOut;
-                              var tween = Tween(
-                                begin: begin,
-                                end: end,
-                              ).chain(CurveTween(curve: curve));
-                              var offsetAnimation = animation.drive(tween);
-                              return SlideTransition(
-                                position: offsetAnimation,
-                                child: child,
-                              );
-                            },
-                        transitionDuration: const Duration(milliseconds: 400),
+                  // Description
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      'AI-powered CV matching that finds your perfect career path with intelligent job recommendations',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Color(0xffcbd5e1),
+                        height: 1.4,
                       ),
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xff3b82f6),
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xff3b82f6).withOpacity(0.4),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Start Now',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(
-                          Icons.arrow_forward,
-                          color: Colors.white,
-                          size: 20,
-                        ),
-                      ],
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
 
-                const SizedBox(height: 40),
-              ],
+                  const SizedBox(height: 40),
+
+                  // Features
+                  _buildFeatures(),
+
+                  const SizedBox(height: 60),
+
+                  // Start Now Button
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  const OnboardingCareerScreen(),
+                          transitionsBuilder:
+                              (context, animation, secondaryAnimation, child) {
+                                const begin = Offset(1.0, 0.0);
+                                const end = Offset.zero;
+                                const curve = Curves.easeInOut;
+                                var tween = Tween(
+                                  begin: begin,
+                                  end: end,
+                                ).chain(CurveTween(curve: curve));
+                                var offsetAnimation = animation.drive(tween);
+                                return SlideTransition(
+                                  position: offsetAnimation,
+                                  child: child,
+                                );
+                              },
+                          transitionDuration: const Duration(milliseconds: 400),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xff3b82f6),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xff3b82f6).withOpacity(0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Start Now',
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
         ),
@@ -164,8 +167,10 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   Widget _buildFeatures() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 16,
+      runSpacing: 16,
       children: [
         _buildFeatureItem(icon: Icons.psychology_outlined, label: 'AI Powered'),
         _buildFeatureItem(icon: Icons.trending_up, label: 'Career Growth'),

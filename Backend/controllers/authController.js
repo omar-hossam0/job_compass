@@ -184,6 +184,14 @@ export const login = async (req, res) => {
 
 export const getMyProfile = async (req, res) => {
   try {
+    // Get candidate data if user is employee
+    let cvUrl = null;
+    if (req.user.role === "user" || req.user.role === "employee") {
+      const Candidate = (await import("../models/Candidate.js")).default;
+      const candidate = await Candidate.findOne({ user: req.user._id });
+      cvUrl = candidate?.cvUrl || null;
+    }
+
     res.json({
       success: true,
       user: {
@@ -194,6 +202,7 @@ export const getMyProfile = async (req, res) => {
         avatar: req.user.avatar || null,
         profileImage: req.user.profileImage || null,
         phone: req.user.phone || null,
+        cvUrl: cvUrl,
       },
     });
   } catch (error) {

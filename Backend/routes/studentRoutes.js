@@ -1,7 +1,63 @@
 import express from "express";
+import multer from "multer";
 import { verifyToken } from "../middleware/authMiddleware.js";
 import Job from "../models/Job.js";
 import Candidate from "../models/Candidate.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Multer configuration for CV upload
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, "../uploads/cvs");
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "cv-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+// Allowed file types for CV upload
+const allowedMimeTypes = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+  "application/rtf",
+  "image/jpeg",
+  "image/png",
+  "image/jpg",
+];
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+  fileFilter: (req, file, cb) => {
+    console.log("\n📄 FILE UPLOAD FILTER:");
+    console.log("  fieldname:", file.fieldname);
+    console.log("  originalname:", file.originalname);
+    console.log("  mimetype:", file.mimetype);
+    console.log("  size:", file.size);
+    console.log("  allowed types:", allowedMimeTypes);
+
+    if (allowedMimeTypes.includes(file.mimetype)) {
+      console.log("✅ File accepted for upload");
+      cb(null, true);
+    } else {
+      const error = `File type ${file.mimetype} not allowed`;
+      console.error("❌ " + error);
+      cb(new Error(error));
+    }
+  },
+});
 
 const router = express.Router();
 
@@ -80,6 +136,7 @@ router.get("/dashboard", async (req, res) => {
           id: req.user.id,
           name: req.user.name,
           email: req.user.email,
+          profilePicture: req.user.profileImage || null,
           profileCompletion: candidate ? 75 : 25,
           skillMatchScore: 0,
           skills: candidate?.skills || [],
@@ -124,20 +181,74 @@ router.get("/profile", async (req, res) => {
 // ============================================
 // UPLOAD CV
 // ============================================
-router.post("/upload-cv", async (req, res) => {
-  try {
-    res.json({
-      success: true,
-      message: "CV uploaded successfully",
-      fileUrl: "/uploads/cv.pdf",
+router.post(
+  "/upload-cv",
+  (req, res, next) => {
+    console.log("\n🚀 CV UPLOAD REQUEST RECEIVED");
+    console.log("  Content-Type:", req.headers["content-type"]);
+    console.log("  User:", req.user ? req.user.email : "NOT AUTHENTICATED");
+
+    upload.single("cv")(req, res, (err) => {
+      if (err) {
+        console.error("❌ Multer error:", err.message);
+        console.error("❌ Error code:", err.code);
+        console.error("❌ Req headers:", req.headers);
+        return res.status(400).json({
+          success: false,
+          message: err.message || "File upload failed",
+          code: err.code,
+        });
+      }
+      console.log("✅ File passed multer validation");
+      next();
     });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+  },
+  async (req, res) => {
+    try {
+      console.log("\n=== CV UPLOAD DEBUG ===");
+      console.log("📦 req.file exists:", !!req.file);
+      console.log("👤 req.user:", req.user ? req.user.email : "NO USER");
+      console.log("📝 req.headers:", req.headers);
+
+      if (!req.file) {
+        console.error("\u274c No file in request");
+        return res.status(400).json({
+          success: false,
+          message: "No file uploaded",
+        });
+      }
+
+      console.log("📄 File details:", {
+        filename: req.file.filename,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+        originalname: req.file.originalname,
+      });
+
+      // Get candidate and update CV URL
+      const candidate = await Candidate.findOne({ user: req.user._id });
+      if (candidate) {
+        candidate.cvUrl = `/uploads/cvs/${req.file.filename}`;
+        await candidate.save();
+        console.log("✅ Candidate CV URL updated:", candidate.cvUrl);
+      } else {
+        console.log("⚠️ Candidate not found for user:", req.user._id);
+      }
+
+      res.json({
+        success: true,
+        message: "CV uploaded successfully",
+        cvUrl: `/uploads/cvs/${req.file.filename}`,
+      });
+    } catch (error) {
+      console.error("❌ Error uploading CV:", error);
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
   }
-});
+);
 
 // ============================================
 // SKILLS ANALYSIS
@@ -235,6 +346,80 @@ router.post("/interview-session", async (req, res) => {
       sessionId: "sess_" + Date.now(),
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// ============================================
+// CHATBOT - AI Career Assistant
+// ============================================
+router.post("/chatbot", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Message is required",
+      });
+    }
+
+    // Get candidate's CV text
+    const candidate = await Candidate.findOne({ email: req.user.email });
+    const cvText = candidate?.resumeText || "";
+
+    // Call Groq API
+    try {
+      const Groq = (await import("groq-sdk")).default;
+      const groq = new Groq({
+        apiKey: process.env.GROQ_API_KEY,
+      });
+
+      const context = cvText
+        ? `You are a professional career assistant chatbot.
+The user has uploaded their CV. Use only the CV content to answer the user's question concisely and accurately.
+
+CV Content:
+${cvText}
+
+If the question is not related to the CV or career, politely redirect to career topics.`
+        : `You are a professional career assistant chatbot.
+The user has not uploaded their CV yet. Provide general career advice and encourage them to upload their CV for personalized guidance.`;
+
+      const completion = await groq.chat.completions.create({
+        model: "llama-3.3-70b-versatile",
+        messages: [
+          { role: "system", content: context },
+          { role: "user", content: message },
+        ],
+        temperature: 0.2,
+        max_tokens: 1024,
+      });
+
+      const answer =
+        completion.choices[0]?.message?.content?.trim() ||
+        "I couldn't process that. Please try again.";
+
+      res.json({
+        success: true,
+        answer: answer,
+        hasCv: !!cvText,
+      });
+    } catch (apiError) {
+      console.error("Groq API error:", apiError);
+      // Fallback response
+      res.json({
+        success: true,
+        answer:
+          "I'm currently experiencing technical difficulties. Please try again later or contact support.",
+        hasCv: !!cvText,
+      });
+    }
+  } catch (error) {
+    console.error("Chatbot error:", error);
     res.status(500).json({
       success: false,
       message: error.message,
