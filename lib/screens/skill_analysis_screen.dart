@@ -77,7 +77,9 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
                                   padding: const EdgeInsets.all(20),
                                   itemCount: _jobs.length,
                                   itemBuilder: (context, index) {
-                                    return _buildJobCardForAnalysis(_jobs[index]);
+                                    return _buildJobCardForAnalysis(
+                                      _jobs[index],
+                                    );
                                   },
                                 ),
                         ),
@@ -143,13 +145,19 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.work_off_outlined, size: 64, color: AppColors.textSecondary),
+            Icon(
+              Icons.work_off_outlined,
+              size: 64,
+              color: AppColors.textSecondary,
+            ),
             const SizedBox(height: 16),
             Text('No jobs available', style: AppStyles.heading3),
             const SizedBox(height: 8),
             Text(
               'There are no jobs posted yet. Check back later!',
-              style: AppStyles.bodyMedium.copyWith(color: AppColors.textSecondary),
+              style: AppStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -214,8 +222,11 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.location_on_outlined,
-                    size: 16, color: AppColors.textSecondary),
+                Icon(
+                  Icons.location_on_outlined,
+                  size: 16,
+                  color: AppColors.textSecondary,
+                ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Text(
@@ -228,7 +239,10 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primaryTeal.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -252,7 +266,10 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
                 runSpacing: 6,
                 children: job.requiredSkills.take(4).map((skill) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.primaryGreen.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
