@@ -54,23 +54,52 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf'],
+        allowedExtensions: [
+          'pdf',
+          'doc',
+          'docx',
+          'txt',
+          'rtf',
+          'jpg',
+          'jpeg',
+          'png',
+        ],
+        withData: true, // Required for web platform
       );
 
-      if (result != null && result.files.single.path != null) {
+      if (result != null && result.files.single.bytes != null) {
         setState(() => _isUploading = true);
 
-        File file = File(result.files.single.path!);
-        await _apiService.uploadCV(file);
+        // Use bytes for cross-platform compatibility (especially web)
+        final bytes = result.files.single.bytes!;
+        final filename = result.files.single.name;
+
+        final response = await _apiService.uploadFile(
+          '/student/upload-cv',
+          bytes,
+          fieldName: 'cv',
+          filename: filename,
+        );
 
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('CV uploaded successfully!'),
-              backgroundColor: AppColors.success,
-            ),
-          );
-          _loadProfile();
+          if (response['success'] == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('CV uploaded successfully!'),
+                backgroundColor: AppColors.success,
+              ),
+            );
+            _loadProfile();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Upload failed: ${response['message'] ?? 'Unknown error'}',
+                ),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
         }
       }
     } catch (e) {

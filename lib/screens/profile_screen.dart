@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../constants/app_colors.dart';
@@ -28,7 +28,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _profileImage;
   String? _userId;
   String? _userRole;
-  File? _selectedImageFile;
+  Uint8List? _selectedImageBytes;
+  String? _selectedImageName;
+  Uint8List? _selectedCvBytes;
+  String? _selectedCvName;
+  String? _cvUrl;
 
   @override
   void initState() {
@@ -55,6 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _emailController.text = user['email'] ?? '';
         _phoneController.text = user['phone'] ?? '';
         _profileImage = user['profileImage'];
+        _cvUrl = user['cvUrl'];
         _userId = user['id'];
         _userRole = user['role'];
       }
@@ -77,11 +82,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final result = await FilePicker.platform.pickFiles(
         type: FileType.image,
         allowMultiple: false,
+        withData: true,
       );
 
-      if (result != null && result.files.single.path != null) {
+      if (result != null && result.files.single.bytes != null) {
         setState(() {
-          _selectedImageFile = File(result.files.single.path!);
+          _selectedImageBytes = result.files.single.bytes;
+          _selectedImageName = result.files.single.name;
         });
         await _uploadProfileImage();
       }
@@ -98,14 +105,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _uploadProfileImage() async {
-    if (_selectedImageFile == null) return;
+    if (_selectedImageBytes == null) return;
 
     setState(() => _isSaving = true);
     try {
       final response = await _apiService.uploadFile(
         '/auth/me/upload-image',
-        _selectedImageFile!,
+        _selectedImageBytes!,
         fieldName: 'profileImage',
+        filename: _selectedImageName ?? 'profile.jpg',
       );
 
       if (response['success'] && mounted) {
@@ -126,6 +134,97 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to upload image: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _pickCV() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: [
+          'pdf',
+          'doc',
+          'docx',
+          'txt',
+          'rtf',
+          'jpg',
+          'jpeg',
+          'png',
+        ],
+        allowMultiple: false,
+        withData: true,
+      );
+
+      if (result != null && result.files.single.bytes != null) {
+        final bytes = result.files.single.bytes!;
+        final fileSizeMB = bytes.length / (1024 * 1024);
+
+        if (fileSizeMB > 100) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('File size must be less than 100MB'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return;
+        }
+
+        setState(() {
+          _selectedCvBytes = bytes;
+          _selectedCvName = result.files.single.name;
+        });
+        await _uploadCV();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to pick file: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _uploadCV() async {
+    if (_selectedCvBytes == null) return;
+
+    setState(() => _isSaving = true);
+    try {
+      final response = await _apiService.uploadFile(
+        '/student/upload-cv',
+        _selectedCvBytes!,
+        fieldName: 'cv',
+        filename: _selectedCvName ?? 'cv.pdf',
+      );
+
+      if (response['success'] && mounted) {
+        setState(() {
+          _cvUrl = response['cvUrl'] ?? response['fileUrl'];
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('CV uploaded successfully!'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+      } else {
+        throw Exception(response['message'] ?? 'Upload failed');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to upload CV: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -193,6 +292,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 const SizedBox(height: 32),
                                 _buildProfileForm(),
                                 const SizedBox(height: 24),
+                                _buildCVSection(),
+                                const SizedBox(height: 24),
                                 _buildRoleInfo(),
                                 const SizedBox(height: 32),
                                 _buildSaveButton(),
@@ -236,9 +337,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(color: AppColors.primaryGreen, width: 3),
-            image: _selectedImageFile != null
+            image: _selectedImageBytes != null
                 ? DecorationImage(
-                    image: FileImage(_selectedImageFile!),
+                    image: MemoryImage(_selectedImageBytes!),
                     fit: BoxFit.cover,
                   )
                 : _profileImage != null
@@ -248,7 +349,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   )
                 : null,
           ),
-          child: (_selectedImageFile == null && _profileImage == null)
+          child: (_selectedImageBytes == null && _profileImage == null)
               ? const Icon(
                   Icons.person,
                   size: 60,
@@ -324,6 +425,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             keyboardType: TextInputType.phone,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCVSection() {
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.description_outlined,
+                color: AppColors.primaryGreen,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Curriculum Vitae (CV)',
+                  style: AppStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (_cvUrl != null)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.success.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.success.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, color: AppColors.success, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'CV uploaded',
+                      style: AppStyles.bodySmall.copyWith(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          if (_cvUrl != null) const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: _pickCV,
+            icon: Icon(
+              _cvUrl != null ? Icons.refresh : Icons.upload_file,
+              size: 20,
+            ),
+            label: Text(_cvUrl != null ? 'Replace CV' : 'Upload CV (PDF)'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.primaryGreen,
+              side: BorderSide(color: AppColors.primaryGreen),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'PDF, DOC, DOCX, TXT, JPG, PNG (max 100MB)',
+            style: AppStyles.bodySmall.copyWith(color: AppColors.textSecondary),
           ),
         ],
       ),

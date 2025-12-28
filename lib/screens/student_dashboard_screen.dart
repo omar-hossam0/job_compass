@@ -338,6 +338,20 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                'Ask AI Assistant',
+                Icons.smart_toy_rounded,
+                () => Navigator.pushNamed(context, '/chatbot'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Container()), // Empty space for symmetry
+          ],
+        ),
       ],
     );
   }

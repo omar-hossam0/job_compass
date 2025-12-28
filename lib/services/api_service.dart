@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Singleton pattern
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
@@ -131,8 +132,9 @@ class ApiService {
   // File upload
   Future<Map<String, dynamic>> uploadFile(
     String endpoint,
-    File file, {
+    dynamic file, {
     String fieldName = 'cv',
+    String? filename,
   }) async {
     try {
       final request = http.MultipartRequest(
@@ -140,21 +142,66 @@ class ApiService {
         Uri.parse('$baseUrl$endpoint'),
       );
 
+      debugPrint('📤 UPLOAD REQUEST:');
+      debugPrint('  URL: $baseUrl$endpoint');
+      debugPrint('  Token present: ${_token != null}');
+
       if (_token != null) {
         request.headers['Authorization'] = 'Bearer $_token';
       }
 
-      request.files.add(
-        await http.MultipartFile.fromPath(fieldName, file.path),
-      );
+      // Support both File (mobile/desktop) and Uint8List (web)
+      if (file is File) {
+        request.files.add(
+          await http.MultipartFile.fromPath(fieldName, file.path),
+        );
+      } else if (file is Uint8List) {
+        // Determine MIME type from filename
+        String mimeType = 'application/octet-stream';
+        if (filename != null) {
+          final ext = filename.toLowerCase().split('.').last;
+          final mimeTypes = {
+            'pdf': 'application/pdf',
+            'doc': 'application/msword',
+            'docx':
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'txt': 'text/plain',
+            'rtf': 'application/rtf',
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+          };
+          mimeType = mimeTypes[ext] ?? 'application/octet-stream';
+        }
 
+        debugPrint('  Filename: $filename');
+        debugPrint('  MIME type: $mimeType');
+        debugPrint('  File size: ${file.length} bytes');
+
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            fieldName,
+            file,
+            filename: filename ?? 'upload.dat',
+            contentType: MediaType.parse(mimeType),
+          ),
+        );
+      } else {
+        throw Exception('Invalid file type');
+      }
+
+      debugPrint('  Sending multipart request...');
       final streamedResponse = await request.send().timeout(
         const Duration(seconds: 30),
       );
       final response = await http.Response.fromStream(streamedResponse);
 
+      debugPrint('  Response status: ${response.statusCode}');
+      debugPrint('  Response: ${response.body}');
+
       return _handleResponse(response);
     } catch (e) {
+      debugPrint('❌ Upload error: $e');
       return {'success': false, 'message': 'Upload error: ${e.toString()}'};
     }
   }
@@ -163,7 +210,7 @@ class ApiService {
   // AUTH ENDPOINTS
   // ============================================
 
-  static Future<Map<String, dynamic>> register({
+  Future<Map<String, dynamic>> register({
     required String email,
     required String password,
     required String name,
@@ -177,7 +224,7 @@ class ApiService {
     }, expectCreated: true);
   }
 
-  static Future<Map<String, dynamic>> login({
+  Future<Map<String, dynamic>> login({
     required String email,
     required String password,
     required String role,
@@ -201,6 +248,12 @@ class ApiService {
 
       print('📊 Response status: ${response.statusCode}');
       print('📝 Response body: ${response.body}');
+      return _handleResponse(response);
+    } catch (e) {
+      print('❌ Login error: ${e.toString()}');
+      return {'success': false, 'message': 'Error: ${e.toString()}'};
+    }
+  }
 
       final data = jsonDecode(response.body);
 
@@ -417,5 +470,15 @@ class ApiService {
     Map<String, dynamic> data,
   ) async {
     return await put('/hr/profile', data);
+  }
+
+  // ============================================
+  // ML / ANALYSIS ENDPOINTS
+  // ============================================
+
+  /// Analyze a specific job against user's CV
+  /// Returns matched skills, missing skills with learning links, and match percentage
+  Future<Map<String, dynamic>> analyzeJobForUser(String jobId) async {
+    return await get('/ml/analyze-job/$jobId');
   }
 }

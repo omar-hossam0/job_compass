@@ -25,6 +25,8 @@ import 'screens/hr_notifications_screen.dart';
 import 'screens/hr_settings_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/chatbot_screen.dart';
+import 'screens/job_analysis_result_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -58,6 +60,7 @@ class MyApp extends StatelessWidget {
         '/interview-prep': (_) => const InterviewPrepScreen(),
         '/notifications': (_) => const NotificationsScreen(),
         '/settings': (_) => const SettingsScreen(),
+        '/chatbot': (_) => const ChatbotScreen(),
         '/hr/dashboard': (_) => const HRDashboardScreen(),
         '/hr/jobs': (_) => const JobListScreen(),
         '/hr/post-job': (_) => const PostJobScreen(),
@@ -103,6 +106,23 @@ class MyApp extends StatelessWidget {
           if (candidateId != null) {
             return MaterialPageRoute(
               builder: (_) => CandidateDetailsScreen(candidateId: candidateId),
+            );
+          }
+        }
+        if (settings.name == '/job-analysis') {
+          final args = settings.arguments;
+          if (args is Map<String, dynamic>) {
+            final jobId = args['jobId'] as String?;
+            final jobTitle = args['jobTitle'] as String?;
+            if (jobId != null) {
+              return MaterialPageRoute(
+                builder: (_) =>
+                    JobAnalysisResultScreen(jobId: jobId, jobTitle: jobTitle),
+              );
+            }
+          } else if (args is String) {
+            return MaterialPageRoute(
+              builder: (_) => JobAnalysisResultScreen(jobId: args),
             );
           }
         }

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
-import '../models/skill.dart';
+import '../models/student.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/custom_buttons.dart';
-import '../widgets/skill_widgets.dart';
 
 class SkillAnalysisScreen extends StatefulWidget {
   const SkillAnalysisScreen({Key? key}) : super(key: key);
@@ -17,47 +16,42 @@ class SkillAnalysisScreen extends StatefulWidget {
 
 class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
   final ApiService _apiService = ApiService();
-  bool _isLoading = true;
-  SkillAnalysis? _analysis;
-  String? _error;
-  String _selectedCategory = 'All'; // All, Technical, Soft
+  bool _isLoadingJobs = true;
+  List<Job> _jobs = [];
+  String? _jobsError;
 
   @override
   void initState() {
     super.initState();
-    _loadSkillAnalysis();
+    _loadJobs();
   }
 
-  Future<void> _loadSkillAnalysis() async {
+  Future<void> _loadJobs() async {
     setState(() {
-      _isLoading = true;
-      _error = null;
+      _isLoadingJobs = true;
+      _jobsError = null;
     });
 
     try {
-      final response = await _apiService.getSkillsAnalysis();
-      setState(() {
-        _analysis = SkillAnalysis.fromJson(response);
-        _isLoading = false;
-      });
+      final response = await _apiService.get('/jobs');
+      if (response['success'] == true && response['data'] != null) {
+        setState(() {
+          _jobs = (response['data'] as List)
+              .map((job) => Job.fromJson(job))
+              .toList();
+          _isLoadingJobs = false;
+        });
+      } else {
+        setState(() {
+          _jobsError = response['message'] ?? 'Failed to load jobs';
+          _isLoadingJobs = false;
+        });
+      }
     } catch (e) {
       setState(() {
-        _error = e.toString();
-        _isLoading = false;
+        _jobsError = e.toString();
+        _isLoadingJobs = false;
       });
-    }
-  }
-
-  List<Skill> _getFilteredSkills() {
-    if (_analysis == null) return [];
-
-    switch (_selectedCategory) {
-      case 'Technical':
-        return _analysis!.technicalSkills;
-      case 'Soft':
-        return _analysis!.softSkills;
-      default:
-        return [..._analysis!.technicalSkills, ..._analysis!.softSkills];
     }
   }
 
@@ -65,69 +59,34 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: GradientBackground(
-        child: LoadingOverlay(
-          isLoading: _isLoading && _analysis == null,
-          child: SafeArea(
-            child: _error != null
-                ? _buildError()
-                : _analysis == null
-                ? const SizedBox()
-                : Column(
-                    children: [
-                      _buildAppBar(),
-                      Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: _loadSkillAnalysis,
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildAppBar(),
+              Expanded(
+                child: LoadingOverlay(
+                  isLoading: _isLoadingJobs,
+                  child: _jobsError != null
+                      ? _buildJobsError()
+                      : RefreshIndicator(
+                          onRefresh: _loadJobs,
                           color: AppColors.primaryGreen,
-                          child: SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            child: Padding(
-                              padding: const EdgeInsets.all(20),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  _buildHeader(),
-                                  const SizedBox(height: 24),
-                                  _buildCategoryFilter(),
-                                  const SizedBox(height: 24),
-                                  _buildSkillsList(),
-                                ],
-                              ),
-                            ),
-                          ),
+                          child: _jobs.isEmpty
+                              ? _buildNoJobsFound()
+                              : ListView.builder(
+                                  padding: const EdgeInsets.all(20),
+                                  itemCount: _jobs.length,
+                                  itemBuilder: (context, index) {
+                                    return _buildJobCardForAnalysis(
+                                      _jobs[index],
+                                    );
+                                  },
+                                ),
                         ),
-                      ),
-                    ],
-                  ),
+                ),
+              ),
+            ],
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildError() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: AppColors.error),
-            const SizedBox(height: 16),
-            Text('Failed to load skill analysis', style: AppStyles.heading3),
-            const SizedBox(height: 8),
-            Text(
-              _error ?? 'Unknown error',
-              style: AppStyles.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            PrimaryButton(
-              text: 'Retry',
-              onPressed: _loadSkillAnalysis,
-              icon: Icons.refresh,
-            ),
-          ],
         ),
       ),
     );
@@ -145,211 +104,212 @@ class _SkillAnalysisScreenState extends State<SkillAnalysisScreen> {
             iconColor: AppColors.textPrimary,
           ),
           const SizedBox(width: 16),
-          Text('Skill Analysis', style: AppStyles.heading2),
+          Text('Analyze Jobs', style: AppStyles.heading2),
         ],
       ),
     );
   }
 
-  Widget _buildHeader() {
-    return GlassCard(
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [AppColors.primaryGreen, AppColors.primaryTeal],
-              ),
-              borderRadius: BorderRadius.circular(16),
+  Widget _buildJobsError() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+            const SizedBox(height: 16),
+            Text('Failed to load jobs', style: AppStyles.heading3),
+            const SizedBox(height: 8),
+            Text(
+              _jobsError ?? 'Unknown error',
+              style: AppStyles.bodyMedium,
+              textAlign: TextAlign.center,
             ),
-            child: const Icon(Icons.psychology, color: Colors.white, size: 32),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            const SizedBox(height: 24),
+            PrimaryButton(
+              text: 'Retry',
+              onPressed: _loadJobs,
+              icon: Icons.refresh,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNoJobsFound() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.work_off_outlined,
+              size: 64,
+              color: AppColors.textSecondary,
+            ),
+            const SizedBox(height: 16),
+            Text('No jobs available', style: AppStyles.heading3),
+            const SizedBox(height: 8),
+            Text(
+              'There are no jobs posted yet. Check back later!',
+              style: AppStyles.bodyMedium.copyWith(
+                color: AppColors.textSecondary,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildJobCardForAnalysis(Job job) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: GlassCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Text('Total Skills Extracted', style: AppStyles.bodyMedium),
-                const SizedBox(height: 4),
-                Text(
-                  '${_analysis!.totalSkills}',
-                  style: AppStyles.heading1.copyWith(
-                    color: AppColors.primaryGreen,
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: job.companyLogo != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            job.companyLogo!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Icon(
+                              Icons.business,
+                              color: AppColors.primaryGreen,
+                            ),
+                          ),
+                        )
+                      : Icon(Icons.business, color: AppColors.primaryGreen),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        job.title,
+                        style: AppStyles.heading3,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        job.company,
+                        style: AppStyles.bodySmall.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                'Technical: ${_analysis!.technicalSkills.length}',
-                style: AppStyles.bodySmall,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Soft: ${_analysis!.softSkills.length}',
-                style: AppStyles.bodySmall,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategoryFilter() {
-    return Row(
-      children: [
-        _buildFilterChip('All'),
-        const SizedBox(width: 12),
-        _buildFilterChip('Technical'),
-        const SizedBox(width: 12),
-        _buildFilterChip('Soft'),
-      ],
-    );
-  }
-
-  Widget _buildFilterChip(String category) {
-    final isSelected = _selectedCategory == category;
-
-    return GestureDetector(
-      onTap: () => setState(() => _selectedCategory = category),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: isSelected
-              ? LinearGradient(
-                  colors: [AppColors.primaryGreen, AppColors.primaryTeal],
-                )
-              : null,
-          color: isSelected ? null : Colors.white.withOpacity(0.3),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : Colors.white.withOpacity(0.5),
-          ),
-        ),
-        child: Text(
-          category,
-          style: AppStyles.bodyMedium.copyWith(
-            color: isSelected ? Colors.white : AppColors.textPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSkillsList() {
-    final skills = _getFilteredSkills();
-
-    if (skills.isEmpty) {
-      return GlassCard(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(40),
-            child: Column(
+            const SizedBox(height: 12),
+            Row(
               children: [
                 Icon(
-                  Icons.search_off,
-                  size: 48,
+                  Icons.location_on_outlined,
+                  size: 16,
                   color: AppColors.textSecondary,
                 ),
-                const SizedBox(height: 12),
-                Text('No skills found', style: AppStyles.bodyMedium),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    return Column(
-      children: skills.map((skill) => _buildSkillCard(skill)).toList(),
-    );
-  }
-
-  Widget _buildSkillCard(Skill skill) {
-    return GlassCard(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(child: Text(skill.name, style: AppStyles.heading3)),
-              SkillLevelIndicator(level: skill.level),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: skill.category == 'Technical'
-                  ? AppColors.primaryGreen.withOpacity(0.1)
-                  : AppColors.accentGold.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              skill.category,
-              style: AppStyles.bodySmall.copyWith(
-                color: skill.category == 'Technical'
-                    ? AppColors.primaryGreen
-                    : AppColors.accentGold,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(child: Text('Proficiency', style: AppStyles.bodySmall)),
-              Text(
-                '${skill.proficiency.toInt()}%',
-                style: AppStyles.bodySmall.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primaryGreen,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ProficiencyBar(value: skill.proficiency),
-          if (skill.explanation != null) ...[
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.info_outline,
-                    size: 16,
-                    color: AppColors.info,
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    job.location,
+                    style: AppStyles.bodySmall.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      skill.explanation!,
-                      style: AppStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
-                      ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTeal.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    job.employmentType.isNotEmpty
+                        ? job.employmentType.first
+                        : 'Full-time',
+                    style: AppStyles.bodySmall.copyWith(
+                      color: AppColors.primaryTeal,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (job.requiredSkills.isNotEmpty) ...[
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: job.requiredSkills.take(4).map((skill) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryGreen.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      skill,
+                      style: AppStyles.bodySmall.copyWith(
+                        color: AppColors.primaryGreen,
+                        fontSize: 11,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 16),
+            ],
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pushNamed(
+                    context,
+                    '/job-analysis',
+                    arguments: {'jobId': job.id, 'jobTitle': job.title},
+                  );
+                },
+                icon: const Icon(Icons.analytics_outlined, size: 20),
+                label: const Text('Analyze My CV'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
