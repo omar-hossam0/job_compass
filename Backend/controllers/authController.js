@@ -14,12 +14,12 @@ export const register = async (req, res) => {
       });
     }
 
-    // Accept user, hr, or employee roles
-    const validRoles = ["user", "hr", "employee"];
+    // Accept hr or employee roles only
+    const validRoles = ["hr", "employee"];
     if (!validRoles.includes(role)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid role. Role must be 'user', 'hr', or 'employee'",
+        message: "Invalid role. Role must be 'hr' or 'employee'",
       });
     }
 

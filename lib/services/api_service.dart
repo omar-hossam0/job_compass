@@ -230,10 +230,20 @@ class ApiService {
     required String password,
     String? role,
   }) async {
-    final body = {'email': email, 'password': password};
-    if (role != null) body['role'] = role;
-    return await _postWithFallback('/auth/login', body, expectOK: true);
-  }
+    try {
+      print('🔐 Attempting login to: $baseUrl/auth/login');
+      print('📧 Email: $email');
+
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/auth/login'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'email': email, 'password': password}),
+          )
+          .timeout(const Duration(seconds: 30));
+
+      print('📊 Response status: ${response.statusCode}');
+      print('📝 Response body: ${response.body}');
 
   // Helper: try POST against each base URL until one succeeds
   static Future<Map<String, dynamic>> _postWithFallback(
@@ -262,6 +272,12 @@ class ApiService {
       for (final b in baseUrls) {
         if (!orderedBases.contains(b)) orderedBases.add(b);
       }
+    } catch (e) {
+      print('❌ Login error: ${e.toString()}');
+      return {
+        'success': false,
+        'message': 'Connection error. Please check if the server is running.',
+      };
     }
 
     for (final base in orderedBases) {
