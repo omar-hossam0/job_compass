@@ -10,7 +10,7 @@ class ApiService {
   ApiService._internal();
 
   // Backend Base URL
-  static const String baseUrl = 'http://192.168.1.7:5000/api';
+  static const String baseUrl = 'http://localhost:5000/api';
 
   String? _token;
 
@@ -204,13 +204,19 @@ class ApiService {
     required String password,
   }) async {
     try {
+      print('🔐 Attempting login to: $baseUrl/auth/login');
+      print('📧 Email: $email');
+      
       final response = await http
           .post(
             Uri.parse('$baseUrl/auth/login'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'email': email, 'password': password}),
           )
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 30));
+
+      print('📊 Response status: ${response.statusCode}');
+      print('📝 Response body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
@@ -229,7 +235,8 @@ class ApiService {
         return {'success': false, 'message': data['message'] ?? 'Login failed'};
       }
     } catch (e) {
-      return {'success': false, 'message': 'Error: ${e.toString()}'};
+      print('❌ Login error: ${e.toString()}');
+      return {'success': false, 'message': 'Connection error. Please check if the server is running.'};
     }
   }
 

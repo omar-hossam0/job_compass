@@ -30,11 +30,11 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: {
-        values: ["user", "hr", "employee"],
-        message: "Role must be user, hr, or employee",
+        values: ["hr", "employee"],
+        message: "Role must be hr or employee",
       },
       required: [true, "Role is required"],
-      default: "user",
+      default: "employee",
     },
     avatar: {
       type: String,
