@@ -129,9 +129,24 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-const server = app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+// Use localhost for development (avoids firewall issues)
+const HOST = process.env.HOST || "localhost";
+const server = app.listen(PORT, HOST, () => {
+  console.log(`✅ Server running on ${HOST}:${PORT}`);
+  console.log(`✅ Local access: http://localhost:${PORT}`);
+  if (HOST === "0.0.0.0") {
+    console.log(`✅ Network access: http://192.168.1.7:${PORT}`);
+  }
+});
+
+// Handle server errors
+server.on("error", (error) => {
+  console.error("❌ Server error:", error);
+  if (error.code === "EADDRINUSE") {
+    console.error(`❌ Port ${PORT} is already in use!`);
+    process.exit(1);
+  }
+});
 
 // Increase timeout for ML operations (120 seconds)
 server.timeout = 120000;

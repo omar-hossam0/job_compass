@@ -5,10 +5,7 @@ const connectDB = async () => {
   try {
     const defaultUri = "mongodb://localhost:27017/cv_project_db";
     const mongoUri = process.env.MONGO_URI || defaultUri;
-    const conn = await mongoose.connect(mongoUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const conn = await mongoose.connect(mongoUri);
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     console.log(`Database Name: ${conn.connection.name}`);

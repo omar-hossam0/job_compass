@@ -36,6 +36,7 @@ class _SignInScreenState extends State<SignInScreen> {
       final response = await ApiService.login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        role: _selectedRole,
       );
 
       if (response['success'] && mounted) {

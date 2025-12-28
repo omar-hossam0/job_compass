@@ -389,51 +389,25 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
   Widget _buildBottomNav() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItemIcon(Icons.home_rounded, 0, () {
-                    setState(() => _currentNavIndex = 0);
-                  }),
-                  _buildNavItemIcon(Icons.work_outline_rounded, 1, () {
-                    setState(() => _currentNavIndex = 1);
-                    Navigator.pushNamed(context, '/hr/jobs');
-                  }),
-                  _buildNavItemIcon(Icons.notifications_outlined, 2, () {
-                    setState(() => _currentNavIndex = 2);
-                    Navigator.pushNamed(context, '/hr/notifications');
-                  }),
-                  _buildNavItemIcon(Icons.settings_outlined, 3, () {
-                    setState(() => _currentNavIndex = 3);
-                    Navigator.pushNamed(context, '/hr/settings');
-                  }),
-                ],
-              ),
-            ),
-          ),
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildNavItemIcon(Icons.home_rounded, 0, () {
+            setState(() => _currentNavIndex = 0);
+          }),
+          _buildNavItemIcon(Icons.work_outline_rounded, 1, () {
+            setState(() => _currentNavIndex = 1);
+            Navigator.pushNamed(context, '/hr/jobs');
+          }),
+          _buildNavItemIcon(Icons.notifications_outlined, 2, () {
+            setState(() => _currentNavIndex = 2);
+            Navigator.pushNamed(context, '/hr/notifications');
+          }),
+          _buildNavItemIcon(Icons.settings_outlined, 3, () {
+            setState(() => _currentNavIndex = 3);
+            Navigator.pushNamed(context, '/hr/settings');
+          }),
+        ],
       ),
     );
   }
@@ -446,17 +420,37 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(12),
+        width: 62,
+        height: 44,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.primaryGreen.withOpacity(0.25)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(14),
+          gradient: isActive
+              ? const LinearGradient(
+                  colors: [AppColors.primaryTeal, AppColors.primaryGreen],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          // Inactive state: transparent background (remove white circles)
+          color: isActive ? null : Colors.transparent,
+          borderRadius: BorderRadius.circular(30),
+          border: isActive
+              ? Border.all(color: Colors.white.withOpacity(0.6), width: 0.6)
+              : null,
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: AppColors.primaryTeal.withOpacity(0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
         child: Icon(
           icon,
-          color: isActive ? AppColors.primaryGreen : AppColors.textSecondary,
-          size: 24,
+          color: isActive ? Colors.white : AppColors.textSecondary,
+          size: 26,
         ),
       ),
     );

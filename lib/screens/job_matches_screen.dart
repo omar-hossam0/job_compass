@@ -35,17 +35,44 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
     });
 
     try {
-      final response = await _apiService.getJobMatches();
-      final jobsList = (response['jobs'] as List)
-          .map((j) => Job.fromJson(j))
-          .toList();
+      // Fetch all jobs from /jobs endpoint (returns active jobs for students)
+      final response = await _apiService.get('/jobs');
 
-      setState(() {
-        _jobs = jobsList;
-        _sortJobs();
-        _isLoading = false;
-      });
-    } catch (e) {
+      print('📥 Jobs API Response: $response');
+
+      if (response['success'] == true) {
+        print('✅ Success! Data type: ${response['data'].runtimeType}');
+        print('📊 Jobs count: ${(response['data'] as List).length}');
+
+        final jobsList = (response['data'] as List)
+            .map((j) {
+              try {
+                return Job.fromJson(j);
+              } catch (e) {
+                print('❌ Error parsing job: $e');
+                print('Job data: $j');
+                return null;
+              }
+            })
+            .whereType<Job>() // Filter out nulls
+            .toList();
+
+        print('✅ Parsed ${jobsList.length} jobs successfully');
+
+        setState(() {
+          _jobs = jobsList;
+          _sortJobs();
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = response['message'] ?? 'Failed to load jobs';
+          _isLoading = false;
+        });
+      }
+    } catch (e, stackTrace) {
+      print('❌ Load jobs error: $e');
+      print('Stack trace: $stackTrace');
       setState(() {
         _error = e.toString();
         _isLoading = false;
