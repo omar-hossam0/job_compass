@@ -18,7 +18,7 @@ class _SignInScreenState extends State<SignInScreen> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   bool _rememberMe = false;
-  String _selectedRole = 'user'; // 'user' for Employee, 'hr' for HR
+  String _selectedRole = 'employee'; // 'employee' for Employee, 'hr' for HR
 
   @override
   void dispose() {
@@ -441,7 +441,7 @@ class _SignInScreenState extends State<SignInScreen> {
               contentPadding: const EdgeInsets.symmetric(vertical: 16),
             ),
             items: const [
-              DropdownMenuItem(value: 'user', child: Text('Employee')),
+              DropdownMenuItem(value: 'employee', child: Text('Employee')),
               DropdownMenuItem(value: 'hr', child: Text('HR Manager')),
             ],
             onChanged: (value) => setState(() => _selectedRole = value!),

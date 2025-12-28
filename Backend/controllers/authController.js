@@ -97,25 +97,23 @@ export const login = async (req, res) => {
     }
     const { email, password, role } = req.body;
 
-    console.log("🔐 Login attempt for:", email);
+    console.log("🔐 Login attempt for:", email, "as role:", role);
 
-    if (!email || !password) {
-      console.log("❌ Missing email or password");
+    if (!email || !password || !role) {
+      console.log("❌ Missing email, password, or role");
       return res.status(400).json({
         success: false,
-        message: "Please provide email and password",
+        message: "Please provide email, password, and role",
       });
     }
 
-    // Validate role if provided
-    if (role) {
-      const validRoles = ["user", "hr", "employee"];
-      if (!validRoles.includes(role)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid role. Role must be 'user', 'hr', or 'employee'",
-        });
-      }
+    // Validate role
+    const validRoles = ["hr", "employee"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role. Role must be 'hr' or 'employee'",
+      });
     }
 
     const user = await User.findOne({ email }).select("+password");
@@ -142,11 +140,13 @@ export const login = async (req, res) => {
       });
     }
 
-    // Check if role matches (if role is provided) - but allow login with warning
-    if (role && user.role !== role) {
-      console.log(`⚠️ Role mismatch: requested ${role}, actual ${user.role}`);
-      // Return success but with the actual role so frontend can handle it
-      // Don't block login - just inform frontend of the actual role
+    // Check if role matches - block login if mismatch
+    if (user.role !== role) {
+      console.log(`❌ Role mismatch: requested ${role}, actual ${user.role}`);
+      return res.status(403).json({
+        success: false,
+        message: `Invalid credentials. You must login as ${user.role === 'hr' ? 'HR Manager' : 'Employee'}.`,
+      });
     }
 
     const token = jwt.sign(
@@ -563,9 +563,8 @@ export const uploadProfileImage = async (req, res) => {
     }
 
     // Convert image to base64
-    const imageBase64 = `data:${
-      req.file.mimetype
-    };base64,${req.file.buffer.toString("base64")}`;
+    const imageBase64 = `data:${req.file.mimetype
+      };base64,${req.file.buffer.toString("base64")}`;
 
     // Update user with profile image
     const user = await User.findByIdAndUpdate(

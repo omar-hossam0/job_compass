@@ -180,22 +180,48 @@ class ApiService {
   static Future<Map<String, dynamic>> login({
     required String email,
     required String password,
-    String? role,
+    required String role,
   }) async {
     try {
       print('🔐 Attempting login to: $baseUrl/auth/login');
       print('📧 Email: $email');
+      print('👤 Role: $role');
 
       final response = await http
           .post(
             Uri.parse('$baseUrl/auth/login'),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'email': email, 'password': password}),
+            body: jsonEncode({
+              'email': email,
+              'password': password,
+              'role': role,
+            }),
           )
           .timeout(const Duration(seconds: 30));
 
       print('📊 Response status: ${response.statusCode}');
       print('📝 Response body: ${response.body}');
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        // Save token if present
+        if (data['token'] != null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('auth_token', data['token']);
+        }
+        return {'success': true, ...data};
+      } else {
+        return {'success': false, 'message': data['message'] ?? 'Login failed'};
+      }
+    } catch (e) {
+      print('❌ Login error: ${e.toString()}');
+      return {
+        'success': false,
+        'message': 'Connection error. Please check if the server is running.',
+      };
+    }
+  }
 
   // Helper: try POST against each base URL until one succeeds
   static Future<Map<String, dynamic>> _postWithFallback(
@@ -224,12 +250,6 @@ class ApiService {
       for (final b in baseUrls) {
         if (!orderedBases.contains(b)) orderedBases.add(b);
       }
-    } catch (e) {
-      print('❌ Login error: ${e.toString()}');
-      return {
-        'success': false,
-        'message': 'Connection error. Please check if the server is running.',
-      };
     }
 
     for (final base in orderedBases) {
