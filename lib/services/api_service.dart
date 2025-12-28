@@ -211,7 +211,7 @@ class ApiService {
   // AUTH ENDPOINTS
   // ============================================
 
-  static Future<Map<String, dynamic>> register({
+  Future<Map<String, dynamic>> register({
     required String email,
     required String password,
     required String name,
@@ -225,7 +225,7 @@ class ApiService {
     }, expectCreated: true);
   }
 
-  static Future<Map<String, dynamic>> login({
+  Future<Map<String, dynamic>> login({
     required String email,
     required String password,
     String? role,
@@ -244,6 +244,11 @@ class ApiService {
 
       print('📊 Response status: ${response.statusCode}');
       print('📝 Response body: ${response.body}');
+      return _handleResponse(response);
+    } catch (e) {
+      print('❌ Login error: ${e.toString()}');
+      return {'success': false, 'message': 'Error: ${e.toString()}'};
+    }
 
   // Helper: try POST against each base URL until one succeeds
   static Future<Map<String, dynamic>> _postWithFallback(
@@ -272,12 +277,6 @@ class ApiService {
       for (final b in baseUrls) {
         if (!orderedBases.contains(b)) orderedBases.add(b);
       }
-    } catch (e) {
-      print('❌ Login error: ${e.toString()}');
-      return {
-        'success': false,
-        'message': 'Connection error. Please check if the server is running.',
-      };
     }
 
     for (final base in orderedBases) {
