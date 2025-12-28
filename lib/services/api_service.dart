@@ -8,7 +8,6 @@ import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // Singleton pattern
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
@@ -250,6 +249,7 @@ class ApiService {
       return {'success': false, 'message': 'Error: ${e.toString()}'};
     }
 
+  }
   // Helper: try POST against each base URL until one succeeds
   static Future<Map<String, dynamic>> _postWithFallback(
     String endpoint,

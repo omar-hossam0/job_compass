@@ -33,7 +33,7 @@ class _SignInScreenState extends State<SignInScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await ApiService.login(
+      final response = await ApiService().login(
         email: _emailController.text.trim(),
         password: _passwordController.text,
         role: _selectedRole,
