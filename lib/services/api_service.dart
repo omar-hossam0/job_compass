@@ -44,10 +44,26 @@ class ApiService {
   }
 
   // Get headers with token
-  Map<String, String> _getHeaders() {
+  Future<Map<String, String>> _getHeaders() async {
     final headers = {'Content-Type': 'application/json'};
+
+    // Load token from storage if not in memory
+    if (_token == null) {
+      print('🔄 Token not in memory, loading from storage...');
+      final prefs = await SharedPreferences.getInstance();
+      _token = prefs.getString('auth_token');
+      print(
+        '📦 Token from storage: ${_token != null ? _token!.substring(0, 20) + "..." : "null"}',
+      );
+    } else {
+      print('✓ Token already in memory: ${_token!.substring(0, 20)}...');
+    }
+
     if (_token != null) {
       headers['Authorization'] = 'Bearer $_token';
+      print('🔐 Authorization header added');
+    } else {
+      print('⚠️ No token available!');
     }
     return headers;
   }
@@ -55,8 +71,9 @@ class ApiService {
   // Generic GET request
   Future<Map<String, dynamic>> get(String endpoint) async {
     try {
+      final headers = await _getHeaders();
       final response = await http
-          .get(Uri.parse('$baseUrl$endpoint'), headers: _getHeaders())
+          .get(Uri.parse('$baseUrl$endpoint'), headers: headers)
           .timeout(const Duration(seconds: 10));
 
       return _handleResponse(response);
@@ -71,10 +88,11 @@ class ApiService {
     Map<String, dynamic> body,
   ) async {
     try {
+      final headers = await _getHeaders();
       final response = await http
           .post(
             Uri.parse('$baseUrl$endpoint'),
-            headers: _getHeaders(),
+            headers: headers,
             body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 10));
@@ -91,10 +109,11 @@ class ApiService {
     Map<String, dynamic> body,
   ) async {
     try {
+      final headers = await _getHeaders();
       final response = await http
           .put(
             Uri.parse('$baseUrl$endpoint'),
-            headers: _getHeaders(),
+            headers: headers,
             body: jsonEncode(body),
           )
           .timeout(const Duration(seconds: 10));
@@ -108,8 +127,9 @@ class ApiService {
   // Generic DELETE request
   Future<Map<String, dynamic>> delete(String endpoint) async {
     try {
+      final headers = await _getHeaders();
       final response = await http
-          .delete(Uri.parse('$baseUrl$endpoint'), headers: _getHeaders())
+          .delete(Uri.parse('$baseUrl$endpoint'), headers: headers)
           .timeout(const Duration(seconds: 10));
 
       return _handleResponse(response);
@@ -144,6 +164,13 @@ class ApiService {
 
       debugPrint('📤 UPLOAD REQUEST:');
       debugPrint('  URL: $baseUrl$endpoint');
+
+      // Load token from storage if not in memory
+      if (_token == null) {
+        final prefs = await SharedPreferences.getInstance();
+        _token = prefs.getString('auth_token');
+      }
+
       debugPrint('  Token present: ${_token != null}');
 
       if (_token != null) {
@@ -248,31 +275,23 @@ class ApiService {
 
       print('📊 Response status: ${response.statusCode}');
       print('📝 Response body: ${response.body}');
-      return _handleResponse(response);
+
+      final result = _handleResponse(response);
+
+      // Save token if login successful
+      if (result['success'] == true && result['token'] != null) {
+        print('💾 Saving token: ${result['token'].substring(0, 20)}...');
+        await saveToken(result['token']);
+        print('✅ Token saved successfully');
+        print('🔑 Token in memory: ${_token?.substring(0, 20)}...');
+      } else {
+        print('❌ No token in response or login failed');
+      }
+
+      return result;
     } catch (e) {
       print('❌ Login error: ${e.toString()}');
       return {'success': false, 'message': 'Error: ${e.toString()}'};
-    }
-  }
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode >= 200 && response.statusCode < 300) {
-        // Save token if present
-        if (data['token'] != null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('auth_token', data['token']);
-        }
-        return {'success': true, ...data};
-      } else {
-        return {'success': false, 'message': data['message'] ?? 'Login failed'};
-      }
-    } catch (e) {
-      print('❌ Login error: ${e.toString()}');
-      return {
-        'success': false,
-        'message': 'Connection error. Please check if the server is running.',
-      };
     }
   }
 

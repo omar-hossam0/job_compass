@@ -23,6 +23,9 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
   bool _isUploading = false;
   Student? _student;
   String? _error;
+  String? _uploadedCvFileName; // Store uploaded CV filename
+  String? _uploadedCvUrl; // Store uploaded CV URL
+  DateTime? _uploadedCvDate; // Store upload date
 
   @override
   void initState() {
@@ -31,18 +34,38 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
   }
 
   Future<void> _loadProfile() async {
+    print('\n🔄 LOADING PROFILE...');
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
+      print('📞 Calling getStudentProfile()...');
       final response = await _apiService.getStudentProfile();
+      print('📥 Profile response: $response');
+
+      // Extract data from response
+      final data = response['data'] ?? response;
+      print('📋 Profile data: $data');
+      print('📄 CV URL: ${data['cvUrl']}');
+      print('📝 CV Filename: ${data['cvFileName']}');
+      print('📅 CV Uploaded At: ${data['cvUploadedAt']}');
+
       setState(() {
-        _student = Student.fromJson(response);
+        _student = Student.fromJson(data);
+        // Also update local state
+        _uploadedCvFileName = data['cvFileName'];
+        _uploadedCvUrl = data['cvUrl'];
+        if (data['cvUploadedAt'] != null) {
+          _uploadedCvDate = DateTime.parse(data['cvUploadedAt']);
+        }
+        print('✅ Student created with cvFileName: ${_student?.cvFileName}');
+        print('✅ Local state cvFileName: $_uploadedCvFileName');
         _isLoading = false;
       });
     } catch (e) {
+      print('❌ Profile load error: $e');
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -83,12 +106,32 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
 
         if (mounted) {
           if (response['success'] == true) {
+            print('✅ CV upload success!');
+            print('📝 Response cvFileName: ${response['cvFileName']}');
+            print('📄 Response cvUrl: ${response['cvUrl']}');
+
+            // Update state immediately with uploaded file info
+            setState(() {
+              _uploadedCvFileName = response['cvFileName'];
+              _uploadedCvUrl = response['cvUrl'];
+              if (response['cvUploadedAt'] != null) {
+                _uploadedCvDate = DateTime.parse(response['cvUploadedAt']);
+              } else {
+                _uploadedCvDate = DateTime.now();
+              }
+              _isUploading = false;
+            });
+
+            print('✅ State updated! cvFileName: $_uploadedCvFileName');
+
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('CV uploaded successfully!'),
                 backgroundColor: AppColors.success,
               ),
             );
+
+            // Reload profile in background
             _loadProfile();
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -352,6 +395,11 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
   }
 
   Widget _buildCVSection() {
+    // Check if CV exists (either from uploaded state or student data)
+    final bool hasCv = _uploadedCvFileName != null || _student?.cvUrl != null;
+    final String? cvFileName = _uploadedCvFileName ?? _student?.cvFileName;
+    final DateTime? cvDate = _uploadedCvDate ?? _student?.cvUploadedAt;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -360,7 +408,7 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
         GlassCard(
           child: Column(
             children: [
-              if (_student!.cvUrl != null) ...[
+              if (hasCv) ...[
                 Row(
                   children: [
                     Container(
@@ -381,15 +429,17 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'CV Uploaded',
+                            cvFileName ?? 'CV Uploaded',
                             style: AppStyles.bodyMedium.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            _student!.cvUploadedAt != null
-                                ? 'Uploaded on ${_formatDate(_student!.cvUploadedAt!)}'
+                            cvDate != null
+                                ? 'Uploaded on ${_formatDate(cvDate)}'
                                 : 'Recently uploaded',
                             style: AppStyles.bodySmall,
                           ),
@@ -401,12 +451,10 @@ class _ProfileCVScreenState extends State<ProfileCVScreen> {
                 const SizedBox(height: 16),
               ],
               PrimaryButton(
-                text: _student!.cvUrl != null ? 'Update CV' : 'Upload CV',
+                text: hasCv ? 'Replace CV' : 'Upload CV',
                 onPressed: _pickAndUploadCV,
                 isLoading: _isUploading,
-                icon: _student!.cvUrl != null
-                    ? Icons.refresh
-                    : Icons.upload_file,
+                icon: hasCv ? Icons.refresh : Icons.upload_file,
                 width: double.infinity,
               ),
               if (_student!.cvUrl == null) ...[

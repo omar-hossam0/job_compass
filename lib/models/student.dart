@@ -6,6 +6,7 @@ class Student {
   final int profileCompletion;
   final double skillMatchScore;
   final String? cvUrl;
+  final String? cvFileName;
   final DateTime? cvUploadedAt;
   final List<String> skills;
 
@@ -16,8 +17,7 @@ class Student {
     this.profilePicture,
     required this.profileCompletion,
     required this.skillMatchScore,
-    this.cvUrl,
-    this.cvUploadedAt,
+    this.cvUrl,    this.cvFileName,    this.cvUploadedAt,
     this.skills = const [],
   });
 
@@ -30,6 +30,7 @@ class Student {
       profileCompletion: json['profileCompletion'] ?? 0,
       skillMatchScore: (json['skillMatchScore'] ?? 0).toDouble(),
       cvUrl: json['cvUrl'],
+      cvFileName: json['cvFileName'],
       cvUploadedAt: json['cvUploadedAt'] != null
           ? DateTime.parse(json['cvUploadedAt'])
           : null,
@@ -46,6 +47,7 @@ class Student {
       'profileCompletion': profileCompletion,
       'skillMatchScore': skillMatchScore,
       'cvUrl': cvUrl,
+      'cvFileName': cvFileName,
       'cvUploadedAt': cvUploadedAt?.toIso8601String(),
       'skills': skills,
     };

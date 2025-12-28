@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const candidateSchema = new mongoose.Schema(
   {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     name: {
       type: String,
       required: true,
@@ -50,6 +55,14 @@ const candidateSchema = new mongoose.Schema(
     cvUrl: {
       type: String,
       default: "",
+    },
+    cvFileName: {
+      type: String,
+      default: "",
+    },
+    cvUploadedAt: {
+      type: Date,
+      default: null,
     },
     resumeText: {
       type: String,

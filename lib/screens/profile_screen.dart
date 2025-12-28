@@ -33,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Uint8List? _selectedCvBytes;
   String? _selectedCvName;
   String? _cvUrl;
+  String? _cvFileName; // Store CV filename from backend
 
   @override
   void initState() {
@@ -51,17 +52,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadUserProfile() async {
     setState(() => _isLoading = true);
     try {
-      final response = await _apiService.get('/auth/me');
+      debugPrint('🔄 Loading profile...');
+      // Get user basic info
+      final userResponse = await _apiService.get('/auth/me');
 
-      if (response['success'] && mounted) {
-        final user = response['user'];
+      // Get complete profile with CV info
+      final profileResponse = await _apiService.get('/student/profile');
+
+      if (userResponse['success'] && mounted) {
+        final user = userResponse['user'];
         _nameController.text = user['name'] ?? '';
         _emailController.text = user['email'] ?? '';
         _phoneController.text = user['phone'] ?? '';
         _profileImage = user['profileImage'];
-        _cvUrl = user['cvUrl'];
         _userId = user['id'];
         _userRole = user['role'];
+
+        // Get CV info from profile response
+        if (profileResponse['success']) {
+          final profileData = profileResponse['data'];
+          _cvUrl = profileData['cvUrl'];
+          _cvFileName = profileData['cvFileName'];
+          debugPrint('📄 Profile CV -> url: $_cvUrl name: $_cvFileName');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -180,6 +193,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           _selectedCvBytes = bytes;
           _selectedCvName = result.files.single.name;
+          // Show picked filename immediately
+          _cvFileName = _selectedCvName;
         });
         await _uploadCV();
       }
@@ -210,7 +225,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (response['success'] && mounted) {
         setState(() {
           _cvUrl = response['cvUrl'] ?? response['fileUrl'];
+          _cvFileName =
+              response['cvFileName'] ??
+              _selectedCvName; // Store filename from response or picked name
         });
+        debugPrint('✅ CV upload -> url: $_cvUrl name: $_cvFileName');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('CV uploaded successfully!'),
@@ -432,6 +451,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildCVSection() {
+    final String? displayFileName = (_cvFileName?.trim().isNotEmpty ?? false)
+        ? _cvFileName!.trim()
+        : (_selectedCvName?.trim().isNotEmpty ?? false)
+        ? _selectedCvName!.trim()
+        : null;
+
+    final bool hasCv =
+        _cvUrl != null ||
+        (displayFileName != null && displayFileName.isNotEmpty);
+
     return GlassCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,7 +484,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          if (_cvUrl != null)
+          if (hasCv)
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -469,30 +498,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'CV uploaded',
+                      displayFileName ?? 'CV uploaded',
                       style: AppStyles.bodySmall.copyWith(
                         color: AppColors.success,
                         fontWeight: FontWeight.w500,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
             ),
-          if (_cvUrl != null) const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: _pickCV,
-            icon: Icon(
-              _cvUrl != null ? Icons.refresh : Icons.upload_file,
-              size: 20,
-            ),
-            label: Text(_cvUrl != null ? 'Replace CV' : 'Upload CV (PDF)'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primaryGreen,
-              side: BorderSide(color: AppColors.primaryGreen),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _pickCV,
+              icon: const Icon(Icons.upload_file, size: 20),
+              label: Text(_cvUrl != null ? 'Replace CV' : 'Upload CV (PDF)'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primaryGreen,
+                side: BorderSide(color: AppColors.primaryGreen),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ),
