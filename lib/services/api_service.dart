@@ -206,7 +206,7 @@ class ApiService {
     try {
       print('🔐 Attempting login to: $baseUrl/auth/login');
       print('📧 Email: $email');
-      
+
       final response = await http
           .post(
             Uri.parse('$baseUrl/auth/login'),
@@ -236,7 +236,10 @@ class ApiService {
       }
     } catch (e) {
       print('❌ Login error: ${e.toString()}');
-      return {'success': false, 'message': 'Connection error. Please check if the server is running.'};
+      return {
+        'success': false,
+        'message': 'Connection error. Please check if the server is running.',
+      };
     }
   }
 
