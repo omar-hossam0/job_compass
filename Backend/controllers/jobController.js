@@ -128,6 +128,8 @@ export const createJob = async (req, res) => {
       location,
       jobType,
       company,
+      customQuestions,
+      companyLogo: logoFromBody,
     } = req.body;
 
     // Parse requiredSkills if it's a string
@@ -137,6 +139,16 @@ export const createJob = async (req, res) => {
         .split(",")
         .map((skill) => skill.trim())
         .filter((skill) => skill);
+    }
+
+    // Parse customQuestions if it's a string
+    let questionsArray = customQuestions || [];
+    if (typeof customQuestions === "string") {
+      try {
+        questionsArray = JSON.parse(customQuestions);
+      } catch (e) {
+        questionsArray = [];
+      }
     }
 
     // Parse salary if it's sent as separate fields
@@ -149,25 +161,25 @@ export const createJob = async (req, res) => {
       };
     }
 
-    // Handle company logo if uploaded
-    let companyLogo = null;
+    // Handle company logo (from body or file upload)
+    let companyLogo = logoFromBody || null;
     if (req.file) {
-      companyLogo = `data:${
-        req.file.mimetype
-      };base64,${req.file.buffer.toString("base64")}`;
+      companyLogo = `data:${req.file.mimetype
+        };base64,${req.file.buffer.toString("base64")}`;
     }
 
     const job = await Job.create({
       title,
       description,
-      department,
+      department: department || "General",
       requiredSkills: skillsArray,
       experienceLevel,
       salary: salaryObj,
-      location,
-      jobType,
+      location: location || "Remote",
+      jobType: jobType || "Full-time",
       company: company || "Company Name",
       companyLogo,
+      customQuestions: questionsArray,
       postedBy: req.user.id,
     });
 
@@ -362,6 +374,16 @@ export const applyToJob = async (req, res) => {
     });
 
     await candidate.save();
+
+    // Also add to job's applicants list
+    job.applicants = job.applicants || [];
+    job.applicants.push({
+      candidateId: candidate._id,
+      appliedAt: new Date(),
+      status: "Pending",
+    });
+    job.applicantsCount = job.applicants.length;
+    await job.save();
 
     res.json({
       success: true,

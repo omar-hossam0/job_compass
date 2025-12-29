@@ -63,24 +63,17 @@ export const getHRDashboard = async (req, res) => {
 // Get all jobs for HR
 export const getHRJobs = async (req, res) => {
   try {
-    let company = await Company.findOne({ ownerId: req.user.id });
+    console.log("\n📋 GET HR JOBS REQUEST");
+    console.log("👤 User ID:", req.user.id);
 
-    if (!company) {
-      // Auto-create a default company profile
-      company = await Company.create({
-        name: req.user.name || "My Company",
-        industry: "Technology",
-        location: "Location Not Set",
-        ownerId: req.user.id,
-        description: "Please update your company profile",
-      });
-    }
-
-    const jobs = await Job.find({ companyId: company._id })
+    // Find jobs posted by this user
+    const jobs = await Job.find({ postedBy: req.user.id })
       .sort({ createdAt: -1 })
       .select(
-        "title description requiredSkills experienceLevel status applicants createdAt"
+        "title description requiredSkills experienceLevel salary location status applicants createdAt customQuestions companyLogo"
       );
+
+    console.log(`📊 Found ${jobs.length} jobs for user ${req.user.email}`);
 
     res.json({
       success: true,
@@ -90,9 +83,13 @@ export const getHRJobs = async (req, res) => {
         description: job.description,
         requiredSkills: job.requiredSkills,
         experienceLevel: job.experienceLevel,
+        salary: job.salary,
+        location: job.location,
         status: job.status,
         applicantsCount: job.applicants?.length || 0,
         postedDate: job.createdAt,
+        customQuestions: job.customQuestions || [],
+        companyLogo: job.companyLogo,
       })),
     });
   } catch (error) {
@@ -161,26 +158,26 @@ export const createJob = async (req, res) => {
 // Get job by ID
 export const getJobById = async (req, res) => {
   try {
-    const company = await Company.findOne({ ownerId: req.user.id });
+    console.log("\n📋 GET JOB BY ID");
+    console.log("👤 User:", req.user.email);
+    console.log("🆔 Job ID:", req.params.id);
 
-    if (!company) {
-      return res.status(404).json({
-        success: false,
-        message: "Company profile not found",
-      });
-    }
-
+    // Find job posted by this user
     const job = await Job.findOne({
       _id: req.params.id,
-      companyId: company._id,
+      postedBy: req.user.id,
     });
 
     if (!job) {
+      console.log("❌ Job not found or not owned by user");
       return res.status(404).json({
         success: false,
         message: "Job not found",
       });
     }
+
+    console.log("✅ Job found:", job.title);
+    console.log("📊 Applicants:", job.applicants?.length || 0);
 
     res.json({
       success: true,
@@ -190,11 +187,14 @@ export const getJobById = async (req, res) => {
         description: job.description,
         requiredSkills: job.requiredSkills,
         experienceLevel: job.experienceLevel,
+        salary: job.salary,
+        location: job.location,
         status: job.status,
         applicantsCount: job.applicants?.length || 0,
         postedDate: job.createdAt,
         department: job.department,
-        location: job.location,
+        customQuestions: job.customQuestions || [],
+        companyLogo: job.companyLogo,
       },
     });
   } catch (error) {
@@ -289,19 +289,15 @@ export const closeJob = async (req, res) => {
 // Get candidates for a job
 export const getJobCandidates = async (req, res) => {
   try {
-    const company = await Company.findOne({ ownerId: req.user.id });
-
-    if (!company) {
-      return res.status(404).json({
-        success: false,
-        message: "Company profile not found",
-      });
-    }
+    console.log("Getting candidates for job:", req.params.id);
+    console.log("User ID:", req.user.id);
 
     const job = await Job.findOne({
       _id: req.params.id,
-      companyId: company._id,
-    }).populate("applicants.candidateId");
+      postedBy: req.user.id,
+    });
+
+    console.log("Job found:", job ? "Yes" : "No");
 
     if (!job) {
       return res.status(404).json({
@@ -310,8 +306,12 @@ export const getJobCandidates = async (req, res) => {
       });
     }
 
-    // Get all candidates
-    const candidates = await Candidate.find().limit(50);
+    // Find all candidates who have applied to this job
+    const candidates = await Candidate.find({
+      "applications.jobId": req.params.id,
+    }).select("name email photo skills resumeUrl applications resumeText");
+
+    console.log("Candidates who applied:", candidates.length);
 
     // Calculate match percentage for each candidate
     const candidatesWithMatch = candidates.map((candidate) => {
@@ -331,6 +331,11 @@ export const getJobCandidates = async (req, res) => {
           ? Math.round((matchingSkills.length / jobSkills.length) * 100)
           : 0;
 
+      // Find the application for this job
+      const application = candidate.applications.find(
+        (app) => app.jobId.toString() === req.params.id
+      );
+
       return {
         id: candidate._id,
         name: candidate.name,
@@ -338,6 +343,8 @@ export const getJobCandidates = async (req, res) => {
         photo: candidate.photo || "",
         extractedSkills: candidateSkills.slice(0, 5),
         matchPercentage,
+        appliedAt: application?.appliedAt || null,
+        applicationStatus: application?.status || "Pending",
       };
     });
 

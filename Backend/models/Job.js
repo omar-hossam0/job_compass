@@ -13,7 +13,8 @@ const jobSchema = new mongoose.Schema(
     },
     department: {
       type: String,
-      required: true,
+      required: false,
+      default: "General",
     },
     requiredSkills: [
       {
@@ -69,6 +70,28 @@ const jobSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Company",
     },
+    customQuestions: [
+      {
+        type: String,
+      },
+    ],
+    applicants: [
+      {
+        candidateId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Candidate",
+        },
+        appliedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        status: {
+          type: String,
+          enum: ["Pending", "Reviewed", "Shortlisted", "Rejected"],
+          default: "Pending",
+        },
+      },
+    ],
   },
   {
     timestamps: true,

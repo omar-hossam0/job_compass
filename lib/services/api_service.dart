@@ -69,12 +69,19 @@ class ApiService {
   }
 
   // Generic GET request
-  Future<Map<String, dynamic>> get(String endpoint) async {
+  Future<Map<String, dynamic>> get(String endpoint, {Duration? timeout}) async {
     try {
       final headers = await _getHeaders();
+      // Use longer timeout for AI endpoints (job-matches needs time for BERT)
+      final timeoutDuration =
+          timeout ??
+          (endpoint.contains('job-matches')
+              ? const Duration(seconds: 60)
+              : const Duration(seconds: 10));
+
       final response = await http
           .get(Uri.parse('$baseUrl$endpoint'), headers: headers)
-          .timeout(const Duration(seconds: 10));
+          .timeout(timeoutDuration);
 
       return _handleResponse(response);
     } catch (e) {

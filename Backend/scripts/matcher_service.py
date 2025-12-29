@@ -10,8 +10,8 @@ import os
 # Get the directory where this script is located
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Add model matching directory to path (go up 2 levels then into model matching)
-model_dir = os.path.abspath(os.path.join(script_dir, '..', '..', 'model matching'))
+# Path to model matching directory (external CV project)
+model_dir = r"D:\Dulms\Level3 term(1)\Project\CV project\CV-project-\model matching"
 print(f"🐍 Adding to path: {model_dir}", file=sys.stderr, flush=True)
 sys.path.insert(0, model_dir)
 
@@ -33,8 +33,8 @@ def main():
     try:
         matcher = CVJobMatcher()
         
-        # Try to load trained model
-        model_path = os.path.join(os.path.dirname(__file__), '..', '..', 'model matching', 'cv_job_matcher_final.pkl')
+        # Try to load trained model from the external model matching directory
+        model_path = os.path.join(model_dir, 'cv_job_matcher_final.pkl')
         try:
             matcher.load_model(model_path)
             print(f"✅ Model loaded from: {model_path}", file=sys.stderr, flush=True)

@@ -9,9 +9,9 @@ import os
 import warnings
 warnings.filterwarnings('ignore')
 
-# Add model matching directory to path
+# Add model matching directory to path (external CV project)
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-model_dir = os.path.join(project_root, 'model matching')
+model_dir = r"D:\Dulms\Level3 term(1)\Project\CV project\CV-project-\model matching"
 sys.path.insert(0, model_dir)
 
 try:

@@ -35,16 +35,28 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
     });
 
     try {
-      // Fetch all jobs from /jobs endpoint (returns active jobs for students)
-      final response = await _apiService.get('/jobs');
+      // Use the AI-powered job matches endpoint that compares CV with jobs
+      final response = await _apiService.get('/student/job-matches');
 
-      print('📥 Jobs API Response: $response');
+      print('📥 Job Matches API Response: $response');
 
       if (response['success'] == true) {
-        print('✅ Success! Data type: ${response['data'].runtimeType}');
-        print('📊 Jobs count: ${(response['data'] as List).length}');
+        final data = response['data'];
 
-        final jobsList = (response['data'] as List)
+        // Check if user has uploaded CV
+        if (response['hasCv'] == false) {
+          print('⚠️ No CV uploaded - showing empty state');
+          setState(() {
+            _jobs = [];
+            _isLoading = false;
+          });
+          return;
+        }
+
+        print('✅ Success! Data type: ${data.runtimeType}');
+        print('📊 Jobs count: ${(data as List).length}');
+
+        final jobsList = data
             .map((j) {
               try {
                 return Job.fromJson(j);
@@ -54,10 +66,15 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
                 return null;
               }
             })
-            .whereType<Job>() // Filter out nulls
+            .whereType<Job>()
             .toList();
 
         print('✅ Parsed ${jobsList.length} jobs successfully');
+        if (jobsList.isNotEmpty) {
+          print(
+            '🏆 Top match: ${jobsList.first.title} - ${jobsList.first.matchScore}%',
+          );
+        }
 
         setState(() {
           _jobs = jobsList;
@@ -66,12 +83,12 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
         });
       } else {
         setState(() {
-          _error = response['message'] ?? 'Failed to load jobs';
+          _error = response['message'] ?? 'Failed to load job matches';
           _isLoading = false;
         });
       }
     } catch (e, stackTrace) {
-      print('❌ Load jobs error: $e');
+      print('❌ Load job matches error: $e');
       print('Stack trace: $stackTrace');
       setState(() {
         _error = e.toString();
@@ -227,7 +244,7 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
             iconColor: AppColors.textPrimary,
           ),
           const SizedBox(width: 16),
-          Text('Job Matches', style: AppStyles.heading2),
+          Expanded(child: Text('Job Matches', style: AppStyles.heading2)),
         ],
       ),
     );

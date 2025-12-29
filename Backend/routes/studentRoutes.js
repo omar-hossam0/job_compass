@@ -6,9 +6,42 @@ import Candidate from "../models/Candidate.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import pdf from "pdf-parse";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Helper function to extract text from PDF
+async function extractTextFromPdf(filePath) {
+    try {
+        const dataBuffer = fs.readFileSync(filePath);
+        const data = await pdf(dataBuffer);
+        return data.text || "";
+    } catch (error) {
+        console.error("❌ PDF text extraction error:", error.message);
+        return "";
+    }
+}
+
+// Helper function to extract skills from text
+function extractSkillsFromText(text) {
+    if (!text) return [];
+
+    const skillPatterns = [
+        /\b(javascript|js|typescript|ts|react|angular|vue|node\.?js|express|mongodb|mysql|postgresql|python|java|c\+\+|c#|php|ruby|go|rust|swift|kotlin|html|css|sass|tailwind|bootstrap|git|docker|kubernetes|aws|azure|gcp|machine learning|ai|data science|pandas|numpy|tensorflow|pytorch|sql|redis|graphql|rest|api|linux|windows|agile|scrum|jira|figma|photoshop|illustrator|excel|word|powerpoint)\b/gi,
+    ];
+
+    const foundSkills = new Set();
+    skillPatterns.forEach((pattern) => {
+        const matches = text.match(pattern);
+        if (matches) {
+            matches.forEach((m) =>
+                foundSkills.add(m.charAt(0).toUpperCase() + m.slice(1).toLowerCase())
+            );
+        }
+    });
+    return Array.from(foundSkills).slice(0, 20);
+}
 
 // Multer configuration for CV upload
 const storage = multer.diskStorage({
@@ -97,8 +130,9 @@ router.get("/dashboard", async (req, res) => {
                 enrichedJobs = jobs.map((job, idx) => {
                     const matchData = matches.find((m) => m.job_index === idx);
                     const jobObj = job.toObject();
+                    // Python matcher returns similarity_score as percentage (0-100)
                     jobObj.matchScore = matchData
-                        ? Math.round(matchData.similarity_score * 100)
+                        ? Math.round(matchData.similarity_score)
                         : 0;
                     return jobObj;
                 });
@@ -309,17 +343,44 @@ router.post(
             }
 
             console.log("📄 About to update CV info");
+
+            // Extract text from PDF for AI matching
+            const filePath = path.join(__dirname, "../uploads/cvs", req.file.filename);
+            let resumeText = "";
+            let extractedSkills = [];
+
+            if (req.file.mimetype === "application/pdf") {
+                console.log("📝 Extracting text from PDF...");
+                resumeText = await extractTextFromPdf(filePath);
+                console.log("📝 Extracted text length:", resumeText.length, "chars");
+
+                // Extract skills from text
+                extractedSkills = extractSkillsFromText(resumeText);
+                console.log("🔧 Extracted skills:", extractedSkills);
+            } else if (req.file.mimetype === "text/plain") {
+                // For .txt files, read directly
+                resumeText = fs.readFileSync(filePath, "utf-8");
+                extractedSkills = extractSkillsFromText(resumeText);
+            }
+
             // Update CV info
             candidate.cvUrl = `/uploads/cvs/${req.file.filename}`;
             candidate.cvFileName = req.file.originalname;
             candidate.cvUploadedAt = new Date();
-            console.log("💾 Saving candidate with CV info...");
+            candidate.resumeText = resumeText;
+            if (extractedSkills.length > 0) {
+                candidate.skills = extractedSkills;
+            }
+
+            console.log("💾 Saving candidate with CV info and text...");
             await candidate.save();
 
             console.log("✅ Candidate CV updated:", {
                 cvUrl: candidate.cvUrl,
                 cvFileName: candidate.cvFileName,
                 candidateId: candidate._id,
+                resumeTextLength: resumeText.length,
+                skillsCount: extractedSkills.length,
             });
 
             res.json({
@@ -328,6 +389,8 @@ router.post(
                 cvUrl: `/uploads/cvs/${req.file.filename}`,
                 cvFileName: req.file.originalname,
                 cvUploadedAt: new Date(),
+                textExtracted: resumeText.length > 0,
+                skillsExtracted: extractedSkills.length,
             });
         } catch (error) {
             console.error("❌ Error uploading CV:", error);
@@ -362,18 +425,143 @@ router.get("/skills-analysis", async (req, res) => {
 });
 
 // ============================================
-// JOB MATCHES
+// JOB MATCHES - AI-Powered CV to Job Matching
 // ============================================
 router.get("/job-matches", async (req, res) => {
     try {
+        console.log("\n🎯 JOB MATCHES REQUEST");
+        console.log("👤 User:", req.user.email);
+
+        // Get candidate data for CV text
+        const candidate = await Candidate.findOne({ user: req.user._id });
+
+        if (!candidate) {
+            console.log("⚠️ No candidate profile found");
+            return res.json({
+                success: true,
+                message: "No CV uploaded yet",
+                data: [],
+                hasCv: false,
+            });
+        }
+
+        if (!candidate.resumeText || !candidate.resumeText.trim()) {
+            console.log("⚠️ No CV text available");
+            return res.json({
+                success: true,
+                message: "Upload a CV to get job matches",
+                data: [],
+                hasCv: false,
+            });
+        }
+
+        console.log("📄 CV text length:", candidate.resumeText.length);
+
+        // Get all active jobs
+        const jobs = await Job.find({ status: "Active" })
+            .sort({ createdAt: -1 })
+            .populate("postedBy", "name email");
+
+        if (jobs.length === 0) {
+            console.log("⚠️ No active jobs found");
+            return res.json({
+                success: true,
+                message: "No jobs available",
+                data: [],
+                hasCv: true,
+            });
+        }
+
+        console.log("📊 Found", jobs.length, "active jobs");
+
+        // Use Python BERT matcher for AI matching
+        let matchedJobs = [];
+        try {
+            const { getPythonMatcher } = await import("../utils/pythonMatcher.js");
+            const pythonMatcher = getPythonMatcher();
+
+            // Start service if not running
+            if (!pythonMatcher.isReady) {
+                console.log("🚀 Starting Python matcher service...");
+                await pythonMatcher.start();
+            }
+
+            const cvText = candidate.resumeText;
+            const jobDescriptions = jobs.map((job) =>
+                `${job.title}. ${job.description || ""}. Skills: ${(job.requiredSkills || []).join(", ")}`
+            );
+
+            console.log("🔍 Running BERT matching...");
+            const matches = await pythonMatcher.match(cvText, jobDescriptions, jobs.length);
+            console.log("✅ Matching complete, got", matches.length, "results");
+
+            // Map matches to jobs with scores
+            matchedJobs = jobs.map((job, idx) => {
+                const matchData = matches.find((m) => m.job_index === idx);
+                // Python matcher returns similarity_score as percentage (0-100), not decimal
+                const matchScore = matchData
+                    ? Math.round(matchData.similarity_score)
+                    : 0;
+
+                return {
+                    id: job._id,
+                    title: job.title,
+                    company: job.company || "Company",
+                    companyLogo: job.companyLogo,
+                    description: job.description,
+                    location: job.location || "Remote",
+                    employmentType: job.jobType ? [job.jobType] : ["Full-time"],
+                    salary: job.salary?.min || 0,
+                    salaryPeriod: "/year",
+                    experienceYears: job.experienceRequired || 0,
+                    requiredSkills: job.requiredSkills || [],
+                    matchScore: matchScore,
+                    missingSkillsCount: 0,
+                    postedAt: job.createdAt,
+                    applicantsCount: job.applicants?.length || 0,
+                };
+            });
+
+            // Sort by match score descending
+            matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
+
+            console.log("📊 Top 3 matches:");
+            matchedJobs.slice(0, 3).forEach((j, i) => {
+                console.log(`   ${i + 1}. ${j.title}: ${j.matchScore}%`);
+            });
+
+        } catch (matchError) {
+            console.error("❌ Python matcher error:", matchError.message);
+            // Fallback: return jobs without match scores
+            matchedJobs = jobs.map((job) => ({
+                id: job._id,
+                title: job.title,
+                company: job.company || "Company",
+                companyLogo: job.companyLogo,
+                description: job.description,
+                location: job.location || "Remote",
+                employmentType: job.jobType ? [job.jobType] : ["Full-time"],
+                salary: job.salary?.min || 0,
+                salaryPeriod: "/year",
+                experienceYears: job.experienceRequired || 0,
+                requiredSkills: job.requiredSkills || [],
+                matchScore: 0,
+                missingSkillsCount: 0,
+                postedAt: job.createdAt,
+                applicantsCount: job.applicants?.length || 0,
+            }));
+        }
+
         res.json({
             success: true,
-            message: "Job matches",
-            data: {
-                matches: [],
-            },
+            message: "Job matches retrieved",
+            data: matchedJobs,
+            hasCv: true,
+            totalJobs: matchedJobs.length,
         });
+
     } catch (error) {
+        console.error("❌ Job matches error:", error);
         res.status(500).json({
             success: false,
             message: error.message,

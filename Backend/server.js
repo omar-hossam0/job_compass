@@ -140,6 +140,7 @@ const server = app.listen(PORT, HOST, () => {
   if (HOST === "0.0.0.0") {
     console.log(`✅ Network access: http://192.168.1.7:${PORT}`);
   }
+  console.log('💡 Python BERT matcher will start on first job-matches request');
 });
 
 // Handle server errors
