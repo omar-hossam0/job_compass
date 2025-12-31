@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
@@ -18,15 +20,60 @@ class StudentDashboardScreen extends StatefulWidget {
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   final ApiService _apiService = ApiService();
+  final TextEditingController _searchController = TextEditingController();
+  final FocusNode _searchFocusNode = FocusNode();
   bool _isLoading = true;
   DashboardData? _dashboardData;
   String? _error;
   int _currentNavIndex = 0;
+  List<Map<String, dynamic>> _suggestions = [];
+  bool _showSuggestions = false;
 
   @override
   void initState() {
     super.initState();
     _loadDashboard();
+    _searchController.addListener(_onSearchChanged);
+    _searchFocusNode.addListener(() {
+      if (!_searchFocusNode.hasFocus) {
+        setState(() => _showSuggestions = false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onSearchChanged);
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) {
+      setState(() {
+        _suggestions = [];
+        _showSuggestions = false;
+      });
+      return;
+    }
+
+    try {
+      final response = await _apiService.getJobSuggestions(query);
+      if (response['success'] && mounted) {
+        setState(() {
+          _suggestions = List<Map<String, dynamic>>.from(
+            (response['data'] ?? []).map(
+              (item) => Map<String, dynamic>.from(item),
+            ),
+          );
+          _showSuggestions = _suggestions.isNotEmpty;
+        });
+      }
+    } catch (e) {
+      // Silently fail for suggestions
+    }
   }
 
   Future<void> _loadDashboard() async {
@@ -37,6 +84,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
     try {
       final response = await _apiService.getStudentDashboard();
+      print(
+        '📸 Dashboard response: ${response['data']?['student']?['profilePicture'] != null ? "Has profilePicture" : "No profilePicture"}',
+      );
+      if (response['data']?['student']?['profilePicture'] != null) {
+        final img = response['data']['student']['profilePicture'].toString();
+        print(
+          '📸 Profile picture type: ${img.substring(0, img.length > 50 ? 50 : img.length)}...',
+        );
+      }
       setState(() {
         _dashboardData = DashboardData.fromJson(response);
         _isLoading = false;
@@ -46,6 +102,22 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         _error = e.toString();
         _isLoading = false;
       });
+    }
+  }
+
+  ImageProvider? _getImageProvider(String imageData) {
+    try {
+      // Check if it's a base64 data URI
+      if (imageData.startsWith('data:image')) {
+        final base64String = imageData.split(',')[1];
+        final bytes = base64Decode(base64String);
+        return MemoryImage(bytes);
+      }
+      // Otherwise treat as URL
+      return NetworkImage(imageData);
+    } catch (e) {
+      print('Error loading image: $e');
+      return null;
     }
   }
 
@@ -136,17 +208,29 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               ),
             ],
           ),
-          child: CircleAvatar(
-            backgroundImage: student.profilePicture != null
-                ? NetworkImage(student.profilePicture!)
-                : null,
-            backgroundColor: AppColors.primaryGreen,
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: AppColors.primaryGreen,
+              image:
+                  student.profilePicture != null &&
+                      _getImageProvider(student.profilePicture!) != null
+                  ? DecorationImage(
+                      image: _getImageProvider(student.profilePicture!)!,
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
             child: student.profilePicture == null
-                ? Text(
-                    student.name.isNotEmpty
-                        ? student.name[0].toUpperCase()
-                        : 'U',
-                    style: AppStyles.heading2.copyWith(color: Colors.white),
+                ? Center(
+                    child: Text(
+                      student.name.isNotEmpty
+                          ? student.name[0].toUpperCase()
+                          : 'U',
+                      style: AppStyles.heading2.copyWith(color: Colors.white),
+                    ),
                   )
                 : null,
           ),
@@ -192,29 +276,188 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _buildSearchBar() {
-    return GlassCard(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          const Icon(Icons.search, color: AppColors.textSecondary),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Search here...',
-              style: AppStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GlassCard(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              const Icon(Icons.search, color: AppColors.textSecondary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: _searchController,
+                  focusNode: _searchFocusNode,
+                  style: AppStyles.bodyMedium.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'Search jobs, skills, locations...',
+                    hintStyle: AppStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onSubmitted: (value) {
+                    if (value.trim().isNotEmpty) {
+                      setState(() => _showSuggestions = false);
+                      _performSearch(value.trim());
+                    }
+                  },
+                  onTap: () {
+                    if (_suggestions.isNotEmpty) {
+                      setState(() => _showSuggestions = true);
+                    }
+                  },
+                ),
               ),
+              IconButtonCircular(
+                icon: Icons.search,
+                onPressed: () {
+                  if (_searchController.text.trim().isNotEmpty) {
+                    setState(() => _showSuggestions = false);
+                    _performSearch(_searchController.text.trim());
+                  }
+                },
+                backgroundColor: AppColors.primaryGreen,
+                size: 40,
+              ),
+            ],
+          ),
+        ),
+        if (_showSuggestions && _suggestions.isNotEmpty)
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              itemCount: _suggestions.length,
+              itemBuilder: (context, index) {
+                final suggestion = _suggestions[index];
+                final isJob = suggestion['type'] == 'job';
+
+                return InkWell(
+                  onTap: () async {
+                    final jobId = suggestion['jobId'];
+                    final text = suggestion['text'];
+                    final isJob = suggestion['type'] == 'job';
+
+                    // Hide suggestions immediately
+                    if (mounted) {
+                      setState(() => _showSuggestions = false);
+                    }
+
+                    // Small delay to ensure UI updates
+                    await Future.delayed(const Duration(milliseconds: 50));
+
+                    if (isJob && jobId != null) {
+                      // Navigate directly to job details
+                      if (mounted) {
+                        await Navigator.pushNamed(
+                          context,
+                          '/job-details',
+                          arguments: jobId,
+                        );
+                      }
+                    } else {
+                      // Perform search
+                      _searchController.text = text ?? '';
+                      _performSearch(text ?? '');
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      border: index < _suggestions.length - 1
+                          ? Border(bottom: BorderSide(color: Colors.grey[200]!))
+                          : null,
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          isJob ? Icons.work_outline : Icons.search,
+                          size: 18,
+                          color: AppColors.primaryGreen,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                suggestion['text'] ?? '',
+                                style: AppStyles.bodyMedium.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              if (suggestion['company'] != null)
+                                Text(
+                                  suggestion['company'],
+                                  style: AppStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        Icon(
+                          isJob ? Icons.arrow_forward_ios : Icons.north_west,
+                          size: 14,
+                          color: AppColors.textSecondary,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
-          IconButtonCircular(
-            icon: Icons.tune,
-            onPressed: () {},
-            backgroundColor: AppColors.primaryGreen,
-            size: 40,
-          ),
-        ],
-      ),
+      ],
     );
+  }
+
+  Future<void> _performSearch(String query) async {
+    try {
+      final response = await _apiService.searchJobs(query);
+      if (response['success'] && mounted) {
+        // Navigate to search results screen
+        Navigator.pushNamed(
+          context,
+          '/search-results',
+          arguments: {
+            'query': query,
+            'results': response['data'],
+            'count': response['count'],
+          },
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Search failed: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildStatsCards() {
@@ -305,7 +548,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               child: _buildActionButton(
                 'Upload CV',
                 Icons.upload_file,
-                () => Navigator.pushNamed(context, '/profile'),
+                () async {
+                  await Navigator.pushNamed(context, '/profile');
+                  _loadDashboard();
+                },
               ),
             ),
             const SizedBox(width: 12),
@@ -463,9 +709,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               const SnackBar(content: Text('Saved jobs screen coming soon')),
             );
           }),
-          _buildNavItemIcon(Icons.person_outline_rounded, 3, () {
+          _buildNavItemIcon(Icons.person_outline_rounded, 3, () async {
             setState(() => _currentNavIndex = 3);
-            Navigator.pushNamed(context, '/profile');
+            await Navigator.pushNamed(context, '/profile');
+            _loadDashboard();
           }),
         ],
       ),

@@ -28,6 +28,7 @@ import 'screens/profile_screen.dart';
 import 'screens/chatbot_screen.dart';
 import 'screens/job_analysis_result_screen.dart';
 import 'screens/job_application_screen.dart';
+import 'screens/search_results_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -62,6 +63,7 @@ class MyApp extends StatelessWidget {
         '/notifications': (_) => const NotificationsScreen(),
         '/settings': (_) => const SettingsScreen(),
         '/chatbot': (_) => const ChatbotScreen(),
+        '/search-results': (_) => const SearchResultsScreen(),
         '/hr/dashboard': (_) => const HRDashboardScreen(),
         '/hr/jobs': (_) => const JobListScreen(),
         '/hr/post-job': (_) => const PostJobScreen(),

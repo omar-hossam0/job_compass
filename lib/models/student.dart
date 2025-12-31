@@ -30,7 +30,7 @@ class Student {
       id: json['id'] ?? json['_id'] ?? '',
       name: json['name'] ?? '',
       email: json['email'] ?? '',
-      profilePicture: json['profilePicture'],
+      profilePicture: json['profilePicture'] ?? json['profileImage'],
       profileCompletion: json['profileCompletion'] ?? 0,
       skillMatchScore: (json['skillMatchScore'] ?? 0).toDouble(),
       cvUrl: json['cvUrl'],

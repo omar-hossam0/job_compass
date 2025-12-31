@@ -145,7 +145,9 @@ export const login = async (req, res) => {
       console.log(`❌ Role mismatch: requested ${role}, actual ${user.role}`);
       return res.status(403).json({
         success: false,
-        message: `Invalid credentials. You must login as ${user.role === 'hr' ? 'HR Manager' : 'Employee'}.`,
+        message: `Invalid credentials. You must login as ${
+          user.role === "hr" ? "HR Manager" : "Employee"
+        }.`,
       });
     }
 
@@ -572,8 +574,9 @@ export const uploadProfileImage = async (req, res) => {
     }
 
     // Convert image to base64
-    const imageBase64 = `data:${req.file.mimetype
-      };base64,${req.file.buffer.toString("base64")}`;
+    const imageBase64 = `data:${
+      req.file.mimetype
+    };base64,${req.file.buffer.toString("base64")}`;
 
     // Update user with profile image
     const user = await User.findByIdAndUpdate(

@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../constants/app_colors.dart';
@@ -87,6 +88,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  ImageProvider? _getImageProvider(String imageData) {
+    try {
+      // Check if it's a base64 data URI
+      if (imageData.startsWith('data:image')) {
+        final base64String = imageData.split(',')[1];
+        final bytes = base64Decode(base64String);
+        return MemoryImage(bytes);
+      }
+      // Otherwise treat as URL
+      return NetworkImage(imageData);
+    } catch (e) {
+      print('Error loading image: $e');
+      return null;
     }
   }
 
@@ -363,7 +380,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   )
                 : _profileImage != null
                 ? DecorationImage(
-                    image: NetworkImage(_profileImage!),
+                    image: _getImageProvider(_profileImage!)!,
                     fit: BoxFit.cover,
                   )
                 : null,

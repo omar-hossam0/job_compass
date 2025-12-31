@@ -76,7 +76,7 @@ class ApiService {
       final timeoutDuration =
           timeout ??
           (endpoint.contains('job-matches')
-              ? const Duration(seconds: 15)
+              ? const Duration(seconds: 45)
               : const Duration(seconds: 10));
 
       final response = await http
@@ -445,6 +445,18 @@ class ApiService {
 
   Future<Map<String, dynamic>> getNotifications() async {
     return await get('/student/notifications');
+  }
+
+  Future<Map<String, dynamic>> searchJobs(String query) async {
+    return await get(
+      '/student/jobs/search?query=${Uri.encodeComponent(query)}',
+    );
+  }
+
+  Future<Map<String, dynamic>> getJobSuggestions(String query) async {
+    return await get(
+      '/student/jobs/suggestions?query=${Uri.encodeComponent(query)}',
+    );
   }
 
   Future<Map<String, dynamic>> updateProfile(Map<String, dynamic> data) async {

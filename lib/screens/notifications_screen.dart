@@ -34,7 +34,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
 
     try {
-      final response = await _apiService.getHRNotifications();
+      final response = await _apiService.getNotifications();
 
       if (response['success'] == true) {
         final notifList = (response['data'] as List)
