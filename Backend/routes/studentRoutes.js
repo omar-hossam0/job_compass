@@ -15,88 +15,64 @@ const USE_FAST_MATCH = process.env.FAST_MATCH === "true";
 // Helper: Calculate keyword match percentage (shared across modes)
 const calculateKeywordMatch = (cvText, job) => {
   const cvLower = (cvText || "").toLowerCase();
-  const jobTitle = (job.title || "").toLowerCase();
-  const jobDesc = (job.description || "").toLowerCase();
   const skills = (job.requiredSkills || []).map((s) => (s || "").toLowerCase());
 
-  const techKeywords = [
-    "node.js",
-    "nodejs",
-    "express",
-    "react",
-    "vue",
-    "angular",
-    "python",
-    "java",
-    "javascript",
-    "typescript",
-    "mongodb",
-    "mysql",
-    "sql",
-    "docker",
-    "kubernetes",
-    "aws",
-    "azure",
-    "git",
-    "api",
-    "backend",
-    "frontend",
-    "fullstack",
-    "full-stack",
-    "mobile",
-    "android",
-    "ios",
-    "flutter",
-    "unity",
-    "machine learning",
-    "ai",
-    "deep learning",
-    "data science",
-    "tensorflow",
-  ];
-
-  let matchedKeywords = 0;
-  let totalJobKeywords = 0;
-
-  techKeywords.forEach((keyword) => {
-    if (
-      jobTitle.includes(keyword) ||
-      jobDesc.includes(keyword) ||
-      skills.some((s) => s.includes(keyword))
-    ) {
-      totalJobKeywords++;
-      if (cvLower.includes(keyword)) {
-        matchedKeywords++;
+  // Focus ONLY on required skills for accurate matching
+  let exactMatches = 0;
+  let partialMatches = 0;
+  
+  skills.forEach((skill) => {
+    // Normalize skill names for comparison
+    const skillVariants = [
+      skill,
+      skill.replace(/\.js$/, ''),      // node.js -> node
+      skill.replace(/\.js$/, 'js'),    // node.js -> nodejs
+      skill.replace(/js$/, '.js'),     // nodejs -> node.js
+      skill.replace(/\//g, ' '),       // MongoDB/MySQL -> MongoDB MySQL
+    ];
+    
+    const found = skillVariants.some(variant => {
+      // Check for exact word match (not just substring)
+      const regex = new RegExp(`\\b${variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+      return regex.test(cvLower);
+    });
+    
+    if (found) {
+      exactMatches++;
+    } else {
+      // Check for partial match (e.g., "express" in "expressjs")
+      const baseSkill = skill.replace(/\.js|js$/i, '').replace(/[^a-z]/gi, '');
+      if (baseSkill.length >= 3 && cvLower.includes(baseSkill)) {
+        partialMatches++;
       }
     }
   });
 
-  let skillMatches = 0;
-  skills.forEach((skill) => {
-    if (cvLower.includes(skill)) {
-      skillMatches++;
-    }
-  });
+  const totalSkills = skills.length;
+  if (totalSkills === 0) return 0;
 
-  const keywordScore =
-    totalJobKeywords > 0 ? (matchedKeywords / totalJobKeywords) * 100 : 0;
-  const skillScore =
-    skills.length > 0 ? (skillMatches / skills.length) * 100 : 0;
+  // Calculate score based on exact and partial matches
+  const exactScore = (exactMatches / totalSkills) * 100;
+  const partialScore = (partialMatches / totalSkills) * 30; // Partial matches worth 30%
+  let rawScore = exactScore + partialScore;
 
-  // Combine with more realistic weighting and cap at reasonable levels
-  const rawScore = skillScore * 0.6 + keywordScore * 0.4;
-
-  // Apply penalty for very few skills/keywords matched
-  let finalScore = rawScore;
-  if (skillMatches === 0 && matchedKeywords === 0) {
-    finalScore = 0;
-  } else if (skillMatches <= 1 && matchedKeywords <= 2) {
-    finalScore = Math.min(rawScore, 40); // Cap low matches at 40%
-  } else if (skillMatches <= 2 && matchedKeywords <= 4) {
-    finalScore = Math.min(rawScore, 65); // Cap medium matches at 65%
+  // Apply realistic caps based on actual matches
+  const matchRatio = exactMatches / totalSkills;
+  
+  if (exactMatches === 0) {
+    rawScore = Math.min(rawScore, 15); // Only partial matches = max 15%
+  } else if (matchRatio < 0.25) {
+    rawScore = Math.min(rawScore, 30); // Less than 25% match = max 30%
+  } else if (matchRatio < 0.5) {
+    rawScore = Math.min(rawScore, 50); // Less than 50% match = max 50%
+  } else if (matchRatio < 0.75) {
+    rawScore = Math.min(rawScore, 70); // Less than 75% match = max 70%
   }
+  // Only 75%+ actual skill match can get above 70%
 
-  return Math.round(finalScore);
+  console.log(`📊 Skill matching for "${job.title}": ${exactMatches}/${totalSkills} exact, ${partialMatches} partial = ${Math.round(rawScore)}%`);
+  
+  return Math.round(rawScore);
 };
 
 const __filename = fileURLToPath(import.meta.url);
