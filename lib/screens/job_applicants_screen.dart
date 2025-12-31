@@ -41,28 +41,28 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
 
     try {
       final response = await _apiService.getJobCandidates(widget.jobId);
-      
+
       print('🔍 Job Applicants Response: $response');
       print('🔍 Response type: ${response.runtimeType}');
       print('🔍 Response keys: ${response.keys}');
-      
+
       if (response['success'] == true) {
         print('✅ Success is true');
-        
+
         // Check if 'data' exists and is a Map
         if (response['data'] == null) {
           throw Exception('Response data is null');
         }
-        
+
         final data = response['data'];
         print('📦 Data: $data');
         print('📦 Data type: ${data.runtimeType}');
-        
+
         // Safely extract candidates
         dynamic candidatesData = data['candidates'];
         print('👥 Candidates data: $candidatesData');
         print('👥 Candidates type: ${candidatesData.runtimeType}');
-        
+
         List<dynamic> candidatesList;
         if (candidatesData is List) {
           candidatesList = candidatesData;
@@ -72,13 +72,13 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
           // If it's not a list, wrap it in a list
           candidatesList = [candidatesData];
         }
-        
+
         setState(() {
           _jobDetails = data['job'];
           _applicants = candidatesList;
           _isLoading = false;
         });
-        
+
         print('✅ Loaded ${_applicants.length} applicants');
       } else {
         setState(() {
@@ -125,12 +125,13 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
                             style: AppStyles.heading3,
                           ),
                           const SizedBox(height: 16),
-                          ...(_applicants is List 
-                            ? (_applicants as List).map((applicant) => 
-                                _buildApplicantCard(applicant as Map<String, dynamic>),
-                              )
-                            : <Widget>[]
-                          ),
+                          ...(_applicants is List
+                              ? (_applicants as List).map(
+                                  (applicant) => _buildApplicantCard(
+                                    applicant as Map<String, dynamic>,
+                                  ),
+                                )
+                              : <Widget>[]),
                         ],
                       ),
                     ),
@@ -185,10 +186,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            _jobDetails!['title'] ?? '',
-            style: AppStyles.heading3,
-          ),
+          Text(_jobDetails!['title'] ?? '', style: AppStyles.heading3),
           const SizedBox(height: 12),
           Text(
             _jobDetails!['description'] ?? '',
@@ -207,7 +205,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
     final email = applicant['email'] ?? '';
     final phone = applicant['phone'] ?? '';
     final skills = applicant['extractedSkills'] as List? ?? [];
-    final appliedAt = applicant['appliedAt'] != null 
+    final appliedAt = applicant['appliedAt'] != null
         ? DateTime.parse(applicant['appliedAt'])
         : null;
 
@@ -226,12 +224,14 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
                   CircleAvatar(
                     radius: 30,
                     backgroundColor: AppColors.primaryGreen.withOpacity(0.2),
-                    backgroundImage: applicant['photo'] != null && 
-                        applicant['photo'].toString().isNotEmpty
+                    backgroundImage:
+                        applicant['photo'] != null &&
+                            applicant['photo'].toString().isNotEmpty
                         ? NetworkImage(applicant['photo'])
                         : null,
-                    child: applicant['photo'] == null || 
-                        applicant['photo'].toString().isEmpty
+                    child:
+                        applicant['photo'] == null ||
+                            applicant['photo'].toString().isEmpty
                         ? Text(
                             name[0].toUpperCase(),
                             style: AppStyles.heading3.copyWith(
@@ -245,9 +245,12 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(name, style: AppStyles.bodyMedium.copyWith(
-                          fontWeight: FontWeight.bold,
-                        )),
+                        Text(
+                          name,
+                          style: AppStyles.bodyMedium.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 4),
                         if (email.isNotEmpty)
                           Text(
@@ -274,7 +277,9 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: _getMatchColor(matchPercentage).withOpacity(0.2),
+                          color: _getMatchColor(
+                            matchPercentage,
+                          ).withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -442,7 +447,10 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
               ),
               const SizedBox(height: 20),
               _buildDetailRow('الاسم', applicant['name'] ?? 'غير متوفر'),
-              _buildDetailRow('البريد الإلكتروني', applicant['email'] ?? 'غير متوفر'),
+              _buildDetailRow(
+                'البريد الإلكتروني',
+                applicant['email'] ?? 'غير متوفر',
+              ),
               _buildDetailRow('الهاتف', applicant['phone'] ?? 'غير متوفر'),
               _buildDetailRow('المنطقة', applicant['region'] ?? 'غير متوفر'),
               _buildDetailRow('العنوان', applicant['address'] ?? 'غير متوفر'),
@@ -455,9 +463,12 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
               if (customQuestions.isNotEmpty && customAnswers.isNotEmpty) ...[
                 const Divider(),
                 const SizedBox(height: 16),
-                Text('إجابات الأسئلة المخصصة', style: AppStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.bold,
-                )),
+                Text(
+                  'إجابات الأسئلة المخصصة',
+                  style: AppStyles.bodyMedium.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 12),
                 ...List.generate(
                   customQuestions.length.clamp(0, customAnswers.length),
@@ -525,9 +536,7 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
           Expanded(
             child: Text(
               value,
-              style: AppStyles.bodySmall.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppStyles.bodySmall.copyWith(fontWeight: FontWeight.w500),
             ),
           ),
         ],

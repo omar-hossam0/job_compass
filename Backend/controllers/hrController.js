@@ -319,7 +319,7 @@ export const getJobCandidates = async (req, res) => {
     // Calculate match percentage for each candidate
     const candidatesWithMatch = applications.map((application) => {
       const candidate = application.candidateId;
-      
+
       if (!candidate) {
         return null; // Skip if candidate not found
       }

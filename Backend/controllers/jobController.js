@@ -433,7 +433,7 @@ export const applyToJob = async (req, res) => {
     // ✅ Create notification for HR who posted this job
     try {
       const Notification = (await import("../models/Notification.js")).default;
-      
+
       await Notification.create({
         userId: job.postedBy, // HR who posted the job
         title: "متقدم جديد على الوظيفة",

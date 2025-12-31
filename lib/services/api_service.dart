@@ -149,7 +149,7 @@ class ApiService {
   Map<String, dynamic> _handleResponse(http.Response response) {
     print('📥 API Response Status: ${response.statusCode}');
     print('📥 API Response Body: ${response.body}');
-    
+
     final data = jsonDecode(response.body) as Map<String, dynamic>;
     print('📦 Decoded Data: $data');
     print('📦 Data type: ${data.runtimeType}');
@@ -508,7 +508,9 @@ class ApiService {
     return await get('/hr/notifications');
   }
 
-  Future<Map<String, dynamic>> markNotificationAsRead(String notificationId) async {
+  Future<Map<String, dynamic>> markNotificationAsRead(
+    String notificationId,
+  ) async {
     return await put('/notifications/$notificationId', {});
   }
 

@@ -35,7 +35,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
     try {
       final response = await _apiService.getHRNotifications();
-      
+
       if (response['success'] == true) {
         final notifList = (response['data'] as List)
             .map((n) => NotificationModel.fromJson(n))
@@ -248,16 +248,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     print('🔔 Notification tapped!');
     print('Type: ${notification.type}');
     print('Metadata: ${notification.metadata}');
-    
+
     // Handle notification tap based on type and metadata
     if (notification.type == 'application') {
       if (notification.metadata != null && notification.metadata!.isNotEmpty) {
         final jobId = notification.metadata!['jobId'];
         final jobTitle = notification.metadata!['jobTitle'] ?? 'الوظيفة';
-        
+
         print('JobId: $jobId');
         print('JobTitle: $jobTitle');
-        
+
         if (jobId != null) {
           print('✅ Navigating to JobApplicantsScreen...');
           // Navigate to job applicants screen
@@ -270,7 +270,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ),
             ),
           );
-          
+
           // Mark notification as read
           _markNotificationAsRead(notification.id);
         } else {
@@ -300,7 +300,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       // Call API to mark as read
       await _apiService.markNotificationAsRead(notificationId);
-      
+
       // Update local state
       setState(() {
         final index = _notifications.indexWhere((n) => n.id == notificationId);

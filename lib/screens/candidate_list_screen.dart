@@ -35,21 +35,23 @@ class _CandidateListScreenState extends State<CandidateListScreen> {
 
     try {
       final response = await _apiService.getJobCandidates(widget.jobId);
-      
+
       print('🔍 Candidate List Response: $response');
-      
+
       if (response['success'] == true && response['data'] != null) {
         final data = response['data'];
         print('📦 Data: $data');
-        
+
         // The backend wraps candidates in a data object
         final candidatesData = data['candidates'];
         print('👥 Candidates: $candidatesData');
-        
+
         if (candidatesData is! List) {
-          throw Exception('Candidates data is not a list: ${candidatesData.runtimeType}');
+          throw Exception(
+            'Candidates data is not a list: ${candidatesData.runtimeType}',
+          );
         }
-        
+
         setState(() {
           _candidates = (candidatesData as List)
               .map((c) => HRCandidate.fromJson(c))
@@ -60,7 +62,7 @@ class _CandidateListScreenState extends State<CandidateListScreen> {
           );
           _isLoading = false;
         });
-        
+
         print('✅ Loaded ${_candidates.length} candidates');
       } else {
         setState(() {

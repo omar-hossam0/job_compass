@@ -177,9 +177,7 @@ class _HRNotificationsScreenState extends State<HRNotificationsScreen> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: _getNotificationColor(
-                notification.type,
-              ).withOpacity(0.15),
+              color: _getNotificationColor(notification.type).withOpacity(0.15),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
@@ -245,15 +243,15 @@ class _HRNotificationsScreenState extends State<HRNotificationsScreen> {
     print('🔔 HR Notification tapped!');
     print('Type: ${notification.type}');
     print('Metadata: ${notification.metadata}');
-    
+
     if (notification.type == 'application') {
       if (notification.metadata != null && notification.metadata!.isNotEmpty) {
         final jobId = notification.metadata!['jobId'];
         final jobTitle = notification.metadata!['jobTitle'] ?? 'الوظيفة';
-        
+
         print('JobId: $jobId');
         print('JobTitle: $jobTitle');
-        
+
         if (jobId != null) {
           print('✅ Navigating to JobApplicantsScreen...');
           Navigator.push(
@@ -265,7 +263,7 @@ class _HRNotificationsScreenState extends State<HRNotificationsScreen> {
               ),
             ),
           );
-          
+
           // Mark notification as read
           _markNotificationAsRead(notification.id);
         } else {

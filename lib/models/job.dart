@@ -218,7 +218,8 @@ class Job {
       return '${difference.inHours}h ago';
     }
     if (difference.inDays < 7) return '${difference.inDays}d ago';
-    if (difference.inDays < 30) return '${(difference.inDays / 7).floor()}w ago';
+    if (difference.inDays < 30)
+      return '${(difference.inDays / 7).floor()}w ago';
     return '${(difference.inDays / 30).floor()}mo ago';
   }
 }
