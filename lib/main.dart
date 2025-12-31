@@ -27,6 +27,7 @@ import 'screens/auth_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/chatbot_screen.dart';
 import 'screens/job_analysis_result_screen.dart';
+import 'screens/job_application_screen.dart';
 import 'services/api_service.dart';
 
 void main() async {
@@ -124,6 +125,24 @@ class MyApp extends StatelessWidget {
             return MaterialPageRoute(
               builder: (_) => JobAnalysisResultScreen(jobId: args),
             );
+          }
+        }
+        if (settings.name == '/job-application') {
+          final args = settings.arguments;
+          if (args is Map<String, dynamic>) {
+            final jobId = args['jobId'] as String?;
+            final jobTitle = args['jobTitle'] as String? ?? 'Job';
+            final customQuestions =
+                args['customQuestions'] as List<String>? ?? [];
+            if (jobId != null) {
+              return MaterialPageRoute(
+                builder: (_) => JobApplicationScreen(
+                  jobId: jobId,
+                  jobTitle: jobTitle,
+                  customQuestions: customQuestions,
+                ),
+              );
+            }
           }
         }
         return null;

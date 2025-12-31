@@ -409,6 +409,17 @@ class ApiService {
     return await get('/jobs/$jobId');
   }
 
+  Future<Map<String, dynamic>> applyToJob(
+    String jobId,
+    Map<String, dynamic> applicationData,
+  ) async {
+    return await post('/jobs/$jobId/apply', applicationData);
+  }
+
+  Future<Map<String, dynamic>> cancelApplication(String jobId) async {
+    return await delete('/jobs/$jobId/cancel-application');
+  }
+
   Future<Map<String, dynamic>> getSkillGap(String jobId) async {
     return await get('/student/skill-gap/$jobId');
   }

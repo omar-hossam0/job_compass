@@ -1,5 +1,6 @@
 import Job from "../models/Job.js";
 import Candidate from "../models/Candidate.js";
+import Application from "../models/Application.js";
 
 // Get all jobs
 export const getAllJobs = async (req, res) => {
@@ -328,16 +329,32 @@ export const getJobApplicants = async (req, res) => {
 // Apply to a job
 export const applyToJob = async (req, res) => {
   try {
+    console.log('\n📝 APPLICATION REQUEST');
+    console.log('Job ID:', req.params.id);
+    console.log('User:', req.user.email);
+    console.log('Request Body:', JSON.stringify(req.body, null, 2));
+
     const jobId = req.params.id;
     const userId = req.user.id;
     const userEmail = req.user.email;
+
+    // Validate required basic information
+    const { fullName, phoneNumber, region, address, expectedSalary, customAnswers } = req.body;
+
+    if (!fullName || !phoneNumber || !region || !address || expectedSalary === undefined) {
+      console.log('❌ Missing required fields');
+      return res.status(400).json({
+        success: false,
+        message: "جميع الحقول الأساسية مطلوبة (الاسم، التليفون، المنطقة، العنوان، السالري المتوقع)",
+      });
+    }
 
     // Find the job
     const job = await Job.findById(jobId);
     if (!job) {
       return res.status(404).json({
         success: false,
-        message: "Job not found",
+        message: "الوظيفة غير موجودة",
       });
     }
 
@@ -348,34 +365,53 @@ export const applyToJob = async (req, res) => {
       // Create basic candidate profile if doesn't exist
       candidate = await Candidate.create({
         email: userEmail,
-        name: req.user.name || "Candidate",
+        name: req.user.name || fullName,
         applications: [],
       });
     }
 
     // Check if already applied
-    const alreadyApplied = candidate.applications?.some(
-      (app) => app.jobId && app.jobId.toString() === jobId
-    );
+    const existingApplication = await Application.findOne({
+      jobId: jobId,
+      candidateId: candidate._id,
+    });
 
-    if (alreadyApplied) {
+    if (existingApplication) {
       return res.status(400).json({
         success: false,
-        message: "You have already applied to this job",
+        message: "لقد تقدمت بالفعل على هذه الوظيفة",
       });
     }
 
-    // Add application
-    candidate.applications = candidate.applications || [];
-    candidate.applications.push({
+    // Validate custom answers if job has custom questions
+    const customAnswersArray = customAnswers || [];
+    if (job.customQuestions && job.customQuestions.length > 0) {
+      if (customAnswersArray.length !== job.customQuestions.length) {
+        return res.status(400).json({
+          success: false,
+          message: `يرجى الإجابة على جميع الأسئلة (${job.customQuestions.length} أسئلة)`,
+        });
+      }
+    }
+
+    // Create application with all information
+    console.log('✅ Creating application...');
+    const application = await Application.create({
       jobId: jobId,
-      appliedAt: new Date(),
+      candidateId: candidate._id,
+      basicInfo: {
+        fullName,
+        phoneNumber,
+        region,
+        address,
+        expectedSalary: Number(expectedSalary),
+      },
+      customAnswers: customAnswersArray,
       status: "Pending",
     });
+    console.log('✅ Application created:', application._id);
 
-    await candidate.save();
-
-    // Also add to job's applicants list
+    // Also add to job's applicants list (for backward compatibility)
     job.applicants = job.applicants || [];
     job.applicants.push({
       candidateId: candidate._id,
@@ -385,19 +421,98 @@ export const applyToJob = async (req, res) => {
     job.applicantsCount = job.applicants.length;
     await job.save();
 
+    // Add to candidate applications
+    candidate.applications = candidate.applications || [];
+    candidate.applications.push({
+      jobId: jobId,
+      appliedAt: new Date(),
+      status: "Applied", // Changed from "Pending" to match Candidate schema
+    });
+    await candidate.save();
+
     res.json({
       success: true,
-      message: "Application submitted successfully",
+      message: "تم التقديم بنجاح!",
       data: {
+        applicationId: application._id,
         jobId: jobId,
         jobTitle: job.title,
-        appliedAt: new Date(),
+        appliedAt: application.appliedAt,
       },
     });
   } catch (error) {
+    console.error('❌ Apply to Job Error:', error);
+    console.error('Error details:', error.message);
+    console.error('Stack:', error.stack);
     res.status(500).json({
       success: false,
-      message: "Server Error",
+      message: "خطأ في الخادم",
+      error: error.message,
+    });
+  }
+};
+
+// Cancel application
+export const cancelApplication = async (req, res) => {
+  try {
+    console.log('\n🗑️ CANCEL APPLICATION REQUEST');
+    console.log('Job ID:', req.params.id);
+    console.log('User:', req.user.email);
+
+    const jobId = req.params.id;
+    const userEmail = req.user.email;
+
+    // Find candidate
+    const candidate = await Candidate.findOne({ email: userEmail });
+    if (!candidate) {
+      return res.status(404).json({
+        success: false,
+        message: "الملف الشخصي غير موجود",
+      });
+    }
+
+    // Find application
+    const application = await Application.findOne({
+      jobId: jobId,
+      candidateId: candidate._id,
+    });
+
+    if (!application) {
+      return res.status(404).json({
+        success: false,
+        message: "لم يتم العثور على طلب التقديم",
+      });
+    }
+
+    // Delete application
+    await Application.findByIdAndDelete(application._id);
+
+    // Remove from job's applicants list
+    const job = await Job.findById(jobId);
+    if (job) {
+      job.applicants = job.applicants.filter(
+        (app) => app.candidateId.toString() !== candidate._id.toString()
+      );
+      job.applicantsCount = job.applicants.length;
+      await job.save();
+    }
+
+    // Remove from candidate applications
+    candidate.applications = candidate.applications.filter(
+      (app) => app.jobId.toString() !== jobId
+    );
+    await candidate.save();
+
+    console.log('✅ Application cancelled successfully');
+    res.json({
+      success: true,
+      message: "تم إلغاء التقديم بنجاح",
+    });
+  } catch (error) {
+    console.error('❌ Cancel Application Error:', error);
+    res.status(500).json({
+      success: false,
+      message: "خطأ في الخادم",
       error: error.message,
     });
   }

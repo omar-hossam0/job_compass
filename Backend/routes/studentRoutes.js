@@ -487,21 +487,107 @@ router.get("/job-matches", async (req, res) => {
             }
 
             const cvText = candidate.resumeText;
-            const jobDescriptions = jobs.map((job) =>
-                `${job.title}. ${job.description || ""}. Skills: ${(job.requiredSkills || []).join(", ")}`
-            );
+            // Build rich job descriptions - emphasize content over title
+            const jobDescriptions = jobs.map((job) => {
+                const title = job.title || '';
+                const desc = job.description || '';
+                const skills = (job.requiredSkills || []).join(', ');
+                const location = job.location || '';
+                const level = job.experienceLevel || '';
+
+                // If description is short, boost it by repeating key info
+                // This prevents short-title jobs from dominating
+                if (desc.length < 100) {
+                    return `${title}. Required: ${skills}. Experience: ${level}. Location: ${location}.`;
+                }
+
+                // For full jobs, emphasize description content
+                return `Job position: ${title}. ${desc} Required skills and qualifications: ${skills}. Experience level: ${level}. Work location: ${location}.`;
+            });
 
             console.log("🔍 Running BERT matching...");
+            console.log("📝 Sample job descriptions:");
+            jobDescriptions.slice(0, 2).forEach((desc, i) => {
+                console.log(`   [${i}] ${desc.substring(0, 80)}...`);
+            });
+
             const matches = await pythonMatcher.match(cvText, jobDescriptions, jobs.length);
             console.log("✅ Matching complete, got", matches.length, "results");
 
-            // Map matches to jobs with scores
+            // Helper: Calculate keyword match percentage
+            const calculateKeywordMatch = (cvText, job) => {
+                const cvLower = cvText.toLowerCase();
+                const jobTitle = (job.title || '').toLowerCase();
+                const jobDesc = (job.description || '').toLowerCase();
+                const skills = (job.requiredSkills || []).map(s => s.toLowerCase());
+
+                // Technical keywords from CV and job
+                const techKeywords = ['node.js', 'nodejs', 'express', 'react', 'vue', 'angular',
+                    'python', 'java', 'javascript', 'typescript', 'mongodb', 'mysql', 'sql',
+                    'docker', 'kubernetes', 'aws', 'azure', 'git', 'api', 'backend', 'frontend',
+                    'fullstack', 'full-stack', 'mobile', 'android', 'ios', 'flutter', 'unity',
+                    'machine learning', 'ai', 'deep learning', 'data science', 'tensorflow'];
+
+                let matchedKeywords = 0;
+                let totalJobKeywords = 0;
+
+                // Check technical keywords
+                techKeywords.forEach(keyword => {
+                    if (jobTitle.includes(keyword) || jobDesc.includes(keyword) || skills.some(s => s.includes(keyword))) {
+                        totalJobKeywords++;
+                        if (cvLower.includes(keyword)) {
+                            matchedKeywords++;
+                        }
+                    }
+                });
+
+                // Check required skills match
+                let skillMatches = 0;
+                skills.forEach(skill => {
+                    if (cvLower.includes(skill)) {
+                        skillMatches++;
+                    }
+                });
+
+                const keywordScore = totalJobKeywords > 0 ? (matchedKeywords / totalJobKeywords) * 100 : 0;
+                const skillScore = skills.length > 0 ? (skillMatches / skills.length) * 100 : 0;
+
+                // Weighted average: 60% skills + 40% general keywords
+                return (skillScore * 0.6) + (keywordScore * 0.4);
+            };
+
+            // Map matches to jobs with quality-adjusted scores
             matchedJobs = jobs.map((job, idx) => {
                 const matchData = matches.find((m) => m.job_index === idx);
-                // Python matcher returns similarity_score as percentage (0-100), not decimal
-                const matchScore = matchData
+                let bertScore = matchData
                     ? Math.round(matchData.similarity_score)
                     : 0;
+
+                // Calculate keyword match boost
+                const keywordMatch = calculateKeywordMatch(cvText, job);
+
+                // Combine: 75% BERT + 25% keyword matching
+                let matchScore = Math.round((bertScore * 0.75) + (keywordMatch * 0.25));
+
+                // Apply quality penalty for jobs with insufficient content
+                const titleLength = (job.title || '').length;
+                const descLength = (job.description || '').length;
+                const hasSkills = (job.requiredSkills || []).length > 0;
+
+                // Jobs with very short descriptions get penalized
+                if (descLength < 100 || titleLength < 15 || !hasSkills) {
+                    const contentPenalty = Math.min(20,
+                        (100 - descLength) / 8 +
+                        (15 - titleLength) * 1.5 +
+                        (hasSkills ? 0 : 5)
+                    );
+                    matchScore = Math.max(0, matchScore - contentPenalty);
+                    if (contentPenalty > 8) {
+                        console.log(`   ⚠️ "${job.title}": BERT=${bertScore}% Keywords=${Math.round(keywordMatch)}% Penalty=-${Math.round(contentPenalty)}% Final=${matchScore}%`);
+                    }
+                } else {
+                    console.log(`   ✅ "${job.title}": BERT=${bertScore}% Keywords=${Math.round(keywordMatch)}% Final=${matchScore}%`);
+                }
 
                 return {
                     id: job._id,

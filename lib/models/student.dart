@@ -17,7 +17,9 @@ class Student {
     this.profilePicture,
     required this.profileCompletion,
     required this.skillMatchScore,
-    this.cvUrl,    this.cvFileName,    this.cvUploadedAt,
+    this.cvUrl,
+    this.cvFileName,
+    this.cvUploadedAt,
     this.skills = const [],
   });
 
@@ -97,6 +99,7 @@ class Job {
   final int missingSkillsCount;
   final DateTime postedAt;
   final int applicantsCount;
+  final List<String> customQuestions; // Custom questions from HR
 
   Job({
     required this.id,
@@ -114,6 +117,7 @@ class Job {
     required this.missingSkillsCount,
     required this.postedAt,
     required this.applicantsCount,
+    this.customQuestions = const [],
   });
 
   factory Job.fromJson(Map<String, dynamic> json) {
@@ -189,9 +193,22 @@ class Job {
         employmentType: employmentTypes,
         salary: salaryValue,
         salaryPeriod: (json['salaryPeriod'] ?? '/year').toString(),
-        experienceYears: (json['experienceYears'] ?? 0) is num
-            ? (json['experienceYears'] as num).toInt()
-            : 0,
+        experienceYears: () {
+          // Try experienceYears first, then parse experienceLevel
+          if (json['experienceYears'] != null &&
+              json['experienceYears'] is num) {
+            return (json['experienceYears'] as num).toInt();
+          }
+          // Parse experienceLevel string to estimate years
+          final expLevel = (json['experienceLevel'] ?? '')
+              .toString()
+              .toLowerCase();
+          if (expLevel.contains('entry')) return 0;
+          if (expLevel.contains('mid')) return 3;
+          if (expLevel.contains('senior')) return 5;
+          if (expLevel.contains('executive')) return 10;
+          return 0;
+        }(),
         requiredSkills: json['requiredSkills'] != null
             ? List<String>.from(json['requiredSkills'])
             : [],
@@ -201,6 +218,9 @@ class Job {
             : 0,
         postedAt: postedDate,
         applicantsCount: applicantsCountValue,
+        customQuestions: json['customQuestions'] != null
+            ? List<String>.from(json['customQuestions'])
+            : [],
       );
     } catch (e) {
       // Fallback with default values if parsing fails
@@ -222,6 +242,7 @@ class Job {
         missingSkillsCount: 0,
         postedAt: DateTime.now(),
         applicantsCount: 0,
+        customQuestions: [],
       );
     }
   }

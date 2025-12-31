@@ -23,6 +23,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
   Job? _job;
   String? _error;
   bool _isSaved = false;
+  bool _hasApplied = false; // Track if user has applied
 
   @override
   void initState() {
@@ -43,6 +44,10 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       // Extract job data from response
       final jobData = response['data'] ?? response;
       print('📦 Job Data: $jobData');
+
+      // Check if user has applied (look for current user in applicants)
+      final applicants = jobData['applicants'] as List?;
+      _hasApplied = applicants != null && applicants.isNotEmpty;
 
       setState(() {
         _job = Job.fromJson(jobData);
@@ -383,35 +388,130 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               ),
             ),
             const SizedBox(width: 12),
-            // Apply Button
+            // Apply or Cancel Button
             Expanded(
               child: SizedBox(
                 height: 56,
-                child: ElevatedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Application submitted successfully!'),
-                        backgroundColor: AppColors.success,
+                child: _hasApplied
+                    ? ElevatedButton.icon(
+                        onPressed: () async {
+                          // Show confirmation dialog
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: const Text('إلغاء التقديم'),
+                              content: const Text(
+                                'هل أنت متأكد من إلغاء التقديم على هذه الوظيفة؟',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () =>
+                                      Navigator.pop(context, false),
+                                  child: const Text('لا'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(context, true),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                  child: const Text('نعم، إلغاء'),
+                                ),
+                              ],
+                            ),
+                          );
+
+                          if (confirm == true && mounted) {
+                            setState(() => _isLoading = true);
+
+                            try {
+                              final response = await _apiService
+                                  .cancelApplication(widget.jobId);
+
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+
+                                if (response['success'] == true) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        response['message'] ??
+                                            'تم إلغاء التقديم بنجاح',
+                                      ),
+                                      backgroundColor: AppColors.success,
+                                    ),
+                                  );
+                                  // Reload job details to update UI
+                                  _loadJobDetails();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        response['message'] ??
+                                            'فشل إلغاء التقديم',
+                                      ),
+                                      backgroundColor: AppColors.error,
+                                    ),
+                                  );
+                                }
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('خطأ: ${e.toString()}'),
+                                    backgroundColor: AppColors.error,
+                                  ),
+                                );
+                              }
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.cancel_outlined),
+                        label: const Text('إلغاء التقديم'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.error,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                      )
+                    : ElevatedButton(
+                        onPressed: () async {
+                          // Navigate to application form
+                          final result = await Navigator.pushNamed(
+                            context,
+                            '/job-application',
+                            arguments: {
+                              'jobId': widget.jobId,
+                              'jobTitle': _job?.title ?? 'Job',
+                              'customQuestions': _job?.customQuestions ?? [],
+                            },
+                          );
+
+                          // If application was successful, reload details
+                          if (result == true && mounted) {
+                            _loadJobDetails(); // Reload to update button state
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryTeal,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'تقديم الطلب',
+                          style: AppStyles.bodyLarge.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryTeal,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: Text(
-                    'Apply Now',
-                    style: AppStyles.bodyLarge.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
               ),
             ),
           ],
