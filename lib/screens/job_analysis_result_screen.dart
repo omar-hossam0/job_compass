@@ -283,87 +283,129 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: GlassCard(
-        child: Column(
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [const Color(0xFFDDF8E8), const Color(0xFFC8F1EC)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          border: Border.all(color: Colors.white.withOpacity(0.6)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              children: [
-                // Circular Progress Indicator
-                SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: Stack(
-                    alignment: Alignment.center,
+            Container(
+              width: 110,
+              height: 110,
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 94,
+                    height: 94,
+                    child: CircularProgressIndicator(
+                      value: _result!.matchScore / 100,
+                      strokeWidth: 9,
+                      backgroundColor: AppColors.textSecondary.withOpacity(0.1),
+                      valueColor: AlwaysStoppedAnimation(matchColor),
+                    ),
+                  ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: 100,
-                        height: 100,
-                        child: CircularProgressIndicator(
-                          value: _result!.matchScore / 100,
-                          strokeWidth: 8,
-                          backgroundColor: Colors.grey.withOpacity(0.2),
-                          valueColor: AlwaysStoppedAnimation(matchColor),
+                      Text(
+                        '${_result!.matchScore.toStringAsFixed(0)}%',
+                        style: AppStyles.heading1.copyWith(
+                          color: matchColor,
+                          fontWeight: FontWeight.w800,
                         ),
                       ),
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '${_result!.matchScore.toStringAsFixed(0)}%',
-                            style: AppStyles.heading1.copyWith(
-                              color: matchColor,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Match',
-                            style: AppStyles.bodySmall.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
                       Text(
-                        _result!.jobTitle,
-                        style: AppStyles.heading3,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _result!.company,
-                        style: AppStyles.bodyMedium.copyWith(
+                        'Match',
+                        style: AppStyles.bodySmall.copyWith(
                           color: AppColors.textSecondary,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          _buildStatChip(
-                            Icons.check_circle,
-                            '${_result!.matchedSkills.length} Matched',
-                            AppColors.success,
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _result!.jobTitle,
+                    style: AppStyles.heading3.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.business,
+                        size: 16,
+                        color: AppColors.textSecondary,
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          _result!.company,
+                          style: AppStyles.bodyMedium.copyWith(
+                            color: AppColors.textSecondary,
                           ),
-                          const SizedBox(width: 8),
-                          _buildStatChip(
-                            Icons.warning_amber,
-                            '${_result!.missingSkills.length} Missing',
-                            AppColors.warning,
-                          ),
-                        ],
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: [
+                      _buildStatChip(
+                        Icons.check_circle,
+                        '${_result!.matchedSkills.length} Matched',
+                        AppColors.success,
+                      ),
+                      _buildStatChip(
+                        Icons.warning_amber,
+                        '${_result!.missingSkills.length} Missing',
+                        AppColors.warning,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -411,14 +453,65 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
             ),
             borderRadius: BorderRadius.circular(12),
           ),
+          labelPadding: const EdgeInsets.symmetric(horizontal: 6),
           labelColor: Colors.white,
           unselectedLabelColor: AppColors.textSecondary,
           labelStyle: AppStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
           tabs: [
-            Tab(text: 'Matched (${_result!.matchedSkills.length})'),
-            Tab(text: 'Missing (${_result!.missingSkills.length})'),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Matched'),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.success.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _result!.matchedSkills.length.toString(),
+                      style: AppStyles.bodySmall.copyWith(
+                        color: AppColors.success,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('Missing'),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.warning.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      _result!.missingSkills.length.toString(),
+                      style: AppStyles.bodySmall.copyWith(
+                        color: AppColors.warning,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -640,6 +733,24 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
           color: color,
           fontWeight: FontWeight.w600,
           fontSize: 10,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCountBadge(int count, {Color? color}) {
+    final badgeColor = color ?? AppColors.primaryTeal;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: badgeColor.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        count.toString(),
+        style: AppStyles.bodySmall.copyWith(
+          color: badgeColor,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

@@ -76,7 +76,7 @@ class ApiService {
       final timeoutDuration =
           timeout ??
           (endpoint.contains('job-matches')
-              ? const Duration(seconds: 60)
+              ? const Duration(seconds: 15)
               : const Duration(seconds: 10));
 
       final response = await http
@@ -516,6 +516,9 @@ class ApiService {
   /// Analyze a specific job against user's CV
   /// Returns matched skills, missing skills with learning links, and match percentage
   Future<Map<String, dynamic>> analyzeJobForUser(String jobId) async {
-    return await get('/ml/analyze-job/$jobId');
+    return await get(
+      '/ml/analyze-job/$jobId',
+      timeout: const Duration(seconds: 30),
+    );
   }
 }
