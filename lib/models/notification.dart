@@ -26,8 +26,8 @@ class NotificationModel {
       createdAt: json['createdAt'] != null
           ? DateTime.parse(json['createdAt'])
           : DateTime.now(),
-      isRead: json['isRead'] ?? false,
-      metadata: json['metadata'],
+      isRead: json['read'] ?? json['isRead'] ?? false,
+      metadata: json['metadata'] as Map<String, dynamic>?,
     );
   }
 

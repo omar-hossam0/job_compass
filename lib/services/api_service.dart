@@ -147,10 +147,19 @@ class ApiService {
 
   // Handle response
   Map<String, dynamic> _handleResponse(http.Response response) {
-    final data = jsonDecode(response.body);
+    print('📥 API Response Status: ${response.statusCode}');
+    print('📥 API Response Body: ${response.body}');
+    
+    final data = jsonDecode(response.body) as Map<String, dynamic>;
+    print('📦 Decoded Data: $data');
+    print('📦 Data type: ${data.runtimeType}');
 
     if (response.statusCode >= 200 && response.statusCode < 300) {
-      return {'success': true, ...data};
+      // Merge data with success flag
+      final result = Map<String, dynamic>.from(data);
+      result['success'] = true;
+      print('✅ Final result: $result');
+      return result;
     } else {
       return {'success': false, 'message': data['message'] ?? 'Request failed'};
     }
@@ -497,6 +506,10 @@ class ApiService {
 
   Future<Map<String, dynamic>> getHRNotifications() async {
     return await get('/hr/notifications');
+  }
+
+  Future<Map<String, dynamic>> markNotificationAsRead(String notificationId) async {
+    return await put('/notifications/$notificationId', {});
   }
 
   Future<Map<String, dynamic>> getHRProfile() async {

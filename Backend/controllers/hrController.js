@@ -306,15 +306,24 @@ export const getJobCandidates = async (req, res) => {
       });
     }
 
-    // Find all candidates who have applied to this job
-    const candidates = await Candidate.find({
-      "applications.jobId": req.params.id,
-    }).select("name email photo skills resumeUrl applications resumeText");
+    // Import Application model
+    const Application = (await import("../models/Application.js")).default;
 
-    console.log("Candidates who applied:", candidates.length);
+    // Find all applications for this job
+    const applications = await Application.find({ jobId: req.params.id })
+      .populate("candidateId", "name email photo skills resumeUrl applications resumeText")
+      .sort({ appliedAt: -1 });
+
+    console.log("Applications found:", applications.length);
 
     // Calculate match percentage for each candidate
-    const candidatesWithMatch = candidates.map((candidate) => {
+    const candidatesWithMatch = applications.map((application) => {
+      const candidate = application.candidateId;
+      
+      if (!candidate) {
+        return null; // Skip if candidate not found
+      }
+
       const candidateSkills = candidate.skills || [];
       const jobSkills = job.requiredSkills || [];
 
@@ -331,29 +340,38 @@ export const getJobCandidates = async (req, res) => {
           ? Math.round((matchingSkills.length / jobSkills.length) * 100)
           : 0;
 
-      // Find the application for this job
-      const application = candidate.applications.find(
-        (app) => app.jobId.toString() === req.params.id
-      );
-
       return {
         id: candidate._id,
-        name: candidate.name,
+        name: application.basicInfo?.fullName || candidate.name,
         email: candidate.email,
+        phone: application.basicInfo?.phoneNumber || "",
+        region: application.basicInfo?.region || "",
+        address: application.basicInfo?.address || "",
+        expectedSalary: application.basicInfo?.expectedSalary || null,
         photo: candidate.photo || "",
         extractedSkills: candidateSkills.slice(0, 5),
         matchPercentage,
-        appliedAt: application?.appliedAt || null,
-        applicationStatus: application?.status || "Pending",
+        appliedAt: application.appliedAt,
+        applicationStatus: application.status,
+        applicationId: application._id,
+        customAnswers: application.customAnswers || [],
       };
-    });
+    }).filter(c => c !== null); // Remove null entries
 
     // Sort by match percentage
     candidatesWithMatch.sort((a, b) => b.matchPercentage - a.matchPercentage);
 
     res.json({
       success: true,
-      data: candidatesWithMatch,
+      data: {
+        job: {
+          id: job._id,
+          title: job.title,
+          description: job.description,
+          customQuestions: job.customQuestions || [],
+        },
+        candidates: candidatesWithMatch,
+      },
     });
   } catch (error) {
     console.error("Get Job Candidates Error:", error);
@@ -429,23 +447,26 @@ export const getHRNotifications = async (req, res) => {
   try {
     const notifications = await Notification.find({ userId: req.user.id })
       .sort({ createdAt: -1 })
-      .limit(20);
+      .limit(50);
 
     res.json({
       success: true,
+      count: notifications.length,
       data: notifications.map((notif) => ({
         id: notif._id,
         title: notif.title,
         message: notif.message,
-        type: notif.type || "info",
-        isRead: notif.isRead || false,
+        type: notif.type || "system",
+        read: notif.read || false,
         createdAt: notif.createdAt,
+        metadata: notif.metadata || {},
       })),
     });
   } catch (error) {
     console.error("Get Notifications Error:", error);
     res.status(500).json({
       success: true, // Return success but empty array
+      count: 0,
       data: [],
     });
   }

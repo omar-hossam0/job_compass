@@ -86,6 +86,7 @@ export const markAsRead = async (req, res) => {
       data: notification,
     });
   } catch (error) {
+    console.error("Mark as read error:", error);
     res.status(500).json({
       success: false,
       message: "Server Error",

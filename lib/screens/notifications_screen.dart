@@ -6,6 +6,7 @@ import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/custom_buttons.dart';
+import 'job_applicants_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({Key? key}) : super(key: key);
@@ -33,15 +34,23 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
 
     try {
-      final response = await _apiService.getNotifications();
-      final notifList = (response['notifications'] as List)
-          .map((n) => NotificationModel.fromJson(n))
-          .toList();
+      final response = await _apiService.getHRNotifications();
+      
+      if (response['success'] == true) {
+        final notifList = (response['data'] as List)
+            .map((n) => NotificationModel.fromJson(n))
+            .toList();
 
-      setState(() {
-        _notifications = notifList;
-        _isLoading = false;
-      });
+        setState(() {
+          _notifications = notifList;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _error = response['message'] ?? 'Failed to load notifications';
+          _isLoading = false;
+        });
+      }
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -168,8 +177,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildNotificationCard(NotificationModel notification) {
+    print('📝 Building notification card: ${notification.title}');
     return GlassCard(
       margin: const EdgeInsets.only(bottom: 12),
+      onTap: () {
+        print('👆 GlassCard tapped!');
+        _handleNotificationTap(notification);
+      },
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -230,14 +244,91 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
+  void _handleNotificationTap(NotificationModel notification) {
+    print('🔔 Notification tapped!');
+    print('Type: ${notification.type}');
+    print('Metadata: ${notification.metadata}');
+    
+    // Handle notification tap based on type and metadata
+    if (notification.type == 'application') {
+      if (notification.metadata != null && notification.metadata!.isNotEmpty) {
+        final jobId = notification.metadata!['jobId'];
+        final jobTitle = notification.metadata!['jobTitle'] ?? 'الوظيفة';
+        
+        print('JobId: $jobId');
+        print('JobTitle: $jobTitle');
+        
+        if (jobId != null) {
+          print('✅ Navigating to JobApplicantsScreen...');
+          // Navigate to job applicants screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => JobApplicantsScreen(
+                jobId: jobId.toString(),
+                jobTitle: jobTitle.toString(),
+              ),
+            ),
+          );
+          
+          // Mark notification as read
+          _markNotificationAsRead(notification.id);
+        } else {
+          print('❌ JobId is null!');
+          _showErrorSnackBar('معلومات الإشعار غير كاملة');
+        }
+      } else {
+        print('❌ Metadata is null or empty!');
+        _showErrorSnackBar('معلومات الإشعار غير متوفرة');
+      }
+    } else {
+      print('ℹ️ Notification type is not "application": ${notification.type}');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _markNotificationAsRead(String notificationId) async {
+    try {
+      // Call API to mark as read
+      await _apiService.markNotificationAsRead(notificationId);
+      
+      // Update local state
+      setState(() {
+        final index = _notifications.indexWhere((n) => n.id == notificationId);
+        if (index != -1) {
+          // Reload notifications to get updated state
+          _loadNotifications();
+        }
+      });
+    } catch (e) {
+      print('Failed to mark notification as read: $e');
+    }
+  }
+
   IconData _getTypeIcon(String type) {
     switch (type) {
+      case 'application':
+        return Icons.person_add;
       case 'job_match':
         return Icons.work;
       case 'learning_update':
         return Icons.school;
       case 'interview_reminder':
+      case 'interview':
         return Icons.event;
+      case 'system':
+        return Icons.info;
+      case 'message':
+        return Icons.message;
       default:
         return Icons.notifications;
     }
@@ -245,12 +336,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Color _getTypeColor(String type) {
     switch (type) {
+      case 'application':
+        return AppColors.info;
       case 'job_match':
         return AppColors.success;
       case 'learning_update':
         return AppColors.info;
       case 'interview_reminder':
+      case 'interview':
         return AppColors.warning;
+      case 'system':
+        return AppColors.textSecondary;
+      case 'message':
+        return AppColors.primaryGreen;
       default:
         return AppColors.primaryGreen;
     }

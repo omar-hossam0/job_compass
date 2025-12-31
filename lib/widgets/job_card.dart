@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
 import '../models/student.dart';
+import '../models/job.dart';
 import 'glass_card.dart';
 
 class JobCard extends StatelessWidget {

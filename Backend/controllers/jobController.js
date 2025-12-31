@@ -430,6 +430,31 @@ export const applyToJob = async (req, res) => {
     });
     await candidate.save();
 
+    // ✅ Create notification for HR who posted this job
+    try {
+      const Notification = (await import("../models/Notification.js")).default;
+      
+      await Notification.create({
+        userId: job.postedBy, // HR who posted the job
+        title: "متقدم جديد على الوظيفة",
+        message: `${fullName} قدم على وظيفة ${job.title}`,
+        type: "application",
+        read: false,
+        link: `/job/${jobId}/applicants`, // Link to job applicants page
+        metadata: {
+          jobId: jobId,
+          jobTitle: job.title,
+          candidateId: candidate._id,
+          candidateName: fullName,
+          applicationId: application._id,
+        },
+      });
+      console.log('✅ Notification sent to HR:', job.postedBy);
+    } catch (notificationError) {
+      console.error('⚠️ Failed to send notification:', notificationError.message);
+      // Don't fail the application if notification fails
+    }
+
     res.json({
       success: true,
       message: "تم التقديم بنجاح!",

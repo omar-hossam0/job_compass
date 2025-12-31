@@ -5,6 +5,7 @@ import '../models/hr_notification.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
+import 'job_applicants_screen.dart';
 
 class HRNotificationsScreen extends StatefulWidget {
   const HRNotificationsScreen({Key? key}) : super(key: key);
@@ -164,73 +165,137 @@ class _HRNotificationsScreenState extends State<HRNotificationsScreen> {
   }
 
   Widget _buildNotificationCard(HRNotification notification) {
+    print('📝 Building HR notification card: ${notification.title}');
     return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: _getNotificationColor(
-                  notification.type,
-                ).withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                _getNotificationIcon(notification.type),
-                color: _getNotificationColor(notification.type),
-                size: 24,
-              ),
+      onTap: () {
+        print('👆 HR Notification tapped!');
+        _handleNotificationTap(notification);
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: _getNotificationColor(
+                notification.type,
+              ).withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          notification.title,
-                          style: AppStyles.heading3.copyWith(
-                            fontWeight: notification.isRead
-                                ? FontWeight.normal
-                                : FontWeight.bold,
-                          ),
+            child: Icon(
+              _getNotificationIcon(notification.type),
+              color: _getNotificationColor(notification.type),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  notification.title,
+                  style: AppStyles.heading3.copyWith(
+                    fontWeight: notification.isRead
+                        ? FontWeight.normal
+                        : FontWeight.bold,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  notification.message,
+                  style: AppStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _formatDate(notification.createdAt),
+                      style: AppStyles.bodySmall.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                    if (!notification.isRead)
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primaryGreen,
+                          shape: BoxShape.circle,
                         ),
                       ),
-                      if (!notification.isRead)
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.primaryGreen,
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    notification.message,
-                    style: AppStyles.bodyMedium.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _formatDate(notification.createdAt),
-                    style: AppStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleNotificationTap(HRNotification notification) {
+    print('🔔 HR Notification tapped!');
+    print('Type: ${notification.type}');
+    print('Metadata: ${notification.metadata}');
+    
+    if (notification.type == 'application') {
+      if (notification.metadata != null && notification.metadata!.isNotEmpty) {
+        final jobId = notification.metadata!['jobId'];
+        final jobTitle = notification.metadata!['jobTitle'] ?? 'الوظيفة';
+        
+        print('JobId: $jobId');
+        print('JobTitle: $jobTitle');
+        
+        if (jobId != null) {
+          print('✅ Navigating to JobApplicantsScreen...');
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => JobApplicantsScreen(
+                jobId: jobId.toString(),
+                jobTitle: jobTitle.toString(),
               ),
             ),
-          ],
-        ),
+          );
+          
+          // Mark notification as read
+          _markNotificationAsRead(notification.id);
+        } else {
+          print('❌ JobId is null!');
+          _showErrorSnackBar('معلومات الإشعار غير كاملة');
+        }
+      } else {
+        print('❌ Metadata is null or empty!');
+        _showErrorSnackBar('معلومات الإشعار غير متوفرة');
+      }
+    } else {
+      print('ℹ️ Notification type is not "application": ${notification.type}');
+    }
+  }
+
+  Future<void> _markNotificationAsRead(String notificationId) async {
+    try {
+      await _apiService.markNotificationAsRead(notificationId);
+      _loadNotifications();
+    } catch (e) {
+      print('Failed to mark notification as read: $e');
+    }
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
       ),
     );
   }

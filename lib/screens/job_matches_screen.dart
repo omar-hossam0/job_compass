@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
 import '../models/student.dart';
+import '../models/job.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
