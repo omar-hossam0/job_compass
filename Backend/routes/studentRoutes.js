@@ -82,7 +82,21 @@ const calculateKeywordMatch = (cvText, job) => {
     totalJobKeywords > 0 ? (matchedKeywords / totalJobKeywords) * 100 : 0;
   const skillScore =
     skills.length > 0 ? (skillMatches / skills.length) * 100 : 0;
-  return skillScore * 0.6 + keywordScore * 0.4;
+
+  // Combine with more realistic weighting and cap at reasonable levels
+  const rawScore = skillScore * 0.6 + keywordScore * 0.4;
+
+  // Apply penalty for very few skills/keywords matched
+  let finalScore = rawScore;
+  if (skillMatches === 0 && matchedKeywords === 0) {
+    finalScore = 0;
+  } else if (skillMatches <= 1 && matchedKeywords <= 2) {
+    finalScore = Math.min(rawScore, 40); // Cap low matches at 40%
+  } else if (skillMatches <= 2 && matchedKeywords <= 4) {
+    finalScore = Math.min(rawScore, 65); // Cap medium matches at 65%
+  }
+
+  return Math.round(finalScore);
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -664,6 +678,7 @@ router.get("/job-matches", async (req, res) => {
       const cvText = candidate.resumeText;
       matchedJobs = jobs.map((job) => {
         const keywordMatch = calculateKeywordMatch(cvText, job);
+        console.log(`🎯 Job "${job.title}": keyword match = ${keywordMatch}%`);
         return {
           id: job._id,
           title: job.title,
@@ -754,8 +769,8 @@ router.get("/job-matches", async (req, res) => {
             const contentPenalty = Math.min(
               20,
               (100 - descLength) / 8 +
-                (15 - titleLength) * 1.5 +
-                (hasSkills ? 0 : 5)
+              (15 - titleLength) * 1.5 +
+              (hasSkills ? 0 : 5)
             );
             matchScore = Math.max(0, matchScore - contentPenalty);
             if (contentPenalty > 8) {

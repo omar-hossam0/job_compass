@@ -38,7 +38,7 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
 
     try {
       // Use fast mode to avoid long waits on initial load
-      final response = await _apiService.get('/student/job-matches?fast=1');
+      final response = await _apiService.get('/student/job-matches');
       final hasCv = response['hasCv'] ?? true;
 
       print('📥 Job Matches API Response: $response');
