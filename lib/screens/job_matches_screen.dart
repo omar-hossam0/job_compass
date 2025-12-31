@@ -22,6 +22,7 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
   List<Job> _jobs = [];
   String? _error;
   String _sortBy = 'match';
+  bool _hasCv = true;
 
   @override
   void initState() {
@@ -36,8 +37,9 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
     });
 
     try {
-      // Use the AI-powered job matches endpoint that compares CV with jobs
-      final response = await _apiService.get('/student/job-matches');
+      // Use fast mode to avoid long waits on initial load
+      final response = await _apiService.get('/student/job-matches?fast=1');
+      final hasCv = response['hasCv'] ?? true;
 
       print('📥 Job Matches API Response: $response');
 
@@ -45,14 +47,18 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
         final data = response['data'];
 
         // Check if user has uploaded CV
-        if (response['hasCv'] == false) {
+        if (hasCv == false) {
           print('⚠️ No CV uploaded - showing empty state');
           setState(() {
+            _hasCv = false;
             _jobs = [];
             _isLoading = false;
           });
           return;
         }
+
+        // Persist CV state even when jobs are empty
+        _hasCv = hasCv;
 
         print('✅ Success! Data type: ${data.runtimeType}');
         print('📊 Jobs count: ${(data as List).length}');
@@ -80,11 +86,13 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
         setState(() {
           _jobs = jobsList;
           _sortJobs();
+          _hasCv = hasCv;
           _isLoading = false;
         });
       } else {
         setState(() {
           _error = response['message'] ?? 'Failed to load job matches';
+          _hasCv = hasCv;
           _isLoading = false;
         });
       }
@@ -93,6 +101,7 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
       print('Stack trace: $stackTrace');
       setState(() {
         _error = e.toString();
+        _hasCv = true;
         _isLoading = false;
       });
     }
@@ -202,6 +211,12 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
   }
 
   Widget _buildEmptyState() {
+    final title = _hasCv ? 'No Job Matches Yet' : 'No CV Found';
+    final subtitle = _hasCv
+        ? 'We could not find matches yet. Try refreshing or updating your profile.'
+        : 'Upload your CV to get personalized job recommendations';
+    final icon = _hasCv ? Icons.work_outline : Icons.upload_file;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(40),
@@ -209,23 +224,25 @@ class _JobMatchesScreenState extends State<JobMatchesScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.work_off_outlined,
+              icon,
               size: 80,
               color: AppColors.textSecondary.withOpacity(0.5),
             ),
             const SizedBox(height: 24),
-            Text('No Job Matches Yet', style: AppStyles.heading2),
+            Text(title, style: AppStyles.heading2),
             const SizedBox(height: 12),
             Text(
-              'Upload your CV to get personalized job recommendations',
+              subtitle,
               style: AppStyles.bodyMedium,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 32),
             PrimaryButton(
-              text: 'Upload CV',
-              onPressed: () => Navigator.pushNamed(context, '/profile'),
-              icon: Icons.upload_file,
+              text: _hasCv ? 'Refresh Matches' : 'Upload CV',
+              onPressed: _hasCv
+                  ? _loadJobMatches
+                  : () => Navigator.pushNamed(context, '/profile'),
+              icon: _hasCv ? Icons.refresh : Icons.upload_file,
             ),
           ],
         ),

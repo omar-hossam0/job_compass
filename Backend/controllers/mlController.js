@@ -5,6 +5,7 @@ import { hybridMatch } from "../utils/hybridMatcher.js";
 import { getPythonMatcher } from "../utils/pythonMatcher.js";
 import path from "path";
 import { fileURLToPath } from "url";
+import { execFile } from "child_process";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,6 +14,53 @@ const ML_SERVICE_URL = process.env.ML_HOST || "http://127.0.0.1:5001";
 const CV_CLASSIFIER_URL =
   process.env.CV_CLASSIFIER_URL || "http://127.0.0.1:5002";
 const USE_PYTHON_MATCHER = process.env.USE_PYTHON_MATCHER !== "false"; // Default: true (Python BERT matcher)
+const LOCAL_SKILL_MATCHER = path.join(
+  __dirname,
+  "..",
+  "..",
+  "last-one",
+  "skill_matcher_local.py"
+);
+const PYTHON_BIN = process.env.PYTHON_BIN || "python";
+
+async function runLocalSkillMatcher(cvText, jobDescription) {
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      cv_text: cvText,
+      job_desc: jobDescription,
+    });
+    const child = execFile(
+      PYTHON_BIN,
+      [LOCAL_SKILL_MATCHER],
+      {
+        maxBuffer: 20 * 1024 * 1024,
+        cwd: path.join(__dirname, "..", "..", "last-one"),
+      },
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error("❌ Local skill matcher error:", error.message);
+          console.error("stderr:", stderr);
+          return reject(error);
+        }
+        try {
+          const parsed = JSON.parse(stdout.toString());
+          return resolve(parsed);
+        } catch (parseError) {
+          console.error(
+            "❌ Failed to parse skill matcher output:",
+            parseError.message
+          );
+          console.error("stdout:", stdout);
+          console.error("stderr:", stderr);
+          return reject(parseError);
+        }
+      }
+    );
+
+    child.stdin.write(payload);
+    child.stdin.end();
+  });
+}
 
 // Python service DISABLED - using JavaScript matcher only for reliable results
 let pythonServiceReady = false;
@@ -639,7 +687,14 @@ export const analyzeJobForUser = async (req, res) => {
     }
 
     const cvText = candidate.resumeText;
-    const jobDescription = job.description || "";
+    const requiredSkillsText = (job.requiredSkills || []).join(", ");
+    const jobDescription = [
+      job.title || "",
+      job.description || "",
+      requiredSkillsText ? `Required skills: ${requiredSkillsText}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
     if (!jobDescription.trim()) {
       return res.status(400).json({
@@ -650,53 +705,85 @@ export const analyzeJobForUser = async (req, res) => {
 
     console.log("📄 CV Text Length:", cvText.length);
     console.log("💼 Job Description Length:", jobDescription.length);
+    console.log(
+      "🧠 Required skills appended:",
+      requiredSkillsText ? requiredSkillsText.length : 0
+    );
 
     // Call TensorFlow Skill Matcher Service (last-one model)
     try {
-      console.log("🤖 Calling TensorFlow Skill Matcher Service...");
-      const SKILL_MATCHER_URL =
-        process.env.SKILL_MATCHER_URL || "http://127.0.0.1:5004";
+      const SKILL_MATCHER_URL = process.env.SKILL_MATCHER_URL || "";
+      if (SKILL_MATCHER_URL) {
+        console.log(
+          "🤖 Calling TensorFlow Skill Matcher Service...",
+          SKILL_MATCHER_URL
+        );
+        const analyzerResponse = await axios.post(
+          `${SKILL_MATCHER_URL.replace(/\/$/, "")}/analyze`,
+          {
+            cv_text: cvText,
+            job_desc: jobDescription,
+          },
+          {
+            timeout: 30000, // 30 seconds timeout
+          }
+        );
 
-      const analyzerResponse = await axios.post(
-        `${SKILL_MATCHER_URL}/analyze`,
-        {
-          cv_text: cvText,
-          job_desc: jobDescription,
-        },
-        {
-          timeout: 30000, // 30 seconds timeout
+        if (analyzerResponse.data.success) {
+          const analysisData = analyzerResponse.data.data;
+
+          console.log("✅ TensorFlow Analysis Complete:");
+          console.log(`   - Match: ${analysisData.match_percentage}%`);
+          console.log(
+            `   - Matched Skills: ${analysisData.matched_skills.length}`
+          );
+          console.log(
+            `   - Missing Skills: ${analysisData.missing_skills.length}`
+          );
+
+          return res.status(200).json({
+            success: true,
+            data: {
+              jobTitle: job.title,
+              company: job.company,
+              matchScore: analysisData.match_percentage,
+              matchPercentage: analysisData.match_percentage,
+              matchedSkills: analysisData.matched_skills,
+              missingSkills: analysisData.missing_skills,
+              totalJobSkills: analysisData.job_skills.length,
+              totalCvSkills: analysisData.cv_skills.length,
+              mlService: "tensorflow",
+            },
+          });
         }
-      );
+      }
 
-      if (analyzerResponse.data.success) {
-        const analysisData = analyzerResponse.data.data;
-
-        console.log("✅ TensorFlow Analysis Complete:");
-        console.log(`   - Match: ${analysisData.match_percentage}%`);
-        console.log(
-          `   - Matched Skills: ${analysisData.matched_skills.length}`
-        );
-        console.log(
-          `   - Missing Skills: ${analysisData.missing_skills.length}`
-        );
-
+      // If remote service not configured or failed, try local Python runner
+      console.log("🤖 Falling back to local skill matcher script...");
+      const localResult = await runLocalSkillMatcher(cvText, jobDescription);
+      if (localResult?.success && localResult.data) {
+        const data = localResult.data;
         return res.status(200).json({
           success: true,
           data: {
             jobTitle: job.title,
             company: job.company,
-            matchScore: analysisData.match_percentage,
-            matchPercentage: analysisData.match_percentage,
-            matchedSkills: analysisData.matched_skills,
-            missingSkills: analysisData.missing_skills,
-            totalJobSkills: analysisData.job_skills.length,
-            totalCvSkills: analysisData.cv_skills.length,
-            mlService: "tensorflow",
+            matchScore: data.match_percentage,
+            matchPercentage: data.match_percentage,
+            matchedSkills: data.matched_skills,
+            missingSkills: data.missing_skills,
+            totalJobSkills: data.job_skills.length,
+            totalCvSkills: data.cv_skills.length,
+            mlService: "local-tensorflow",
           },
         });
-      } else {
-        throw new Error("Skill Analyzer returned unsuccessful response");
       }
+
+      if (localResult && localResult.success === false) {
+        throw new Error(localResult.message || "Local skill matcher failed");
+      }
+
+      throw new Error("Skill matcher service unavailable");
     } catch (mlError) {
       console.error("❌ TensorFlow Service Error:", mlError.message);
 
