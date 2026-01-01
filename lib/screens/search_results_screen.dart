@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
-import '../widgets/glass_card.dart';
 import '../widgets/job_card.dart';
 import '../models/job.dart';
 import '../services/api_service.dart';

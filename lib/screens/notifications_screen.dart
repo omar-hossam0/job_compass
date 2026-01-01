@@ -159,7 +159,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  for (var n in _notifications) {
+                  for (var _ in _notifications) {
                     // Mark as read logic here
                   }
                 });

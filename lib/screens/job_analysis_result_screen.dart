@@ -738,24 +738,6 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
     );
   }
 
-  Widget _buildCountBadge(int count, {Color? color}) {
-    final badgeColor = color ?? AppColors.primaryTeal;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: badgeColor.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        count.toString(),
-        style: AppStyles.bodySmall.copyWith(
-          color: badgeColor,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
-  }
-
   Widget _buildEmptyState({
     required IconData icon,
     required String title,

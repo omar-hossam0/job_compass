@@ -16,17 +16,19 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
-  bool _isLoading = false;
   bool _isSending = false;
 
   @override
   void initState() {
     super.initState();
-    _messages.add(ChatMessage(
-      text: 'Hi! I\'m your career assistant. I can help you with questions about your CV, career advice, and job recommendations. How can I help you today?',
-      isBot: true,
-      timestamp: DateTime.now(),
-    ));
+    _messages.add(
+      ChatMessage(
+        text:
+            'Hi! I\'m your career assistant. I can help you with questions about your CV, career advice, and job recommendations. How can I help you today?',
+        isBot: true,
+        timestamp: DateTime.now(),
+      ),
+    );
   }
 
   @override
@@ -41,11 +43,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     if (message.isEmpty || _isSending) return;
 
     setState(() {
-      _messages.add(ChatMessage(
-        text: message,
-        isBot: false,
-        timestamp: DateTime.now(),
-      ));
+      _messages.add(
+        ChatMessage(text: message, isBot: false, timestamp: DateTime.now()),
+      );
       _isSending = true;
     });
 
@@ -59,28 +59,36 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
       if (response['success'] == true) {
         setState(() {
-          _messages.add(ChatMessage(
-            text: response['answer'] ?? 'I couldn\'t process that. Please try again.',
-            isBot: true,
-            timestamp: DateTime.now(),
-          ));
+          _messages.add(
+            ChatMessage(
+              text:
+                  response['answer'] ??
+                  'I couldn\'t process that. Please try again.',
+              isBot: true,
+              timestamp: DateTime.now(),
+            ),
+          );
         });
       } else {
         setState(() {
-          _messages.add(ChatMessage(
-            text: 'Sorry, I encountered an error. Please try again.',
-            isBot: true,
-            timestamp: DateTime.now(),
-          ));
+          _messages.add(
+            ChatMessage(
+              text: 'Sorry, I encountered an error. Please try again.',
+              isBot: true,
+              timestamp: DateTime.now(),
+            ),
+          );
         });
       }
     } catch (e) {
       setState(() {
-        _messages.add(ChatMessage(
-          text: 'Connection error. Please check your internet connection.',
-          isBot: true,
-          timestamp: DateTime.now(),
-        ));
+        _messages.add(
+          ChatMessage(
+            text: 'Connection error. Please check your internet connection.',
+            isBot: true,
+            timestamp: DateTime.now(),
+          ),
+        );
       });
     } finally {
       setState(() => _isSending = false);
@@ -108,9 +116,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           child: Column(
             children: [
               _buildAppBar(),
-              Expanded(
-                child: _buildMessagesList(),
-              ),
+              Expanded(child: _buildMessagesList()),
               _buildMessageInput(),
             ],
           ),

@@ -3,11 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../constants/app_colors.dart';
-import '../constants/app_styles.dart';
 import '../services/api_service.dart';
-import '../widgets/common_widgets.dart';
-import '../widgets/glass_card.dart';
-import '../widgets/custom_buttons.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({Key? key}) : super(key: key);
@@ -309,62 +305,91 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildAppBar(),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : SingleChildScrollView(
-                        child: Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Form(
-                            key: _formKey,
-                            child: Column(
-                              children: [
-                                _buildProfileImage(),
-                                const SizedBox(height: 32),
-                                _buildProfileForm(),
-                                const SizedBox(height: 24),
-                                _buildCVSection(),
-                                const SizedBox(height: 24),
-                                _buildRoleInfo(),
-                                const SizedBox(height: 32),
-                                _buildSaveButton(),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      backgroundColor: Colors.white,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                _buildCurvedHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 90),
+                        _buildNameSection(),
+                        const SizedBox(height: 16),
+                        _buildEditButton(),
+                        const SizedBox(height: 24),
+                        _buildStatsSection(),
+                        const SizedBox(height: 32),
+                        _buildMenuList(),
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 
-  Widget _buildAppBar() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          IconButtonCircular(
-            icon: Icons.arrow_back,
-            onPressed: () => Navigator.pop(context),
-            backgroundColor: Colors.white.withOpacity(0.3),
-            iconColor: AppColors.textPrimary,
+  Widget _buildCurvedHeader() {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          height: 180,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF5BA8D9), Color(0xFF62B0E8)],
+            ),
+            borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(40),
+              bottomRight: Radius.circular(40),
+            ),
           ),
-          const SizedBox(width: 16),
-          Text('Edit Profile', style: AppStyles.heading2),
-        ],
-      ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  Text(
+                    'Profile',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.more_horiz, color: Colors.white),
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: -60,
+          left: 0,
+          right: 0,
+          child: Center(child: _buildProfileImage()),
+        ),
+      ],
     );
   }
 
   Widget _buildProfileImage() {
+    final bool hasImage = _selectedImageBytes != null || _profileImage != null;
+
     return Stack(
       children: [
         Container(
@@ -372,25 +397,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
           height: 120,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: AppColors.primaryGreen, width: 3),
+            color: hasImage ? Colors.white : Color(0xFFE8E8E8),
+            border: Border.all(color: Colors.white, width: 5),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 15,
+                offset: Offset(0, 5),
+              ),
+            ],
             image: _selectedImageBytes != null
                 ? DecorationImage(
                     image: MemoryImage(_selectedImageBytes!),
                     fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
                   )
                 : _profileImage != null
                 ? DecorationImage(
                     image: _getImageProvider(_profileImage!)!,
                     fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
                   )
                 : null,
           ),
-          child: (_selectedImageBytes == null && _profileImage == null)
-              ? const Icon(
-                  Icons.person,
-                  size: 60,
-                  color: AppColors.textSecondary,
-                )
+          child: !hasImage
+              ? Icon(Icons.person, size: 70, color: Colors.grey[500])
               : null,
         ),
         Positioned(
@@ -401,14 +432,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.primaryGreen,
+                color: Color(0xFF5BA8D9),
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 2),
               ),
               child: const Icon(
                 Icons.camera_alt,
                 color: Colors.white,
-                size: 20,
+                size: 18,
               ),
             ),
           ),
@@ -417,191 +448,221 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileForm() {
-    return GlassCard(
-      child: Column(
+  Widget _buildNameSection() {
+    return Column(
+      children: [
+        Text(
+          _nameController.text.isNotEmpty ? _nameController.text : 'User Name',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF2D3748),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEditButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      child: ElevatedButton(
+        onPressed: () => _showEditDialog(),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Color(0xFF5BA8D9),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(25),
+          ),
+          elevation: 0,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.edit, size: 18),
+            SizedBox(width: 8),
+            Text(
+              'Edit Personal Data',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsSection() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 40),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          TextFormField(
-            controller: _nameController,
-            decoration: InputDecoration(
-              labelText: 'Name',
-              prefixIcon: const Icon(Icons.person_outline),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            validator: (value) =>
-                value?.isEmpty ?? true ? 'Please enter your name' : null,
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _emailController,
-            decoration: InputDecoration(
-              labelText: 'Email',
-              prefixIcon: const Icon(Icons.email_outlined),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            keyboardType: TextInputType.emailAddress,
-            validator: (value) {
-              if (value?.isEmpty ?? true) return 'Please enter your email';
-              if (!value!.contains('@')) return 'Please enter a valid email';
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _phoneController,
-            decoration: InputDecoration(
-              labelText: 'Phone',
-              prefixIcon: const Icon(Icons.phone_outlined),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            keyboardType: TextInputType.phone,
-          ),
+          _buildStatItem('2x', 'Applications'),
+          Container(width: 1, height: 30, color: Colors.grey[300]),
+          _buildStatItem('6', 'Interviews'),
         ],
       ),
     );
   }
 
-  Widget _buildCVSection() {
-    final String? displayFileName = (_cvFileName?.trim().isNotEmpty ?? false)
-        ? _cvFileName!.trim()
-        : (_selectedCvName?.trim().isNotEmpty ?? false)
-        ? _selectedCvName!.trim()
-        : null;
+  Widget _buildStatItem(String count, String label) {
+    return Column(
+      children: [
+        Text(
+          count,
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF2D3748),
+          ),
+        ),
+        SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+      ],
+    );
+  }
 
-    final bool hasCv =
-        _cvUrl != null ||
-        (displayFileName != null && displayFileName.isNotEmpty);
+  Widget _buildMenuList() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+          child: Text(
+            'Profile',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF2D3748),
+            ),
+          ),
+        ),
+        _buildMenuItem(
+          Icons.person_outline,
+          'Personal Information',
+          () => _showEditDialog(),
+        ),
+        _buildMenuItem(Icons.description_outlined, 'Resume', () => _pickCV()),
+        _buildMenuItem(Icons.work_outline, 'Career History', () {}),
+        _buildMenuItem(Icons.school_outlined, 'Education', () {}),
+        _buildMenuItem(
+          Icons.card_membership_outlined,
+          'Licenses and Certifications',
+          () {},
+        ),
+      ],
+    );
+  }
 
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.description_outlined,
-                color: AppColors.primaryGreen,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Curriculum Vitae (CV)',
-                  style: AppStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+  Widget _buildMenuItem(IconData icon, String title, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(color: Colors.grey[200]!, width: 1),
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: Color(0xFF5BA8D9), size: 24),
+            SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Color(0xFF2D3748),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (hasCv)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.success.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.success.withOpacity(0.3)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.check_circle, color: AppColors.success, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      displayFileName ?? 'CV uploaded',
-                      style: AppStyles.bodySmall.copyWith(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+            ),
+            Icon(Icons.chevron_right, color: Colors.grey[400], size: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit Profile'),
+        content: SingleChildScrollView(
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextFormField(
+                  controller: _nameController,
+                  decoration: InputDecoration(
+                    labelText: 'Name',
+                    prefixIcon: const Icon(Icons.person_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                ],
-              ),
-            ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _pickCV,
-              icon: const Icon(Icons.upload_file, size: 20),
-              label: Text(_cvUrl != null ? 'Replace CV' : 'Upload CV (PDF)'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primaryGreen,
-                side: BorderSide(color: AppColors.primaryGreen),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+                  validator: (value) =>
+                      value?.isEmpty ?? true ? 'Please enter your name' : null,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'PDF, DOC, DOCX, TXT, JPG, PNG (max 100MB)',
-            style: AppStyles.bodySmall.copyWith(color: AppColors.textSecondary),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRoleInfo() {
-    return GlassCard(
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              _userRole == 'hr' ? Icons.business_center : Icons.person,
-              color: AppColors.primaryGreen,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Account Type', style: AppStyles.bodySmall),
-                const SizedBox(height: 4),
-                Text(
-                  _userRole == 'hr' ? 'HR Manager' : 'Employee',
-                  style: AppStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryGreen,
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    prefixIcon: const Icon(Icons.email_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    if (value?.isEmpty ?? true)
+                      return 'Please enter your email';
+                    if (!value!.contains('@'))
+                      return 'Please enter a valid email';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: InputDecoration(
+                    labelText: 'Phone',
+                    prefixIcon: const Icon(Icons.phone_outlined),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  keyboardType: TextInputType.phone,
                 ),
               ],
             ),
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (_formKey.currentState!.validate()) {
+                _saveProfile();
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Color(0xFF5BA8D9)),
+            child: Text('Save'),
+          ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return PrimaryButton(
-      text: _isSaving ? 'Saving...' : 'Save Changes',
-      onPressed: () => _saveProfile(),
-      isLoading: _isSaving,
-      icon: Icons.save,
-      width: double.infinity,
     );
   }
 }

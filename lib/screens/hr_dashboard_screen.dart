@@ -5,7 +5,6 @@ import '../constants/app_styles.dart';
 import '../models/hr_dashboard.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
-import '../widgets/glass_card.dart';
 import '../widgets/custom_buttons.dart';
 
 class HRDashboardScreen extends StatefulWidget {
@@ -58,37 +57,43 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GradientBackground(
-        child: LoadingOverlay(
-          isLoading: _isLoading && _dashboardData == null,
-          child: SafeArea(
-            child: _error != null
-                ? _buildError()
-                : _dashboardData == null
-                ? const SizedBox()
-                : RefreshIndicator(
-                    onRefresh: _loadDashboard,
-                    color: AppColors.primaryGreen,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildHeader(),
-                            const SizedBox(height: 32),
-                            _buildStatsCards(),
-                            const SizedBox(height: 24),
-                            _buildQuickActions(),
-                            const SizedBox(height: 24),
-                            _buildRecentJobs(),
-                          ],
+      backgroundColor: const Color(0xFFF8F9FD),
+      body: LoadingOverlay(
+        isLoading: _isLoading && _dashboardData == null,
+        child: SafeArea(
+          child: _error != null
+              ? _buildError()
+              : _dashboardData == null
+              ? const SizedBox()
+              : RefreshIndicator(
+                  onRefresh: _loadDashboard,
+                  color: AppColors.primaryGreen,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildHeader(),
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildStatsCards(),
                         ),
-                      ),
+                        const SizedBox(height: 24),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildQuickActions(),
+                        ),
+                        const SizedBox(height: 24),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: _buildRecentJobs(),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
                     ),
                   ),
-          ),
+                ),
         ),
       ),
       bottomNavigationBar: _buildBottomNav(),
@@ -121,22 +126,120 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
   }
 
   Widget _buildHeader() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Welcome back! 👋',
-          style: AppStyles.heading3.copyWith(color: AppColors.textSecondary),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          _dashboardData?.companyName ?? 'Company',
-          style: AppStyles.heading1.copyWith(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
+    final hour = DateTime.now().hour;
+    String greeting = 'Good Morning,';
+    if (hour >= 12 && hour < 17) {
+      greeting = 'Good Afternoon,';
+    } else if (hour >= 17) {
+      greeting = 'Good Evening,';
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  greeting,
+                  style: AppStyles.bodyMedium.copyWith(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _dashboardData?.companyName ?? 'Company',
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1A1D26),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          // Notification Icon
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Stack(
+                children: [
+                  const Icon(
+                    Icons.notifications_outlined,
+                    color: Color(0xFF1A1D26),
+                    size: 24,
+                  ),
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF5B9FED),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              onPressed: () {
+                Navigator.pushNamed(context, '/hr/notifications');
+              },
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Profile/Settings Icon
+          GestureDetector(
+            onTap: () {
+              Navigator.pushNamed(context, '/hr/settings');
+            },
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(14),
+                color: const Color(0xFF5B9FED),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  (_dashboardData?.companyName ?? 'C').isNotEmpty
+                      ? (_dashboardData?.companyName ?? 'C')[0].toUpperCase()
+                      : 'C',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -148,16 +251,16 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
             'Active Jobs',
             _dashboardData?.activeJobsCount.toString() ?? '0',
             Icons.work_rounded,
-            AppColors.primaryGreen,
+            const Color(0xFF5B9FED),
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: _buildStatCard(
-            'Total Candidates',
+            'Candidates',
             _dashboardData?.totalCandidatesCount.toString() ?? '0',
             Icons.people_rounded,
-            AppColors.primaryBlue,
+            const Color(0xFF6BCB77),
           ),
         ),
       ],
@@ -170,84 +273,138 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
     IconData icon,
     Color color,
   ) {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 28),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 16),
-            Text(
-              value,
-              style: AppStyles.heading1.copyWith(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1A1D26),
             ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: AppStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 4),
+          Text(title, style: TextStyle(fontSize: 13, color: Colors.grey[600])),
+        ],
       ),
     );
   }
 
   Widget _buildQuickActions() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Quick Actions', style: AppStyles.heading2),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: PrimaryButton(
-                text: 'Post Job',
-                onPressed: () => Navigator.pushNamed(context, '/hr/post-job'),
-                icon: Icons.add_circle_outline,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () => Navigator.pushNamed(context, '/hr/jobs'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryGreen,
-                  side: const BorderSide(
-                    color: AppColors.primaryGreen,
-                    width: 2,
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.folder_rounded),
-                    const SizedBox(width: 8),
-                    Text('View Jobs', style: AppStyles.buttonText),
-                  ],
-                ),
-              ),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF5B9FED), Color(0xFF4A8FDD)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-      ],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF5B9FED).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Quick Actions',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/hr/post-job'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: const Color(0xFF5B9FED),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.add_circle_outline, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Post Job',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pushNamed(context, '/hr/jobs'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white, width: 2),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.folder_rounded, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'View Jobs',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -260,14 +417,23 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Recent Jobs', style: AppStyles.heading2),
+            const Text(
+              'Recent Jobs',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1A1D26),
+              ),
+            ),
             if (jobs.isNotEmpty)
               TextButton(
                 onPressed: () => Navigator.pushNamed(context, '/hr/jobs'),
-                child: Text(
+                child: const Text(
                   'View All',
-                  style: AppStyles.bodyMedium.copyWith(
-                    color: AppColors.primaryGreen,
+                  style: TextStyle(
+                    color: Color(0xFF5B9FED),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -275,27 +441,43 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
         ),
         const SizedBox(height: 16),
         if (jobs.isEmpty)
-          GlassCard(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.work_off_outlined,
-                      size: 48,
-                      color: AppColors.textSecondary,
-                    ),
-                    const SizedBox(height: 12),
-                    Text('No jobs posted yet', style: AppStyles.bodyMedium),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Post your first job to get started',
-                      style: AppStyles.bodySmall,
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+          Container(
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
+              ],
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.work_off_outlined,
+                    size: 48,
+                    color: Colors.grey[400],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'No jobs posted yet',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF1A1D26),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Post your first job to get started',
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
             ),
           )
@@ -313,71 +495,105 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
   }
 
   Widget _buildJobItem(Map<String, dynamic> job) {
-    return GlassCard(
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(20),
+      ),
       child: InkWell(
         onTap: () => Navigator.pushNamed(
           context,
           '/hr/job-details',
           arguments: job['_id'] ?? job['id'],
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.work_rounded,
-                  color: AppColors.primaryGreen,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
                       job['title'] ?? 'Job Title',
-                      style: AppStyles.heading3,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1A1D26),
+                      ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${job['applicantsCount'] ?? 0} applicants',
-                      style: AppStyles.bodySmall.copyWith(
-                        color: AppColors.textSecondary,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: job['status'] == 'active'
+                          ? const Color(0xFFD1E8D5)
+                          : Colors.grey[300],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      job['status']?.toUpperCase() ?? 'ACTIVE',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: job['status'] == 'active'
+                            ? const Color(0xFF4A7C59)
+                            : Colors.grey[700],
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
                       ),
                     ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: job['status'] == 'active'
-                      ? AppColors.success.withOpacity(0.15)
-                      : AppColors.textSecondary.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  job['status'] ?? 'active',
-                  style: AppStyles.bodySmall.copyWith(
-                    color: job['status'] == 'active'
-                        ? AppColors.success
-                        : AppColors.textSecondary,
-                    fontWeight: FontWeight.w600,
                   ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                job['description'] ?? '${job['title']} ${job['title']}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                  height: 1.4,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Icon(Icons.people_outline, size: 16, color: Colors.grey[600]),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${job['applicantsCount'] ?? 0} applicants',
+                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  ),
+                  const SizedBox(width: 16),
+                  Icon(
+                    Icons.military_tech_outlined,
+                    size: 16,
+                    color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    job['experienceLevel'] ?? 'Entry Level',
+                    style: TextStyle(fontSize: 13, color: Colors.grey[700]),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _buildTag(job['category'] ?? 'mobile'),
+                  if (job['employmentType'] != null)
+                    _buildTag(job['employmentType']),
+                ],
               ),
             ],
           ),
@@ -386,72 +602,102 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
     );
   }
 
+  Widget _buildTag(String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFBCDFC2),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF2D5F3D),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
   Widget _buildBottomNav() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 20,
+            offset: const Offset(0, -5),
+          ),
+        ],
+      ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildNavItemIcon(Icons.home_rounded, 0, () {
+          _buildNavItem(Icons.home_rounded, 'Home', 0, () {
             setState(() => _currentNavIndex = 0);
           }),
-          _buildNavItemIcon(Icons.work_outline_rounded, 1, () {
+          _buildNavItem(Icons.work_outline_rounded, 'Jobs', 1, () async {
             setState(() => _currentNavIndex = 1);
-            Navigator.pushNamed(context, '/hr/jobs');
+            await Navigator.pushNamed(context, '/hr/jobs');
+            setState(() => _currentNavIndex = 0);
           }),
-          _buildNavItemIcon(Icons.notifications_outlined, 2, () {
+          _buildNavItem(Icons.notifications_outlined, 'Alerts', 2, () async {
             setState(() => _currentNavIndex = 2);
-            Navigator.pushNamed(context, '/hr/notifications');
+            await Navigator.pushNamed(context, '/hr/notifications');
+            setState(() => _currentNavIndex = 0);
           }),
-          _buildNavItemIcon(Icons.settings_outlined, 3, () {
+          _buildNavItem(Icons.settings_outlined, 'Settings', 3, () async {
             setState(() => _currentNavIndex = 3);
-            Navigator.pushNamed(context, '/hr/settings');
+            await Navigator.pushNamed(context, '/hr/settings');
+            setState(() => _currentNavIndex = 0);
           }),
         ],
       ),
     );
   }
 
-  Widget _buildNavItemIcon(IconData icon, int index, VoidCallback onTap) {
+  Widget _buildNavItem(
+    IconData icon,
+    String label,
+    int index,
+    VoidCallback onTap,
+  ) {
     final isActive = _currentNavIndex == index;
 
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        width: 62,
-        height: 44,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          gradient: isActive
-              ? const LinearGradient(
-                  colors: [AppColors.primaryTeal, AppColors.primaryGreen],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                )
-              : null,
-          // Inactive state: transparent background (remove white circles)
-          color: isActive ? null : Colors.transparent,
-          borderRadius: BorderRadius.circular(30),
-          border: isActive
-              ? Border.all(color: Colors.white.withOpacity(0.6), width: 0.6)
-              : null,
-          boxShadow: isActive
-              ? [
-                  BoxShadow(
-                    color: AppColors.primaryTeal.withOpacity(0.25),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Icon(
-          icon,
-          color: isActive ? Colors.white : AppColors.textSecondary,
-          size: 26,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: isActive
+                  ? const LinearGradient(
+                      colors: [Color(0xFF5B9FED), Color(0xFF7BB8F7)],
+                    )
+                  : null,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: isActive ? Colors.white : Colors.grey[400],
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: isActive ? const Color(0xFF5B9FED) : Colors.grey[400],
+              fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
