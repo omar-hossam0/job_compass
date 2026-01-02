@@ -124,7 +124,10 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 2, vsync: this)
+      ..addListener(() {
+        if (mounted) setState(() {});
+      });
     _loadAnalysis();
   }
 
@@ -195,7 +198,7 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
                     children: [
                       _buildAppBar(),
                       _buildMatchScoreHeader(),
-                      _buildTabBar(),
+                      _buildTabSwitcher(),
                       Expanded(
                         child: TabBarView(
                           controller: _tabController,
@@ -436,90 +439,124 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabSwitcher() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Container(
+        padding: const EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: const Color(0xFFE3F2FD).withOpacity(0.5),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFF5B9FED).withOpacity(0.2)),
-        ),
-        child: TabBar(
-          controller: _tabController,
-          indicator: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF5B9FED), Color(0xFF7BB8F7)],
+          color: Colors.white.withOpacity(0.08),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.white.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
             ),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF5B9FED).withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+          ],
+        ),
+        child: Row(
+          children: [
+            _buildTabSwitcherItem(
+              label: 'Matched',
+              count: _result!.matchedSkills.length,
+              gradient: const [Color(0xFF5B9FED), Color(0xFF7BB8F7)],
+              icon: Icons.check_circle,
+              index: 0,
+            ),
+            _buildTabSwitcherItem(
+              label: 'Missing',
+              count: _result!.missingSkills.length,
+              gradient: const [Color(0xFFF59D42), Color(0xFFF7C269)],
+              icon: Icons.flash_on,
+              index: 1,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabSwitcherItem({
+    required String label,
+    required int count,
+    required List<Color> gradient,
+    required IconData icon,
+    required int index,
+  }) {
+    final bool isActive = _tabController.index == index;
+    return Expanded(
+      child: InkWell(
+        borderRadius: index == 0
+            ? const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+              )
+            : const BorderRadius.only(
+                topRight: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+        onTap: () => _tabController.animateTo(index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          decoration: BoxDecoration(
+            gradient: isActive ? LinearGradient(colors: gradient) : null,
+            color: isActive ? null : Colors.white.withOpacity(0.04),
+            borderRadius: BorderRadius.circular(16),
+            border: isActive
+                ? Border.all(color: Colors.white.withOpacity(0.5), width: 0.8)
+                : Border.all(color: Colors.white.withOpacity(0.08), width: 0.5),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: gradient.last.withOpacity(0.35),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
+                    ),
+                  ]
+                : [],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: isActive ? Colors.white : gradient.last,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: AppStyles.bodyMedium.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: isActive ? Colors.white : AppColors.textPrimary,
+                ),
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: isActive
+                      ? Colors.white.withOpacity(0.25)
+                      : AppColors.textSecondary.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  count.toString(),
+                  style: AppStyles.bodySmall.copyWith(
+                    color: isActive ? Colors.white : AppColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ),
             ],
           ),
-          labelPadding: const EdgeInsets.symmetric(horizontal: 6),
-          labelColor: Colors.white,
-          unselectedLabelColor: AppColors.textSecondary,
-          labelStyle: AppStyles.bodyMedium.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-          tabs: [
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Matched'),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.success.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _result!.matchedSkills.length.toString(),
-                      style: AppStyles.bodySmall.copyWith(
-                        color: AppColors.success,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Tab(
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('Missing'),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.warning.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _result!.missingSkills.length.toString(),
-                      style: AppStyles.bodySmall.copyWith(
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );
