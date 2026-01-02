@@ -34,7 +34,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     });
 
     try {
-      final response = await _apiService.getHRNotifications();
+      final response = await _apiService.getNotifications();
 
       if (response['success'] == true) {
         final notifList = (response['data'] as List)
@@ -159,7 +159,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             TextButton(
               onPressed: () {
                 setState(() {
-                  for (var n in _notifications) {
+                  for (var _ in _notifications) {
                     // Mark as read logic here
                   }
                 });

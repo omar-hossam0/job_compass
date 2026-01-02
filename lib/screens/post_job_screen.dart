@@ -6,7 +6,6 @@ import '../constants/app_styles.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
-import '../widgets/custom_buttons.dart';
 
 class PostJobScreen extends StatefulWidget {
   const PostJobScreen({Key? key}) : super(key: key);
@@ -200,143 +199,199 @@ class _PostJobScreenState extends State<PostJobScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GradientBackground(
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: LoadingOverlay(
-                  isLoading: _isLoading,
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(20),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildJobTitleField(),
-                          const SizedBox(height: 20),
-                          _buildDescriptionField(),
-                          const SizedBox(height: 20),
-                          _buildSalaryAndLocationFields(),
-                          const SizedBox(height: 20),
-                          _buildSkillsField(),
-                          const SizedBox(height: 20),
-                          _buildExperienceLevelDropdown(),
-                          const SizedBox(height: 20),
-                          _buildLogoUploadSection(),
-                          const SizedBox(height: 20),
-                          _buildQuestionsSection(),
-                          const SizedBox(height: 32),
-                          PrimaryButton(
-                            text: 'Post Job',
-                            onPressed: _submitJob,
-                            icon: Icons.check_circle_outline,
-                          ),
-                        ],
-                      ),
+      backgroundColor: const Color(0xFFE3F2FD),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: LoadingOverlay(
+                isLoading: _isLoading,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildJobTitleField(),
+                        const SizedBox(height: 20),
+                        _buildDescriptionField(),
+                        const SizedBox(height: 20),
+                        _buildSalaryAndLocationFields(),
+                        const SizedBox(height: 20),
+                        _buildSkillsField(),
+                        const SizedBox(height: 20),
+                        _buildExperienceLevelDropdown(),
+                        const SizedBox(height: 20),
+                        _buildLogoUploadSection(),
+                        const SizedBox(height: 20),
+                        _buildQuestionsSection(),
+                        const SizedBox(height: 32),
+                        _buildSubmitButton(),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildHeader() {
-    return Padding(
-      padding: const EdgeInsets.all(20),
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1976D2).withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.1),
-              foregroundColor: AppColors.textPrimary,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              color: Colors.white,
             ),
           ),
           const SizedBox(width: 16),
-          Text('Post New Job', style: AppStyles.heading1),
+          const Text(
+            'Post New Job',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildJobTitleField() {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Job Title',
-              style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF42A5F5).withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Job Title',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                hintText: 'e.g. Senior Flutter Developer',
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _titleController,
+            decoration: InputDecoration(
+              hintText: 'e.g. Senior Flutter Developer',
+              hintStyle: TextStyle(color: Colors.grey[400]),
+              filled: true,
+              fillColor: const Color(0xFFE3F2FD),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
               ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter job title';
-                }
-                return null;
-              },
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 14,
+              ),
             ),
-          ],
-        ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter job title';
+              }
+              return null;
+            },
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildDescriptionField() {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Job Description',
-              style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF42A5F5).withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Job Description',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: _descriptionController,
-              maxLines: 6,
-              decoration: InputDecoration(
-                hintText:
-                    'Describe the job role, responsibilities, and requirements...',
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _descriptionController,
+            maxLines: 6,
+            decoration: InputDecoration(
+              hintText:
+                  'Describe the job role, responsibilities, and requirements...',
+              hintStyle: TextStyle(color: Colors.grey[400]),
+              filled: true,
+              fillColor: const Color(0xFFE3F2FD),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
               ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter job description';
-                }
-                return null;
-              },
+              contentPadding: const EdgeInsets.all(16),
             ),
-          ],
-        ),
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter job description';
+              }
+              return null;
+            },
+          ),
+        ],
       ),
     );
   }
@@ -422,69 +477,85 @@ class _PostJobScreenState extends State<PostJobScreen> {
   }
 
   Widget _buildSalaryAndLocationFields() {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Salary & Location',
-              style: AppStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF42A5F5).withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Salary & Location',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1976D2),
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: TextFormField(
-                    controller: _salaryController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      labelText: 'Salary (yearly)',
-                      hintText: '50000',
-                      prefixText: '\$ ',
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.05),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Enter salary';
-                      }
-                      if (int.tryParse(value.trim()) == null) {
-                        return 'Invalid number';
-                      }
-                      return null;
-                    },
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: TextFormField(
-                    controller: _locationController,
-                    decoration: InputDecoration(
-                      labelText: 'Location',
-                      hintText: 'Remote / Cairo',
-                      prefixIcon: const Icon(
-                        Icons.location_on_outlined,
-                        size: 20,
-                      ),
-                      filled: true,
-                      fillColor: Colors.white.withOpacity(0.05),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _salaryController,
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Salary (yearly)',
+                    labelStyle: const TextStyle(color: Color(0xFF1976D2)),
+                    hintText: '50000',
+                    prefixText: '\$ ',
+                    filled: true,
+                    fillColor: const Color(0xFFE3F2FD),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
                   ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Enter salary';
+                    }
+                    if (int.tryParse(value.trim()) == null) {
+                      return 'Invalid number';
+                    }
+                    return null;
+                  },
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: _locationController,
+                  decoration: InputDecoration(
+                    labelText: 'Location',
+                    labelStyle: const TextStyle(color: Color(0xFF1976D2)),
+                    hintText: 'Remote / Cairo',
+                    prefixIcon: const Icon(
+                      Icons.location_on_rounded,
+                      size: 20,
+                      color: Color(0xFF1976D2),
+                    ),
+                    filled: true,
+                    fillColor: const Color(0xFFE3F2FD),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -622,109 +693,161 @@ class _PostJobScreenState extends State<PostJobScreen> {
   }
 
   Widget _buildQuestionsSection() {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Custom Questions',
-                  style: AppStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF42A5F5).withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Custom Questions',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1976D2),
                 ),
-                TextButton.icon(
-                  onPressed: _addQuestion,
-                  icon: const Icon(Icons.add_circle_outline, size: 20),
-                  label: const Text('Add Question'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.primaryGreen,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Add custom screening questions for applicants',
-              style: AppStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
               ),
-            ),
-            if (_customQuestions.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              ...List.generate(_customQuestions.length, (index) {
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: AppColors.primaryGreen.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryGreen,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${index + 1}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          _customQuestions[index],
-                          style: AppStyles.bodyMedium,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => _removeQuestion(index),
-                        icon: const Icon(Icons.delete_outline),
-                        color: AppColors.error,
-                        iconSize: 20,
-                      ),
-                    ],
-                  ),
-                );
-              }),
-            ] else ...[
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
+              TextButton.icon(
+                onPressed: _addQuestion,
+                icon: const Icon(Icons.add_circle_outline, size: 20),
+                label: const Text('Add Question'),
+                style: TextButton.styleFrom(foregroundColor: Color(0xFF1976D2)),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Add custom screening questions for applicants',
+            style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+          ),
+          if (_customQuestions.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            ...List.generate(_customQuestions.length, (index) {
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: AppColors.textSecondary.withOpacity(0.2),
+                    color: AppColors.primaryGreen.withOpacity(0.3),
                   ),
                 ),
-                child: Center(
-                  child: Text(
-                    'No custom questions added yet',
-                    style: AppStyles.bodySmall.copyWith(
-                      color: AppColors.textSecondary,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryGreen,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${index + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _customQuestions[index],
+                        style: AppStyles.bodyMedium,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _removeQuestion(index),
+                      icon: const Icon(Icons.delete_outline),
+                      color: AppColors.error,
+                      iconSize: 20,
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ] else ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.textSecondary.withOpacity(0.2),
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  'No custom questions added yet',
+                  style: AppStyles.bodySmall.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ),
-            ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1976D2), Color(0xFF42A5F5)],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1976D2).withOpacity(0.4),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _submitJob,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.check_circle_rounded, color: Colors.white, size: 24),
+            SizedBox(width: 12),
+            Text(
+              'Post Job',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
           ],
         ),
       ),

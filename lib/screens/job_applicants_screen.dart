@@ -126,13 +126,11 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
                             style: AppStyles.heading3,
                           ),
                           const SizedBox(height: 16),
-                          ...(_applicants is List
-                              ? (_applicants as List).map(
-                                  (applicant) => _buildApplicantCard(
-                                    applicant as Map<String, dynamic>,
-                                  ),
-                                )
-                              : <Widget>[]),
+                          ..._applicants.map(
+                            (applicant) => _buildApplicantCard(
+                              applicant as Map<String, dynamic>,
+                            ),
+                          ),
                         ],
                       ),
                     ),

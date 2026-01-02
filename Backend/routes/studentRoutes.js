@@ -9,8 +9,8 @@ import { fileURLToPath } from "url";
 import pdf from "pdf-parse";
 import mammoth from "mammoth";
 
-const MATCH_TIMEOUT_MS = 12000; // Prevent long waits for Python matcher
-const USE_FAST_MATCH = process.env.FAST_MATCH === "true";
+const MATCH_TIMEOUT_MS = 30000; // Increase timeout for Python matcher (30 seconds)
+const USE_FAST_MATCH = process.env.FAST_MATCH === "true" || true; // Enable fast mode by default
 
 // Helper: Calculate keyword match percentage (shared across modes)
 const calculateKeywordMatch = (cvText, job) => {
@@ -223,7 +223,179 @@ const upload = multer({
 
 const router = express.Router();
 
-// Protect all student routes
+// ============================================
+// PUBLIC ENDPOINTS (No authentication required)
+// ============================================
+
+// AUTOCOMPLETE SUGGESTIONS
+router.get("/jobs/suggestions", async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query || query.trim() === "") {
+      return res.json({
+        success: true,
+        data: [],
+      });
+    }
+
+    const searchQuery = query.trim().toLowerCase();
+
+    // Get job titles and companies that match
+    const jobs = await Job.find({
+      status: { $regex: "^active$", $options: "i" },
+      $or: [
+        { title: { $regex: searchQuery, $options: "i" } },
+        { requiredSkills: { $regex: searchQuery, $options: "i" } },
+        { location: { $regex: searchQuery, $options: "i" } },
+      ],
+    })
+      .populate("company", "name")
+      .select("title location requiredSkills company")
+      .limit(20);
+
+    // Create unique suggestions with job IDs and relevance score
+    const suggestionsMap = new Map();
+
+    jobs.forEach((job) => {
+      if (job.title && !suggestionsMap.has(job.title.toLowerCase())) {
+        const titleLower = job.title.toLowerCase();
+
+        // Calculate relevance score
+        let score = 0;
+
+        // Exact match gets highest score
+        if (titleLower === searchQuery) {
+          score = 1000;
+        }
+        // Starts with query gets high score
+        else if (titleLower.startsWith(searchQuery)) {
+          score = 500;
+        }
+        // Contains query gets medium score
+        else if (titleLower.includes(searchQuery)) {
+          score = 100;
+        }
+        // Word match gets lower score
+        else {
+          const words = titleLower.split(/\s+/);
+          if (words.some((word) => word.startsWith(searchQuery))) {
+            score = 50;
+          } else {
+            score = 10;
+          }
+        }
+
+        suggestionsMap.set(job.title.toLowerCase(), {
+          text: job.title,
+          jobId: job._id,
+          type: "job",
+          company: job.company?.name || null,
+          score: score,
+        });
+      }
+    });
+
+    // Sort by relevance score (highest first)
+    const suggestions = Array.from(suggestionsMap.values())
+      .sort((a, b) => b.score - a.score)
+      .map(({ score, ...rest }) => rest)
+      .slice(0, 8);
+
+    res.json({
+      success: true,
+      data: suggestions,
+    });
+  } catch (error) {
+    console.error("❌ Autocomplete error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// SEARCH JOBS
+router.get("/jobs/search", async (req, res) => {
+  try {
+    const { query } = req.query;
+
+    if (!query || query.trim() === "") {
+      // Return all jobs if no search query
+      const jobs = await Job.find({
+        status: { $regex: "^active$", $options: "i" },
+      })
+        .populate("company", "name location")
+        .sort({ createdAt: -1 })
+        .limit(20);
+
+      return res.json({
+        success: true,
+        message: "All active jobs",
+        data: jobs.map((job) => ({
+          id: job._id,
+          title: job.title,
+          company: job.company?.name || "Unknown Company",
+          location: job.location || job.company?.location || "Not specified",
+          salary: job.salary || "Competitive",
+          type: job.type || "Full-time",
+          description: job.description?.substring(0, 150) || "",
+          requiredSkills: job.requiredSkills || [],
+          postedDate: job.createdAt,
+        })),
+        count: jobs.length,
+      });
+    }
+
+    const searchQuery = query.trim().toLowerCase();
+
+    // Search in title, description, location, skills
+    const jobs = await Job.find({
+      status: { $regex: "^active$", $options: "i" },
+      $or: [
+        { title: { $regex: searchQuery, $options: "i" } },
+        { description: { $regex: searchQuery, $options: "i" } },
+        { location: { $regex: searchQuery, $options: "i" } },
+        { requiredSkills: { $regex: searchQuery, $options: "i" } },
+        { type: { $regex: searchQuery, $options: "i" } },
+      ],
+    })
+      .populate("company", "name location")
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    console.log(`🔍 Search for "${query}" found ${jobs.length} jobs`);
+
+    res.json({
+      success: true,
+      message: `Found ${jobs.length} jobs matching "${query}"`,
+      data: jobs.map((job) => ({
+        id: job._id,
+        title: job.title,
+        company: job.company?.name || "Unknown Company",
+        location: job.location || job.company?.location || "Not specified",
+        salary: job.salary || "Competitive",
+        type: job.type || "Full-time",
+        description: job.description?.substring(0, 150) || "",
+        requiredSkills: job.requiredSkills || [],
+        postedDate: job.createdAt,
+      })),
+      count: jobs.length,
+    });
+  } catch (error) {
+    console.error("❌ Search jobs error:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+});
+
+// ============================================
+// PROTECTED ENDPOINTS (Authentication required)
+// ============================================
+
+// Protect all student routes below
 router.use(verifyToken);
 
 // ============================================
@@ -673,11 +845,15 @@ router.get("/job-matches", async (req, res) => {
           applicantsCount: job.applicants?.length || 0,
         };
       });
+
+      // Filter: only show jobs with 60% or higher match
+      matchedJobs = matchedJobs.filter((job) => job.matchScore >= 60);
+
       matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
       console.log(
         "✅ Fast keyword matching complete, returning",
         matchedJobs.length,
-        "jobs"
+        "jobs (filtered: >= 60%)"
       );
     } else {
       try {
@@ -745,8 +921,8 @@ router.get("/job-matches", async (req, res) => {
             const contentPenalty = Math.min(
               20,
               (100 - descLength) / 8 +
-              (15 - titleLength) * 1.5 +
-              (hasSkills ? 0 : 5)
+                (15 - titleLength) * 1.5 +
+                (hasSkills ? 0 : 5)
             );
             matchScore = Math.max(0, matchScore - contentPenalty);
             if (contentPenalty > 8) {
@@ -788,6 +964,13 @@ router.get("/job-matches", async (req, res) => {
         // Sort by match score descending
         matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
 
+        // Filter: only show jobs with 60% or higher match
+        const originalCount = matchedJobs.length;
+        matchedJobs = matchedJobs.filter((job) => job.matchScore >= 60);
+        console.log(
+          `🎯 Filtered jobs: ${originalCount} → ${matchedJobs.length} (showing >= 60%)`
+        );
+
         console.log("📊 Top 3 matches:");
         matchedJobs.slice(0, 3).forEach((j, i) => {
           console.log(`   ${i + 1}. ${j.title}: ${j.matchScore}%`);
@@ -816,6 +999,13 @@ router.get("/job-matches", async (req, res) => {
             applicantsCount: job.applicants?.length || 0,
           };
         });
+
+        // Filter: only show jobs with 60% or higher match
+        matchedJobs = matchedJobs.filter((job) => job.matchScore >= 60);
+        matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
+        console.log(
+          `⚠️ Fallback mode: showing ${matchedJobs.length} jobs (>= 60%)`
+        );
       }
     }
 
@@ -975,12 +1165,12 @@ The user has not uploaded their CV yet. Provide general career advice and encour
 // ============================================
 router.get("/notifications", async (req, res) => {
   try {
+    // TODO: Implement real notifications from database
+    // For now return empty array that matches the expected format
     res.json({
       success: true,
       message: "Student notifications",
-      data: {
-        notifications: [],
-      },
+      data: [], // Return empty array directly to match Flutter expectations
     });
   } catch (error) {
     res.status(500).json({

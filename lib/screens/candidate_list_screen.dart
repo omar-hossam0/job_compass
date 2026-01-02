@@ -53,7 +53,7 @@ class _CandidateListScreenState extends State<CandidateListScreen> {
         }
 
         setState(() {
-          _candidates = (candidatesData as List)
+          _candidates = candidatesData
               .map((c) => HRCandidate.fromJson(c))
               .toList();
           // Sort by match percentage descending

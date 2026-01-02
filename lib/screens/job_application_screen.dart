@@ -4,7 +4,6 @@ import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
-import '../widgets/glass_card.dart';
 import '../widgets/custom_buttons.dart';
 
 class JobApplicationScreen extends StatefulWidget {
