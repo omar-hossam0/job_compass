@@ -62,7 +62,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GradientBackground(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [const Color(0xFFE3F2FD), const Color(0xFFBBDEFB)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: LoadingOverlay(
           isLoading: _isLoading && _notifications.isEmpty,
           child: SafeArea(
@@ -76,7 +83,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ? _buildEmptyState()
                       : RefreshIndicator(
                           onRefresh: _loadNotifications,
-                          color: AppColors.primaryGreen,
+                          color: const Color(0xFF5B9FED),
                           child: ListView.builder(
                             padding: const EdgeInsets.all(20),
                             itemCount: _notifications.length,
@@ -122,17 +129,39 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.notifications_none,
-              size: 80,
-              color: AppColors.textSecondary.withOpacity(0.5),
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF5B9FED).withOpacity(0.15),
+                    const Color(0xFF7BB8F7).withOpacity(0.08),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.notifications_outlined,
+                size: 56,
+                color: Color(0xFF5B9FED),
+              ),
             ),
-            const SizedBox(height: 24),
-            Text('No Notifications', style: AppStyles.heading2),
+            const SizedBox(height: 28),
+            Text(
+              'No Notifications',
+              style: AppStyles.heading2.copyWith(
+                color: const Color(0xFF2D3748),
+                fontWeight: FontWeight.w700,
+              ),
+            ),
             const SizedBox(height: 12),
             Text(
               'You\'re all caught up!',
-              style: AppStyles.bodyMedium,
+              style: AppStyles.bodyMedium.copyWith(
+                color: const Color(0xFF718096),
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -146,14 +175,34 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          IconButtonCircular(
-            icon: Icons.arrow_back,
-            onPressed: () => Navigator.pop(context),
-            backgroundColor: Colors.white.withOpacity(0.3),
-            iconColor: AppColors.textPrimary,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF5B9FED).withOpacity(0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_rounded),
+              style: IconButton.styleFrom(
+                foregroundColor: const Color(0xFF2D3748),
+              ),
+            ),
           ),
           const SizedBox(width: 16),
-          Text('Notifications', style: AppStyles.heading2),
+          Text(
+            'Notifications',
+            style: AppStyles.heading2.copyWith(
+              color: const Color(0xFF2D3748),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           const Spacer(),
           if (_notifications.any((n) => !n.isRead))
             TextButton(
@@ -221,7 +270,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         width: 8,
                         height: 8,
                         decoration: const BoxDecoration(
-                          color: AppColors.primaryGreen,
+                          color: Color(0xFF5B9FED),
                           shape: BoxShape.circle,
                         ),
                       ),

@@ -7,11 +7,8 @@ import '../models/job.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/custom_buttons.dart';
-<<<<<<< HEAD
 import '../widgets/job_card.dart';
 import 'candidate_chats_screen.dart';
-=======
->>>>>>> d893117f2660c36bedd0cd9d7054a36c1ea5fac8
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({Key? key}) : super(key: key);
@@ -1078,18 +1075,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             // Reset to home when returning
             setState(() => _currentNavIndex = 0);
           }),
-<<<<<<< HEAD
-          _buildNavItemIcon(Icons.chat_bubble_outline_rounded, 2, () {
+          _buildNavItem(Icons.chat_bubble_outline_rounded, 'Chats', 2, () {
             setState(() => _currentNavIndex = 2);
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const CandidateChatsScreen()),
-=======
-          _buildNavItem(Icons.bookmark_outline_rounded, 'Saved', 2, () {
-            setState(() => _currentNavIndex = 2);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Saved jobs coming soon')),
->>>>>>> d893117f2660c36bedd0cd9d7054a36c1ea5fac8
+              MaterialPageRoute(
+                builder: (context) => const CandidateChatsScreen(),
+              ),
             );
           }),
           _buildNavItem(Icons.person_outline_rounded, 'Profile', 3, () async {

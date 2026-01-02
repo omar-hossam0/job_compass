@@ -4,7 +4,6 @@ import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
-import '../widgets/glass_card.dart';
 import '../widgets/custom_buttons.dart';
 
 /// Model for missing skill with learning link
@@ -284,19 +283,19 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        padding: const EdgeInsets.all(18),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
-            colors: [const Color(0xFFDDF8E8), const Color(0xFFC8F1EC)],
+            colors: [const Color(0xFFE3F2FD), const Color(0xFFBBDEFB)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
-          border: Border.all(color: Colors.white.withOpacity(0.6)),
+          border: Border.all(color: Colors.white.withOpacity(0.8)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 18,
+              color: const Color(0xFF5B9FED).withOpacity(0.15),
+              blurRadius: 20,
               offset: const Offset(0, 10),
             ),
           ],
@@ -395,7 +394,7 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
                       _buildStatChip(
                         Icons.check_circle,
                         '${_result!.matchedSkills.length} Matched',
-                        AppColors.success,
+                        const Color(0xFF5B9FED),
                       ),
                       _buildStatChip(
                         Icons.warning_amber,
@@ -442,16 +441,24 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
-          borderRadius: BorderRadius.circular(12),
+          color: const Color(0xFFE3F2FD).withOpacity(0.5),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xFF5B9FED).withOpacity(0.2)),
         ),
         child: TabBar(
           controller: _tabController,
           indicator: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [AppColors.primaryGreen, AppColors.primaryTeal],
+            gradient: const LinearGradient(
+              colors: [Color(0xFF5B9FED), Color(0xFF7BB8F7)],
             ),
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF5B9FED).withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           labelPadding: const EdgeInsets.symmetric(horizontal: 6),
           labelColor: Colors.white,
@@ -528,24 +535,49 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       itemCount: _result!.matchedSkills.length,
       itemBuilder: (context, index) {
         final skill = _result!.matchedSkills[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: GlassCard(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF5B9FED).withOpacity(0.2),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF5B9FED).withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF5B9FED), Color(0xFF7BB8F7)],
+                    ),
                     borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF5B9FED).withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                  child: Icon(
-                    Icons.check_circle,
-                    color: AppColors.success,
+                  child: const Icon(
+                    Icons.check_circle_rounded,
+                    color: Colors.white,
                     size: 24,
                   ),
                 ),
@@ -553,8 +585,10 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
                 Expanded(
                   child: Text(
                     skill,
-                    style: AppStyles.bodyLarge.copyWith(
-                      fontWeight: FontWeight.w500,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF2D3748),
                     ),
                   ),
                 ),
@@ -564,14 +598,20 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.1),
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF5B9FED).withOpacity(0.15),
+                        const Color(0xFF7BB8F7).withOpacity(0.1),
+                      ],
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text(
-                    'In CV',
-                    style: AppStyles.bodySmall.copyWith(
-                      color: AppColors.success,
-                      fontWeight: FontWeight.w600,
+                  child: const Text(
+                    '✓ In CV',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF5B9FED),
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -593,82 +633,121 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       itemCount: _result!.missingSkills.length,
       itemBuilder: (context, index) {
         final skill = _result!.missingSkills[index];
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12),
-          child: GlassCard(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.orange.shade200, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: AppColors.warning.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.lightbulb_outline_rounded,
+                          color: Colors.orange.shade600,
+                          size: 24,
+                        ),
                       ),
-                      child: Icon(
-                        Icons.warning_amber,
-                        color: AppColors.warning,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            skill.skill,
-                            style: AppStyles.bodyLarge.copyWith(
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              _buildPriorityBadge(skill.priority),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Confidence: ${(skill.confidence * 100).toStringAsFixed(0)}%',
-                                style: AppStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
-                                ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              skill.skill,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF2D3748),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                _buildPriorityBadge(skill.priority),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${(skill.confidence * 100).toStringAsFixed(0)}% match',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 12),
-                // Learning Link Button
+                // YouTube Learn Button
                 InkWell(
                   onTap: () => _launchUrl(skill.youtubeLink),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
                   child: Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.red.withOpacity(0.1),
-                          Colors.red.withOpacity(0.05),
+                          Colors.red.shade50,
+                          Colors.red.shade100.withOpacity(0.3),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withOpacity(0.2)),
+                      borderRadius: const BorderRadius.only(
+                        bottomLeft: Radius.circular(18),
+                        bottomRight: Radius.circular(18),
+                      ),
                     ),
                     child: Row(
                       children: [
-                        Icon(
-                          Icons.play_circle_fill,
-                          color: Colors.red,
-                          size: 28,
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(10),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -676,23 +755,25 @@ class _JobAnalysisResultScreenState extends State<JobAnalysisResultScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Learn ${skill.skill}',
-                                style: AppStyles.bodyMedium.copyWith(
-                                  fontWeight: FontWeight.w600,
+                                'Learn on YouTube',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.red.shade700,
                                 ),
                               ),
                               Text(
-                                'Watch tutorials on YouTube',
-                                style: AppStyles.bodySmall.copyWith(
-                                  color: AppColors.textSecondary,
+                                'Watch tutorials & courses',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade600,
                                 ),
                               ),
                             ],
                           ),
                         ),
                         Icon(
-                          Icons.arrow_forward_ios,
+                          Icons.arrow_forward_ios_rounded,
                           color: Colors.red.shade400,
                           size: 16,
                         ),
