@@ -8,6 +8,7 @@ import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/custom_buttons.dart';
 import '../widgets/job_card.dart';
+import 'candidate_chats_screen.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({Key? key}) : super(key: key);
@@ -457,10 +458,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             setState(() => _currentNavIndex = 1);
             Navigator.pushNamed(context, '/job-matches');
           }),
-          _buildNavItemIcon(Icons.bookmark_outline_rounded, 2, () {
+          _buildNavItemIcon(Icons.chat_bubble_outline_rounded, 2, () {
             setState(() => _currentNavIndex = 2);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Saved jobs screen coming soon')),
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const CandidateChatsScreen()),
             );
           }),
           _buildNavItemIcon(Icons.person_outline_rounded, 3, () {

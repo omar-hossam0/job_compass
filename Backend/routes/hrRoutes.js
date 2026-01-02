@@ -9,6 +9,8 @@ import {
   getJobCandidates,
   getCandidateDetails,
   saveCandidate,
+  unsaveCandidate,
+  getSavedCandidates,
   getHRNotifications,
   getHRProfile,
   updateHRProfile,
@@ -36,6 +38,8 @@ router.post("/jobs/:id/close", closeJob);
 router.get("/jobs/:id/candidates", getJobCandidates);
 router.get("/candidates/:id", getCandidateDetails);
 router.post("/candidates/:id/save", saveCandidate);
+router.delete("/candidates/:id/save", unsaveCandidate);
+router.get("/saved-candidates", getSavedCandidates);
 
 // Notifications
 router.get("/notifications", getHRNotifications);

@@ -20,7 +20,7 @@ const calculateKeywordMatch = (cvText, job) => {
   // Focus ONLY on required skills for accurate matching
   let exactMatches = 0;
   let partialMatches = 0;
-  
+
   skills.forEach((skill) => {
     // Normalize skill names for comparison
     const skillVariants = [
@@ -30,13 +30,13 @@ const calculateKeywordMatch = (cvText, job) => {
       skill.replace(/js$/, '.js'),     // nodejs -> node.js
       skill.replace(/\//g, ' '),       // MongoDB/MySQL -> MongoDB MySQL
     ];
-    
+
     const found = skillVariants.some(variant => {
       // Check for exact word match (not just substring)
       const regex = new RegExp(`\\b${variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
       return regex.test(cvLower);
     });
-    
+
     if (found) {
       exactMatches++;
     } else {
@@ -58,7 +58,7 @@ const calculateKeywordMatch = (cvText, job) => {
 
   // Apply realistic caps based on actual matches
   const matchRatio = exactMatches / totalSkills;
-  
+
   if (exactMatches === 0) {
     rawScore = Math.min(rawScore, 15); // Only partial matches = max 15%
   } else if (matchRatio < 0.25) {
@@ -71,7 +71,7 @@ const calculateKeywordMatch = (cvText, job) => {
   // Only 75%+ actual skill match can get above 70%
 
   console.log(`📊 Skill matching for "${job.title}": ${exactMatches}/${totalSkills} exact, ${partialMatches} partial = ${Math.round(rawScore)}%`);
-  
+
   return Math.round(rawScore);
 };
 

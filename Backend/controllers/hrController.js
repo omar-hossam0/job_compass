@@ -3,6 +3,9 @@ import Candidate from "../models/Candidate.js";
 import Company from "../models/Company.js";
 import Notification from "../models/Notification.js";
 import User from "../models/User.js";
+import Application from "../models/Application.js";
+import SavedCandidate from "../models/SavedCandidate.js";
+import mongoose from "mongoose";
 
 // Get HR Dashboard Data
 export const getHRDashboard = async (req, res) => {
@@ -386,7 +389,10 @@ export const getJobCandidates = async (req, res) => {
 // Get candidate details
 export const getCandidateDetails = async (req, res) => {
   try {
-    const candidate = await Candidate.findById(req.params.id);
+    const candidateId = req.params.id;
+    const jobId = req.query.jobId; // Optional: to get application-specific data
+
+    const candidate = await Candidate.findById(candidateId);
 
     if (!candidate) {
       return res.status(404).json({
@@ -395,22 +401,55 @@ export const getCandidateDetails = async (req, res) => {
       });
     }
 
+    // Get the user info for more details
+    const user = await User.findById(candidate.user);
+
+    // Get application data if jobId is provided
+    let applicationData = null;
+    if (jobId) {
+      applicationData = await Application.findOne({
+        candidateId: candidateId,
+        jobId: jobId,
+      });
+    } else {
+      // Get the most recent application
+      applicationData = await Application.findOne({
+        candidateId: candidateId,
+      }).sort({ appliedAt: -1 });
+    }
+
+    // Check if this candidate is saved by the HR
+    const hrId = req.user.id;
+    const savedCandidate = await SavedCandidate.findOne({
+      hrId: hrId,
+      candidateId: candidateId,
+    }).catch(() => null); // Ignore if model doesn't exist
+
     res.json({
       success: true,
+      isSaved: !!savedCandidate,
       data: {
         id: candidate._id,
-        name: candidate.name,
-        email: candidate.email,
-        phone: candidate.phone,
-        photo: candidate.photo || "",
-        university: candidate.university,
-        degree: candidate.degree,
-        extractedSkills: candidate.skills,
-        experience: candidate.experience,
-        experienceLevel: candidate.experienceLevel,
-        cvText: candidate.resumeText || "",
-        resumeUrl: candidate.resumeUrl,
-        matchPercentage: 75, // Default for now
+        name: candidate.name || user?.name || '',
+        email: candidate.email || user?.email || '',
+        phone: candidate.phone || user?.phone || applicationData?.basicInfo?.phoneNumber || '',
+        profilePicture: candidate.photo || user?.profileImage || null,
+        university: candidate.university || '',
+        degree: candidate.degree || '',
+        extractedSkills: candidate.skills || [],
+        experience: candidate.experience || '',
+        experienceLevel: candidate.experienceLevel || '',
+        cvText: candidate.resumeText || '',
+        cvUrl: candidate.cvUrl || '',
+        cvFileName: candidate.cvFileName || '',
+        // Application specific data
+        appliedAt: applicationData?.appliedAt || null,
+        applicationStatus: applicationData?.status || 'Pending',
+        basicInfo: applicationData?.basicInfo || null,
+        screeningAnswers: applicationData?.customAnswers || [],
+        hrNotes: applicationData?.hrNotes || '',
+        // Match info
+        matchPercentage: 75, // Will be calculated dynamically later
         matchExplanation: "Good match based on skills and experience",
       },
     });
@@ -427,13 +466,115 @@ export const getCandidateDetails = async (req, res) => {
 // Save candidate
 export const saveCandidate = async (req, res) => {
   try {
-    // In a real app, you would save this to a saved_candidates collection
+    const candidateId = req.params.id;
+    const hrId = req.user.id;
+    const { jobId, notes } = req.body;
+
+    // Check if already saved
+    const existingSaved = await SavedCandidate.findOne({
+      hrId: hrId,
+      candidateId: candidateId,
+    });
+
+    if (existingSaved) {
+      return res.json({
+        success: true,
+        message: "Candidate already saved",
+        data: existingSaved,
+      });
+    }
+
+    // Save the candidate
+    const savedCandidate = await SavedCandidate.create({
+      hrId: hrId,
+      candidateId: candidateId,
+      jobId: jobId || null,
+      notes: notes || "",
+    });
+
     res.json({
       success: true,
       message: "Candidate saved successfully",
+      data: savedCandidate,
     });
   } catch (error) {
     console.error("Save Candidate Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
+// Unsave candidate
+export const unsaveCandidate = async (req, res) => {
+  try {
+    const candidateId = req.params.id;
+    const hrId = req.user.id;
+
+    const result = await SavedCandidate.findOneAndDelete({
+      hrId: hrId,
+      candidateId: candidateId,
+    });
+
+    if (!result) {
+      return res.status(404).json({
+        success: false,
+        message: "Saved candidate not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Candidate unsaved successfully",
+    });
+  } catch (error) {
+    console.error("Unsave Candidate Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+      error: error.message,
+    });
+  }
+};
+
+// Get all saved candidates
+export const getSavedCandidates = async (req, res) => {
+  try {
+    const hrId = req.user.id;
+
+    const savedCandidates = await SavedCandidate.find({ hrId: hrId })
+      .populate({
+        path: 'candidateId',
+        select: 'name email skills photo experienceLevel',
+      })
+      .populate({
+        path: 'jobId',
+        select: 'title',
+      })
+      .sort({ savedAt: -1 });
+
+    res.json({
+      success: true,
+      count: savedCandidates.length,
+      data: savedCandidates.map((saved) => ({
+        id: saved._id,
+        candidate: saved.candidateId ? {
+          id: saved.candidateId._id,
+          name: saved.candidateId.name,
+          email: saved.candidateId.email,
+          skills: saved.candidateId.skills || [],
+          photo: saved.candidateId.photo,
+          experienceLevel: saved.candidateId.experienceLevel,
+        } : null,
+        jobTitle: saved.jobId?.title || null,
+        notes: saved.notes,
+        savedAt: saved.savedAt,
+      })),
+    });
+  } catch (error) {
+    console.error("Get Saved Candidates Error:", error);
     res.status(500).json({
       success: false,
       message: "Server Error",

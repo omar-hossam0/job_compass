@@ -496,12 +496,31 @@ class ApiService {
     return await get('/hr/jobs/$jobId/candidates');
   }
 
-  Future<Map<String, dynamic>> getCandidateDetails(String candidateId) async {
-    return await get('/hr/candidates/$candidateId');
+  Future<Map<String, dynamic>> getCandidateDetails(
+    String candidateId, {
+    String? jobId,
+  }) async {
+    final query = jobId != null ? '?jobId=$jobId' : '';
+    return await get('/hr/candidates/$candidateId$query');
   }
 
-  Future<Map<String, dynamic>> saveCandidate(String candidateId) async {
-    return await post('/hr/candidates/$candidateId/save', {});
+  Future<Map<String, dynamic>> saveCandidate(
+    String candidateId, {
+    String? jobId,
+    String? notes,
+  }) async {
+    return await post('/hr/candidates/$candidateId/save', {
+      if (jobId != null) 'jobId': jobId,
+      if (notes != null) 'notes': notes,
+    });
+  }
+
+  Future<Map<String, dynamic>> unsaveCandidate(String candidateId) async {
+    return await delete('/hr/candidates/$candidateId/save');
+  }
+
+  Future<Map<String, dynamic>> getSavedCandidates() async {
+    return await get('/hr/saved-candidates');
   }
 
   Future<Map<String, dynamic>> getHRNotifications() async {
@@ -535,5 +554,58 @@ class ApiService {
       '/ml/analyze-job/$jobId',
       timeout: const Duration(seconds: 30),
     );
+  }
+
+  // ============================================
+  // CHAT ENDPOINTS
+  // ============================================
+
+  /// Start or get existing chat between HR and candidate
+  Future<Map<String, dynamic>> startChat({
+    required String candidateId,
+    required String jobId,
+  }) async {
+    return await post('/chat/start', {
+      'candidateId': candidateId,
+      'jobId': jobId,
+    });
+  }
+
+  /// Get all chats for HR
+  Future<Map<String, dynamic>> getHRChats() async {
+    return await get('/chat/hr');
+  }
+
+  /// Get all chats for candidate
+  Future<Map<String, dynamic>> getCandidateChats() async {
+    return await get('/chat/candidate');
+  }
+
+  /// Get messages for a specific chat
+  Future<Map<String, dynamic>> getChatMessages(String chatId) async {
+    return await get('/chat/$chatId');
+  }
+
+  /// Send a message in a chat
+  Future<Map<String, dynamic>> sendMessage({
+    required String chatId,
+    required String content,
+  }) async {
+    return await post('/chat/$chatId/message', {
+      'content': content,
+    });
+  }
+
+  /// Update application status (approve/reject)
+  Future<Map<String, dynamic>> updateApplicationStatus({
+    required String candidateId,
+    required String jobId,
+    required String status,
+    String? notes,
+  }) async {
+    return await put('/chat/application/$candidateId/$jobId/status', {
+      'status': status,
+      if (notes != null) 'notes': notes,
+    });
   }
 }

@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/custom_buttons.dart';
+import 'candidate_details_screen.dart';
 
 class JobApplicantsScreen extends StatefulWidget {
   final String jobId;
@@ -546,11 +547,14 @@ class _JobApplicantsScreenState extends State<JobApplicantsScreen> {
 
   void _viewCandidateProfile(String candidateId) {
     // Navigate to candidate profile screen
-    // This would show full CV, skills, experience, etc.
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('سيتم عرض البروفايل الكامل للمتقدم...'),
-        backgroundColor: AppColors.primaryGreen,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CandidateDetailsScreen(
+          candidateId: candidateId,
+          jobId: widget.jobId,
+          jobTitle: widget.jobTitle,
+        ),
       ),
     );
   }

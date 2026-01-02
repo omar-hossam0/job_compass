@@ -17,7 +17,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["application", "interview", "system", "message"],
+      enum: ["application", "interview", "system", "message", "chat", "accepted", "rejected", "shortlisted"],
       default: "system",
     },
     read: {

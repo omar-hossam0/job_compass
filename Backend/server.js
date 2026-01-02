@@ -14,6 +14,7 @@ import resumeRoutes from "./routes/resumeRoutes.js";
 import mlRoutes from "./routes/mlRoutes.js";
 import hrRoutes from "./routes/hrRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 import connectDB from "./config/database.js";
 import { errorHandler, notFound } from "./middleware/errorMiddleware.js";
 
@@ -49,6 +50,7 @@ app.use("/api/resumes", resumeRoutes);
 app.use("/api/ml", mlRoutes);
 app.use("/api/hr", hrRoutes);
 app.use("/api/student", studentRoutes);
+app.use("/api/chat", chatRoutes);
 
 // In production, serve the React built static files
 if (process.env.NODE_ENV === "production") {

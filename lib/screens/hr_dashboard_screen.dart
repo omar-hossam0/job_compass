@@ -7,6 +7,7 @@ import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/custom_buttons.dart';
+import 'hr_chats_screen.dart';
 
 class HRDashboardScreen extends StatefulWidget {
   const HRDashboardScreen({Key? key}) : super(key: key);
@@ -246,6 +247,34 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 12),
+        // Interviews / Chats button
+        OutlinedButton(
+          onPressed: () => Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HRChatsScreen()),
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primaryGreen,
+            side: const BorderSide(
+              color: AppColors.primaryGreen,
+              width: 2,
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            minimumSize: const Size(double.infinity, 0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.chat_bubble_outline),
+              const SizedBox(width: 8),
+              Text('Candidate Interviews', style: AppStyles.buttonText),
+            ],
+          ),
         ),
       ],
     );
