@@ -3,7 +3,6 @@ import '../constants/app_colors.dart';
 import '../constants/app_styles.dart';
 import '../models/chat.dart';
 import '../services/api_service.dart';
-import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
 import 'chat_screen.dart';
 
@@ -57,7 +56,14 @@ class _CandidateChatsScreenState extends State<CandidateChatsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GradientBackground(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [const Color(0xFFE3F2FD), const Color(0xFFBBDEFB)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: SafeArea(
           child: Column(
             children: [
@@ -66,10 +72,10 @@ class _CandidateChatsScreenState extends State<CandidateChatsScreen> {
                 child: _isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : _error != null
-                        ? _buildError()
-                        : _chats.isEmpty
-                            ? _buildEmptyState()
-                            : _buildChatsList(),
+                    ? _buildError()
+                    : _chats.isEmpty
+                    ? _buildEmptyState()
+                    : _buildChatsList(),
               ),
             ],
           ),
@@ -83,16 +89,34 @@ class _CandidateChatsScreenState extends State<CandidateChatsScreen> {
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.white.withOpacity(0.1),
-              foregroundColor: AppColors.textPrimary,
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF5B9FED).withOpacity(0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_rounded),
+              style: IconButton.styleFrom(
+                foregroundColor: const Color(0xFF2D3748),
+              ),
             ),
           ),
           const SizedBox(width: 16),
-          Text('Messages', style: AppStyles.heading1),
+          Text(
+            'Messages',
+            style: AppStyles.heading1.copyWith(
+              color: const Color(0xFF2D3748),
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ],
       ),
     );
@@ -124,25 +148,41 @@ class _CandidateChatsScreenState extends State<CandidateChatsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.chat_bubble_outline,
-            size: 80,
-            color: AppColors.textSecondary.withOpacity(0.5),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF5B9FED).withOpacity(0.15),
+                  const Color(0xFF7BB8F7).withOpacity(0.08),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.chat_bubble_outline_rounded,
+              size: 56,
+              color: Color(0xFF5B9FED),
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           Text(
             'No Messages Yet',
             style: AppStyles.heading2.copyWith(
-              color: AppColors.textSecondary,
+              color: const Color(0xFF2D3748),
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 48),
             child: Text(
               'When an HR contacts you about your application, messages will appear here.',
               style: AppStyles.bodyMedium.copyWith(
-                color: AppColors.textSecondary,
+                color: const Color(0xFF718096),
+                height: 1.5,
               ),
               textAlign: TextAlign.center,
             ),
@@ -181,7 +221,7 @@ class _CandidateChatsScreenState extends State<CandidateChatsScreen> {
                 backgroundImage: chat.hrPhoto != null
                     ? NetworkImage(chat.hrPhoto!)
                     : null,
-                backgroundColor: AppColors.primaryGreen,
+                backgroundColor: const Color(0xFF5B9FED),
                 child: chat.hrPhoto == null
                     ? Text(
                         (chat.hrName ?? 'HR')[0].toUpperCase(),
@@ -224,7 +264,7 @@ class _CandidateChatsScreenState extends State<CandidateChatsScreen> {
                     Text(
                       chat.jobTitle,
                       style: AppStyles.bodySmall.copyWith(
-                        color: AppColors.primaryGreen,
+                        color: const Color(0xFF5B9FED),
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -252,7 +292,7 @@ class _CandidateChatsScreenState extends State<CandidateChatsScreen> {
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.primaryGreen,
+                              color: const Color(0xFF5B9FED),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(

@@ -63,69 +63,69 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
 
   String? _validateName(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'الاسم مطلوب';
+      return 'Full name is required';
     }
     if (value.trim().length < 3) {
-      return 'الاسم لازم يكون 3 حروف على الأقل';
+      return 'Name must be at least 3 characters';
     }
     if (value.trim().length > 100) {
-      return 'الاسم لا يمكن أن يتجاوز 100 حرف';
+      return 'Name cannot exceed 100 characters';
     }
     return null;
   }
 
   String? _validatePhone(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'رقم التليفون مطلوب';
+      return 'Phone number is required';
     }
     // Egyptian phone number validation
     final phoneRegex = RegExp(r'^(\+20|0)?1[0125]\d{8}$');
     if (!phoneRegex.hasMatch(value.trim())) {
-      return 'رقم تليفون مصري غير صحيح (مثال: 01012345678)';
+      return 'Invalid phone number (e.g., 01012345678)';
     }
     return null;
   }
 
   String? _validateRegion(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'المنطقة مطلوبة';
+      return 'Region is required';
     }
     if (value.trim().length < 2) {
-      return 'المنطقة لازم تكون حرفين على الأقل';
+      return 'Region must be at least 2 characters';
     }
     return null;
   }
 
   String? _validateAddress(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'العنوان مطلوب';
+      return 'Address is required';
     }
     if (value.trim().length < 10) {
-      return 'العنوان لازم يكون 10 حروف على الأقل';
+      return 'Address must be at least 10 characters';
     }
     return null;
   }
 
   String? _validateSalary(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'السالري المتوقع مطلوب';
+      return 'Expected salary is required';
     }
     final salary = int.tryParse(value.trim());
     if (salary == null) {
-      return 'السالري لازم يكون رقم';
+      return 'Salary must be a number';
     }
     if (salary < 0) {
-      return 'السالري لا يمكن أن يكون سالب';
+      return 'Salary cannot be negative';
     }
     return null;
   }
 
   String? _validateCustomAnswer(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'الإجابة مطلوبة';
+      return 'Answer is required';
     }
     if (value.trim().length > 1000) {
-      return 'الإجابة لا يمكن أن تتجاوز 1000 حرف';
+      return 'Answer cannot exceed 1000 characters';
     }
     return null;
   }
@@ -167,7 +167,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
         if (response['success'] == true) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('تم التقديم بنجاح! 🎉'),
+              content: Text('Application submitted successfully! 🎉'),
               backgroundColor: AppColors.success,
             ),
           );
@@ -175,7 +175,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(response['message'] ?? 'فشل التقديم'),
+              content: Text(response['message'] ?? 'Application failed'),
               backgroundColor: AppColors.error,
             ),
           );
@@ -186,7 +186,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('خطأ: ${e.toString()}'),
+            content: Text('Error: ${e.toString()}'),
             backgroundColor: AppColors.error,
           ),
         );
@@ -206,7 +206,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'التقديم على الوظيفة',
+          'Job Application',
           style: AppStyles.heading2.copyWith(fontSize: 20),
         ),
       ),
@@ -223,14 +223,21 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryTeal.withOpacity(0.1),
+                    gradient: LinearGradient(
+                      colors: [
+                        const Color(0xFF5B9FED).withOpacity(0.1),
+                        const Color(0xFF7BB8F7).withOpacity(0.08),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     children: [
                       const Icon(
                         Icons.work_outline,
-                        color: AppColors.primaryTeal,
+                        color: Color(0xFF5B9FED),
                         size: 24,
                       ),
                       const SizedBox(width: 12),
@@ -247,12 +254,12 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
 
                 // Basic Information Section
                 Text(
-                  'المعلومات الأساسية',
+                  'Basic Information',
                   style: AppStyles.heading2.copyWith(fontSize: 18),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'جميع الحقول مطلوبة',
+                  'All fields are required',
                   style: AppStyles.bodySmall.copyWith(color: AppColors.error),
                 ),
                 const SizedBox(height: 16),
@@ -260,17 +267,17 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                 // Full Name
                 _buildTextField(
                   controller: _fullNameController,
-                  label: 'الاسم الكامل',
+                  label: 'Full Name',
                   icon: Icons.person_outline,
                   validator: _validateName,
-                  hint: 'مثال: أحمد محمد علي',
+                  hint: 'e.g., John Smith',
                 ),
                 const SizedBox(height: 16),
 
                 // Phone Number
                 _buildTextField(
                   controller: _phoneController,
-                  label: 'رقم التليفون',
+                  label: 'Phone Number',
                   icon: Icons.phone_outlined,
                   validator: _validatePhone,
                   hint: '01012345678',
@@ -281,20 +288,20 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                 // Region
                 _buildTextField(
                   controller: _regionController,
-                  label: 'المنطقة',
+                  label: 'Region',
                   icon: Icons.location_city_outlined,
                   validator: _validateRegion,
-                  hint: 'مثال: القاهرة',
+                  hint: 'e.g., Cairo',
                 ),
                 const SizedBox(height: 16),
 
                 // Address
                 _buildTextField(
                   controller: _addressController,
-                  label: 'العنوان بالتفصيل',
+                  label: 'Full Address',
                   icon: Icons.home_outlined,
                   validator: _validateAddress,
-                  hint: 'مثال: 15 شارع التحرير، المعادي',
+                  hint: 'e.g., 15 Tahrir Street, Maadi',
                   maxLines: 2,
                 ),
                 const SizedBox(height: 16),
@@ -302,10 +309,10 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                 // Expected Salary
                 _buildTextField(
                   controller: _salaryController,
-                  label: 'السالري المتوقع (جنيه مصري)',
+                  label: 'Expected Salary (EGP)',
                   icon: Icons.attach_money,
                   validator: _validateSalary,
-                  hint: 'مثال: 5000',
+                  hint: 'e.g., 5000',
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
@@ -314,12 +321,12 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                 if (widget.customQuestions.isNotEmpty) ...[
                   const SizedBox(height: 32),
                   Text(
-                    'أسئلة إضافية',
+                    'Additional Questions',
                     style: AppStyles.heading2.copyWith(fontSize: 18),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'يرجى الإجابة على جميع الأسئلة',
+                    'Please answer all questions',
                     style: AppStyles.bodySmall.copyWith(
                       color: AppColors.textSecondary,
                     ),
@@ -347,7 +354,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                             maxLines: 3,
                             maxLength: 1000,
                             decoration: InputDecoration(
-                              hintText: 'اكتب إجابتك هنا...',
+                              hintText: 'Type your answer here...',
                               hintStyle: AppStyles.bodyMedium.copyWith(
                                 color: AppColors.textSecondary,
                               ),
@@ -368,7 +375,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                               focusedBorder: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 borderSide: const BorderSide(
-                                  color: AppColors.primaryTeal,
+                                  color: Color(0xFF5B9FED),
                                   width: 2,
                                 ),
                               ),
@@ -392,7 +399,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: PrimaryButton(
-                    text: 'تقديم الطلب',
+                    text: 'Submit Application',
                     onPressed: _submitApplication,
                     isLoading: _isLoading,
                   ),
@@ -435,7 +442,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
             hintStyle: AppStyles.bodyMedium.copyWith(
               color: AppColors.textSecondary,
             ),
-            prefixIcon: Icon(icon, color: AppColors.primaryTeal),
+            prefixIcon: Icon(icon, color: const Color(0xFF5B9FED)),
             filled: true,
             fillColor: Colors.grey[50],
             border: OutlineInputBorder(
@@ -448,10 +455,7 @@ class _JobApplicationScreenState extends State<JobApplicationScreen> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(
-                color: AppColors.primaryTeal,
-                width: 2,
-              ),
+              borderSide: const BorderSide(color: Color(0xFF5B9FED), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),

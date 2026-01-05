@@ -33,9 +33,9 @@ class AppColors {
 
   // Gradients
   static const backgroundGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [gradientStart, gradientMiddle, gradientEnd],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
   );
 
   static const cardGradient = LinearGradient(

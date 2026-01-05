@@ -1075,7 +1075,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             // Reset to home when returning
             setState(() => _currentNavIndex = 0);
           }),
-          _buildNavItem(Icons.chat_bubble_outline_rounded, 'Chat', 2, () {
+          _buildNavItem(Icons.chat_bubble_outline_rounded, 'Chats', 2, () {
             setState(() => _currentNavIndex = 2);
             Navigator.push(
               context,
