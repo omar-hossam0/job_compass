@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
 import 'sign_in_screen.dart';
 import 'sign_up_screen.dart';
 
@@ -180,8 +181,15 @@ class _AuthScreenState extends State<AuthScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFFB8E6D5).withOpacity(0.5),
                 shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.gradientStart,
+                    AppColors.gradientMiddle,
+                  ],
+                ),
               ),
               child: const Icon(
                 Icons.person,
@@ -195,8 +203,15 @@ class _AuthScreenState extends State<AuthScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xFFB8E6D5).withOpacity(0.7),
               shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.gradientMiddle,
+                  AppColors.gradientEnd,
+                ],
+              ),
             ),
             child: const Icon(Icons.person, size: 60, color: Color(0xFF1A1A1A)),
           ),
@@ -207,8 +222,15 @@ class _AuthScreenState extends State<AuthScreen> {
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFFF5E6D3).withOpacity(0.5),
                 shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.gradientStart,
+                    AppColors.gradientMiddle,
+                  ],
+                ),
               ),
               child: const Icon(
                 Icons.person,

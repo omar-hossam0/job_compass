@@ -5,6 +5,7 @@ import '../constants/app_styles.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/glass_card.dart';
+import 'hr_profile_screen.dart';
 
 class HRSettingsScreen extends StatefulWidget {
   const HRSettingsScreen({Key? key}) : super(key: key);
@@ -39,6 +40,19 @@ class _HRSettingsScreenState extends State<HRSettingsScreen> {
       }
     } catch (e) {
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _openProfileEditor() async {
+    final result = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => HRProfileScreen(initialProfile: _profile),
+      ),
+    );
+
+    if (result == true) {
+      _loadProfile();
     }
   }
 
@@ -164,12 +178,7 @@ class _HRSettingsScreenState extends State<HRSettingsScreen> {
               ),
             ),
             IconButton(
-              onPressed: () {
-                // Navigate to edit profile screen
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Edit profile coming soon')),
-                );
-              },
+              onPressed: _openProfileEditor,
               icon: const Icon(Icons.edit_outlined),
               style: IconButton.styleFrom(
                 backgroundColor: Colors.white.withOpacity(0.1),
@@ -187,11 +196,7 @@ class _HRSettingsScreenState extends State<HRSettingsScreen> {
         _buildSettingItem(
           icon: Icons.person_outline,
           title: 'Edit Profile',
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Edit profile coming soon')),
-            );
-          },
+          onTap: _openProfileEditor,
         ),
         const SizedBox(height: 12),
         _buildSettingItem(

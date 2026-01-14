@@ -29,14 +29,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   bool _showSuggestions = false;
   int _selectedCategoryIndex = 0;
 
-  final List<String> _categories = [
-    'All Jobs',
-    'Product Design',
-    'UI/UX Design',
-    'Graphic Design',
-    'Web Dev',
-    'Mobile Dev',
-  ];
+  final List<String> _categories = const [];
 
   @override
   void initState() {
@@ -307,6 +300,35 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             ),
           ),
           const SizedBox(width: 12),
+          // Chatbot shortcut
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF5B9FED), Color(0xFF7BB8F7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF5B9FED).withOpacity(0.25),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.smart_toy_outlined, size: 24),
+              color: Colors.white,
+              onPressed: () {
+                Navigator.pushNamed(context, '/chatbot');
+              },
+              tooltip: 'Career Assistant',
+            ),
+          ),
+          const SizedBox(width: 12),
           // Profile Picture
           GestureDetector(
             onTap: () async {
@@ -551,67 +573,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildCategoryTabs() {
-    return SizedBox(
-      height: 40,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          final isSelected = _selectedCategoryIndex == index;
-          return GestureDetector(
-            onTap: () {
-              setState(() => _selectedCategoryIndex = index);
-            },
-            child: Container(
-              margin: const EdgeInsets.only(right: 10),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                gradient: isSelected
-                    ? const LinearGradient(
-                        colors: [Color(0xFF5B9FED), Color(0xFF7BB8F7)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      )
-                    : null,
-                color: isSelected ? null : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: isSelected
-                    ? null
-                    : Border.all(color: Colors.grey[200]!),
-              ),
-              child: Center(
-                child: Row(
-                  children: [
-                    if (index == 0 && isSelected)
-                      const Padding(
-                        padding: EdgeInsets.only(right: 6),
-                        child: Icon(
-                          Icons.grid_view_rounded,
-                          size: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                    Text(
-                      _categories[index],
-                      style: TextStyle(
-                        color: isSelected ? Colors.white : Colors.grey[600],
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+  Widget _buildCategoryTabs() => const SizedBox.shrink();
 
   Widget _buildPromoBanner() {
     return Container(

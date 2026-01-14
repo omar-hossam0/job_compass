@@ -282,7 +282,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
+                  color: AppColors.primaryBlue.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -291,7 +291,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                       : 'Full-time',
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF2E7D32),
+                    color: AppColors.primaryBlue,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

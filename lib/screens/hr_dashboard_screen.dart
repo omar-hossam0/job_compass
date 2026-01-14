@@ -498,7 +498,7 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
   Widget _buildJobItem(Map<String, dynamic> job) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
+        color: AppColors.gradientStart,
         borderRadius: BorderRadius.circular(20),
       ),
       child: InkWell(
@@ -535,7 +535,7 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: job['status'] == 'active'
-                          ? const Color(0xFFD1E8D5)
+                          ? AppColors.primaryBlue.withOpacity(0.12)
                           : Colors.grey[300],
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -544,7 +544,7 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
                       style: TextStyle(
                         fontSize: 11,
                         color: job['status'] == 'active'
-                            ? const Color(0xFF4A7C59)
+                            ? AppColors.primaryBlue
                             : Colors.grey[700],
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
