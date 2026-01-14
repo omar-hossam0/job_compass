@@ -121,7 +121,31 @@ export const createJob = async (req, res) => {
       });
     }
 
-    const { title, description, requiredSkills, experienceLevel } = req.body;
+    const {
+      title,
+      description,
+      requiredSkills,
+      experienceLevel,
+      customQuestions,
+      salary,
+      location,
+      jobType,
+    } = req.body;
+
+    console.log("📋 createJob in hrController - Received customQuestions:", customQuestions);
+    console.log("📋 createJob in hrController - Type:", typeof customQuestions);
+
+    // Parse customQuestions if it's a string
+    let questionsArray = customQuestions || [];
+    if (typeof customQuestions === "string") {
+      try {
+        questionsArray = JSON.parse(customQuestions);
+      } catch (e) {
+        questionsArray = [];
+      }
+    }
+
+    console.log("📋 createJob in hrController - Parsed questionsArray:", questionsArray);
 
     const job = await Job.create({
       title,
@@ -134,8 +158,13 @@ export const createJob = async (req, res) => {
       postedBy: req.user.id,
       status: "Active",
       department: req.body.department || "General",
-      location: company.location,
+      location: location || company.location,
+      salary: salary,
+      jobType: jobType,
+      customQuestions: questionsArray,
     });
+
+    console.log("✅ Job created with customQuestions:", job.customQuestions);
 
     res.status(201).json({
       success: true,
@@ -146,6 +175,7 @@ export const createJob = async (req, res) => {
         requiredSkills: job.requiredSkills,
         experienceLevel: job.experienceLevel,
         status: job.status,
+        customQuestions: job.customQuestions,
       },
     });
   } catch (error) {

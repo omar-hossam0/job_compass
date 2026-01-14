@@ -176,18 +176,32 @@ class Job {
         postedAt: postedDate,
         applicantsCount: applicantsCountValue,
         customQuestions: () {
+          print('🔍 Parsing customQuestions...');
+          print('📦 Raw customQuestions data: ${json['customQuestions']}');
+          print('📊 Type: ${json['customQuestions'].runtimeType}');
+
           if (json['customQuestions'] != null) {
             try {
               if (json['customQuestions'] is List) {
-                return List<String>.from(
+                final questions = List<String>.from(
                   (json['customQuestions'] as List)
                       .where((q) => q != null)
                       .map((q) => q.toString()),
                 );
+                print(
+                  '✅ Parsed ${questions.length} custom questions: $questions',
+                );
+                return questions;
+              } else {
+                print(
+                  '⚠️ customQuestions is not a List, it is: ${json['customQuestions'].runtimeType}',
+                );
               }
             } catch (e) {
-              print('Error parsing customQuestions: $e');
+              print('❌ Error parsing customQuestions: $e');
             }
+          } else {
+            print('⚠️ customQuestions is null');
           }
           return <String>[];
         }(),

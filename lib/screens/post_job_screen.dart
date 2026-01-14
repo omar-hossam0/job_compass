@@ -142,6 +142,11 @@ class _PostJobScreenState extends State<PostJobScreen> {
         'customQuestions': _customQuestions,
       };
 
+      print('📤 Posting job with data:');
+      print('  - Title: ${jobData['title']}');
+      print('  - Custom Questions: ${jobData['customQuestions']}');
+      print('  - Number of questions: ${_customQuestions.length}');
+
       // Upload logo if selected
       if (_selectedLogoBytes != null && _selectedLogoName != null) {
         try {
