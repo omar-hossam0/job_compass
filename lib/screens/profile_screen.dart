@@ -74,10 +74,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _cvUrl = profileData['cvUrl'];
           _cvFileName = profileData['cvFileName'];
           _cvCategory = profileData['cvCategory'];
-          _cvCategoryConfidence = profileData['cvCategoryConfidence']?.toDouble();
+          _cvCategoryConfidence = profileData['cvCategoryConfidence']
+              ?.toDouble();
           _cvTopCategories = profileData['cvTopCategories'];
           debugPrint('📄 Profile CV -> url: $_cvUrl name: $_cvFileName');
-          debugPrint('🤖 Classification -> category: $_cvCategory confidence: $_cvCategoryConfidence');
+          debugPrint(
+            '🤖 Classification -> category: $_cvCategory confidence: $_cvCategoryConfidence',
+          );
           debugPrint('📊 Top categories: $_cvTopCategories');
         }
       }
@@ -249,25 +252,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _cvFileName =
               response['cvFileName'] ??
               _selectedCvName; // Store filename from response or picked name
-          
+
           // Get classification results
           if (response['classification'] != null) {
             _cvCategory = response['classification']['category'];
-            _cvCategoryConfidence = response['classification']['confidence']?.toDouble();
+            _cvCategoryConfidence = response['classification']['confidence']
+                ?.toDouble();
             _cvTopCategories = response['classification']['top_3'];
           }
         });
-        debugPrint('✅ CV upload -> url: $_cvUrl name: $_cvFileName category: $_cvCategory');
-        
+        debugPrint(
+          '✅ CV upload -> url: $_cvUrl name: $_cvFileName category: $_cvCategory',
+        );
+
         // Show success message with classification
         String message = 'CV uploaded successfully!';
         if (_cvCategory != null) {
           message += ' Classified as: $_cvCategory';
           if (_cvCategoryConfidence != null) {
-            message += ' (${(_cvCategoryConfidence! * 100).toStringAsFixed(0)}%)';
+            message +=
+                ' (${(_cvCategoryConfidence! * 100).toStringAsFixed(0)}%)';
           }
         }
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
@@ -647,11 +654,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: Colors.white.withOpacity(0.25),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    Icons.psychology,
-                    color: Colors.white,
-                    size: 22,
-                  ),
+                  child: Icon(Icons.psychology, color: Colors.white, size: 22),
                 ),
                 SizedBox(width: 12),
                 Expanded(
@@ -681,7 +684,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
             SizedBox(height: 16),
-            
+
             // Main Classification Result
             Container(
               width: double.infinity,
@@ -743,7 +746,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       if (_cvCategoryConfidence != null)
                         Container(
-                          padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: _getConfidenceColor(_cvCategoryConfidence!),
                             borderRadius: BorderRadius.circular(20),
@@ -770,14 +776,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                     ],
                   ),
-                  
+
                   // Alternative Matches
-                  if (_cvTopCategories != null && _cvTopCategories!.length > 1) ...[
+                  if (_cvTopCategories != null &&
+                      _cvTopCategories!.length > 1) ...[
                     SizedBox(height: 16),
-                    Container(
-                      height: 1,
-                      color: Colors.grey[200],
-                    ),
+                    Container(height: 1, color: Colors.grey[200]),
                     SizedBox(height: 12),
                     Text(
                       'Other Possible Matches',
@@ -816,7 +820,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             Container(
-                              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: Colors.grey[100],
                                 borderRadius: BorderRadius.circular(12),

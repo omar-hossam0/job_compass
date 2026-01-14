@@ -776,7 +776,7 @@ router.post(
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ cv_text: resumeText }),
           });
-          
+
           if (classifierResponse.ok) {
             cvClassification = await classifierResponse.json();
             console.log("✅ CV Classification result:", cvClassification);
@@ -796,7 +796,7 @@ router.post(
       if (extractedSkills.length > 0) {
         candidate.skills = extractedSkills;
       }
-      
+
       // Save classification result
       if (cvClassification && cvClassification.success) {
         candidate.cvCategory = cvClassification.job_category;
