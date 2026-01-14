@@ -25,21 +25,48 @@ class HRJob {
 
   factory HRJob.fromJson(Map<String, dynamic> json) {
     return HRJob(
-      id: json['_id'] ?? json['id'] ?? '',
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      requiredSkills: json['requiredSkills'] != null
-          ? List<String>.from(json['requiredSkills'])
-          : [],
-      experienceLevel: json['experienceLevel'] ?? '',
-      status: json['status'] ?? 'active',
-      applicantsCount: json['applicantsCount'] ?? 0,
-      companyId: json['company'] ?? json['companyId'] ?? '',
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      title: (json['title'] ?? '').toString(),
+      description: (json['description'] ?? '').toString(),
+      requiredSkills: () {
+        if (json['requiredSkills'] != null) {
+          try {
+            if (json['requiredSkills'] is List) {
+              return List<String>.from(
+                (json['requiredSkills'] as List)
+                    .where((s) => s != null)
+                    .map((s) => s.toString()),
+              );
+            }
+          } catch (e) {
+            print('Error parsing requiredSkills: $e');
+          }
+        }
+        return <String>[];
+      }(),
+      experienceLevel: (json['experienceLevel'] ?? '').toString(),
+      status: (json['status'] ?? 'active').toString(),
+      applicantsCount: () {
+        // Check applicants array first
+        if (json['applicants'] != null && json['applicants'] is List) {
+          return (json['applicants'] as List).length;
+        }
+        // Check applicantsCount field
+        if (json['applicantsCount'] != null) {
+          if (json['applicantsCount'] is num) {
+            return (json['applicantsCount'] as num).toInt();
+          } else if (json['applicantsCount'] is String) {
+            return int.tryParse(json['applicantsCount']) ?? 0;
+          }
+        }
+        return 0;
+      }(),
+      companyId: (json['company'] ?? json['companyId'] ?? '').toString(),
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
       updatedAt: json['updatedAt'] != null
-          ? DateTime.parse(json['updatedAt'])
+          ? DateTime.tryParse(json['updatedAt'].toString())
           : null,
     );
   }

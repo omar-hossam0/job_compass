@@ -19,17 +19,22 @@ class ChatMessage {
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) {
     return ChatMessage(
-      id: json['id']?.toString() ?? '',
-      senderId: json['senderId']?.toString() ?? '',
-      senderRole: json['senderRole'] ?? 'candidate',
-      content: json['content'] ?? '',
-      createdAt: json['createdAt'] != null 
-          ? DateTime.parse(json['createdAt']) 
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      senderId: (json['senderId'] ?? '').toString(),
+      senderRole: (json['senderRole'] ?? 'candidate').toString(),
+      content: (json['content'] ?? '').toString(),
+      createdAt: json['createdAt'] != null
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
-      readAt: json['readAt'] != null 
-          ? DateTime.parse(json['readAt']) 
+      readAt: json['readAt'] != null
+          ? DateTime.tryParse(json['readAt'].toString())
           : null,
-      isMe: json['isMe'] ?? false,
+      isMe: () {
+        final isMe = json['isMe'];
+        if (isMe is bool) return isMe;
+        if (isMe is String) return isMe.toLowerCase() == 'true';
+        return false;
+      }(),
     );
   }
 
@@ -77,21 +82,39 @@ class Chat {
 
   factory Chat.fromJson(Map<String, dynamic> json) {
     return Chat(
-      id: json['id']?.toString() ?? '',
-      candidateId: json['candidateId']?.toString() ?? '',
-      candidateName: json['candidateName'] ?? 'Unknown',
-      candidatePhoto: json['candidatePhoto'],
-      jobId: json['jobId']?.toString() ?? '',
-      jobTitle: json['jobTitle'] ?? 'Unknown Job',
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      candidateId: (json['candidateId'] ?? '').toString(),
+      candidateName: (json['candidateName'] ?? 'Unknown').toString(),
+      candidatePhoto: json['candidatePhoto']?.toString(),
+      jobId: (json['jobId'] ?? '').toString(),
+      jobTitle: (json['jobTitle'] ?? 'Unknown Job').toString(),
       hrId: json['hrId']?.toString(),
-      hrName: json['hrName'],
-      hrPhoto: json['hrPhoto'],
-      messages: (json['messages'] as List<dynamic>?)
-          ?.map((m) => ChatMessage.fromJson(m))
-          .toList() ?? [],
-      status: json['status'] ?? 'active',
-      lastMessageAt: json['lastMessageAt'] != null 
-          ? DateTime.parse(json['lastMessageAt']) 
+      hrName: json['hrName']?.toString(),
+      hrPhoto: json['hrPhoto']?.toString(),
+      messages: () {
+        try {
+          if (json['messages'] != null && json['messages'] is List) {
+            return (json['messages'] as List)
+                .map((m) {
+                  try {
+                    return ChatMessage.fromJson(m);
+                  } catch (e) {
+                    print('Error parsing message: $e');
+                    return null;
+                  }
+                })
+                .where((m) => m != null)
+                .cast<ChatMessage>()
+                .toList();
+          }
+        } catch (e) {
+          print('Error parsing messages: $e');
+        }
+        return <ChatMessage>[];
+      }(),
+      status: (json['status'] ?? 'active').toString(),
+      lastMessageAt: json['lastMessageAt'] != null
+          ? DateTime.tryParse(json['lastMessageAt'].toString())
           : null,
     );
   }
@@ -132,22 +155,31 @@ class ChatPreview {
 
   factory ChatPreview.fromJson(Map<String, dynamic> json) {
     return ChatPreview(
-      id: json['id']?.toString() ?? '',
-      candidateId: json['candidateId']?.toString() ?? '',
-      candidateName: json['candidateName'] ?? 'Unknown',
-      candidatePhoto: json['candidatePhoto'],
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      candidateId: (json['candidateId'] ?? '').toString(),
+      candidateName: (json['candidateName'] ?? 'Unknown').toString(),
+      candidatePhoto: json['candidatePhoto']?.toString(),
       hrId: json['hrId']?.toString(),
-      hrName: json['hrName'],
-      hrPhoto: json['hrPhoto'],
-      jobId: json['jobId']?.toString() ?? '',
-      jobTitle: json['jobTitle'] ?? 'Unknown Job',
-      companyLogo: json['companyLogo'],
-      lastMessage: json['lastMessage'],
-      lastMessageAt: json['lastMessageAt'] != null 
-          ? DateTime.parse(json['lastMessageAt']) 
+      hrName: json['hrName']?.toString(),
+      hrPhoto: json['hrPhoto']?.toString(),
+      jobId: (json['jobId'] ?? '').toString(),
+      jobTitle: (json['jobTitle'] ?? 'Unknown Job').toString(),
+      companyLogo: json['companyLogo']?.toString(),
+      lastMessage: json['lastMessage']?.toString(),
+      lastMessageAt: json['lastMessageAt'] != null
+          ? DateTime.tryParse(json['lastMessageAt'].toString())
           : null,
-      unreadCount: json['unreadCount'] ?? 0,
-      status: json['status'] ?? 'active',
+      unreadCount: () {
+        if (json['unreadCount'] != null) {
+          if (json['unreadCount'] is num) {
+            return (json['unreadCount'] as num).toInt();
+          } else if (json['unreadCount'] is String) {
+            return int.tryParse(json['unreadCount']) ?? 0;
+          }
+        }
+        return 0;
+      }(),
+      status: (json['status'] ?? 'active').toString(),
     );
   }
 }

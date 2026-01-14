@@ -7,7 +7,6 @@ import '../models/job.dart';
 import '../services/api_service.dart';
 import '../widgets/common_widgets.dart';
 import '../widgets/custom_buttons.dart';
-import '../widgets/job_card.dart';
 import 'candidate_chats_screen.dart';
 
 class StudentDashboardScreen extends StatefulWidget {

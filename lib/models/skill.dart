@@ -15,11 +15,20 @@ class Skill {
 
   factory Skill.fromJson(Map<String, dynamic> json) {
     return Skill(
-      name: json['name'] ?? '',
-      category: json['category'] ?? 'Technical',
-      level: json['level'] ?? 'Beginner',
-      explanation: json['explanation'],
-      proficiency: (json['proficiency'] ?? 0).toDouble(),
+      name: (json['name'] ?? '').toString(),
+      category: (json['category'] ?? 'Technical').toString(),
+      level: (json['level'] ?? 'Beginner').toString(),
+      explanation: json['explanation']?.toString(),
+      proficiency: () {
+        if (json['proficiency'] != null) {
+          if (json['proficiency'] is num) {
+            return (json['proficiency'] as num).toDouble();
+          } else if (json['proficiency'] is String) {
+            return double.tryParse(json['proficiency']) ?? 0.0;
+          }
+        }
+        return 0.0;
+      }(),
     );
   }
 
@@ -49,17 +58,61 @@ class SkillAnalysis {
 
   factory SkillAnalysis.fromJson(Map<String, dynamic> json) {
     return SkillAnalysis(
-      technicalSkills: json['technicalSkills'] != null
-          ? (json['technicalSkills'] as List)
-                .map((s) => Skill.fromJson(s))
-                .toList()
-          : [],
-      softSkills: json['softSkills'] != null
-          ? (json['softSkills'] as List).map((s) => Skill.fromJson(s)).toList()
-          : [],
-      totalSkills: json['totalSkills'] ?? 0,
+      technicalSkills: () {
+        try {
+          if (json['technicalSkills'] != null &&
+              json['technicalSkills'] is List) {
+            return (json['technicalSkills'] as List)
+                .map((s) {
+                  try {
+                    return Skill.fromJson(s);
+                  } catch (e) {
+                    print('Error parsing technical skill: $e');
+                    return null;
+                  }
+                })
+                .where((s) => s != null)
+                .cast<Skill>()
+                .toList();
+          }
+        } catch (e) {
+          print('Error parsing technicalSkills: $e');
+        }
+        return <Skill>[];
+      }(),
+      softSkills: () {
+        try {
+          if (json['softSkills'] != null && json['softSkills'] is List) {
+            return (json['softSkills'] as List)
+                .map((s) {
+                  try {
+                    return Skill.fromJson(s);
+                  } catch (e) {
+                    print('Error parsing soft skill: $e');
+                    return null;
+                  }
+                })
+                .where((s) => s != null)
+                .cast<Skill>()
+                .toList();
+          }
+        } catch (e) {
+          print('Error parsing softSkills: $e');
+        }
+        return <Skill>[];
+      }(),
+      totalSkills: () {
+        if (json['totalSkills'] != null) {
+          if (json['totalSkills'] is num) {
+            return (json['totalSkills'] as num).toInt();
+          } else if (json['totalSkills'] is String) {
+            return int.tryParse(json['totalSkills']) ?? 0;
+          }
+        }
+        return 0;
+      }(),
       analyzedAt: json['analyzedAt'] != null
-          ? DateTime.parse(json['analyzedAt'])
+          ? DateTime.tryParse(json['analyzedAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
     );
   }
@@ -84,20 +137,69 @@ class SkillGap {
 
   factory SkillGap.fromJson(Map<String, dynamic> json) {
     return SkillGap(
-      jobId: json['jobId'] ?? '',
-      jobTitle: json['jobTitle'] ?? '',
-      skillComparisons: json['skillComparisons'] != null
-          ? (json['skillComparisons'] as List)
-                .map((s) => SkillComparison.fromJson(s))
-                .toList()
-          : [],
-      missingSkills: json['missingSkills'] != null
-          ? List<String>.from(json['missingSkills'])
-          : [],
-      overallMatch: (json['overallMatch'] ?? 0).toDouble(),
-      improvementSuggestions: json['improvementSuggestions'] != null
-          ? List<String>.from(json['improvementSuggestions'])
-          : [],
+      jobId: (json['jobId'] ?? '').toString(),
+      jobTitle: (json['jobTitle'] ?? '').toString(),
+      skillComparisons: () {
+        try {
+          if (json['skillComparisons'] != null &&
+              json['skillComparisons'] is List) {
+            return (json['skillComparisons'] as List)
+                .map((s) {
+                  try {
+                    return SkillComparison.fromJson(s);
+                  } catch (e) {
+                    print('Error parsing skill comparison: $e');
+                    return null;
+                  }
+                })
+                .where((s) => s != null)
+                .cast<SkillComparison>()
+                .toList();
+          }
+        } catch (e) {
+          print('Error parsing skillComparisons: $e');
+        }
+        return <SkillComparison>[];
+      }(),
+      missingSkills: () {
+        try {
+          if (json['missingSkills'] != null && json['missingSkills'] is List) {
+            return List<String>.from(
+              (json['missingSkills'] as List)
+                  .where((s) => s != null)
+                  .map((s) => s.toString()),
+            );
+          }
+        } catch (e) {
+          print('Error parsing missingSkills: $e');
+        }
+        return <String>[];
+      }(),
+      overallMatch: () {
+        if (json['overallMatch'] != null) {
+          if (json['overallMatch'] is num) {
+            return (json['overallMatch'] as num).toDouble();
+          } else if (json['overallMatch'] is String) {
+            return double.tryParse(json['overallMatch']) ?? 0.0;
+          }
+        }
+        return 0.0;
+      }(),
+      improvementSuggestions: () {
+        try {
+          if (json['improvementSuggestions'] != null &&
+              json['improvementSuggestions'] is List) {
+            return List<String>.from(
+              (json['improvementSuggestions'] as List)
+                  .where((s) => s != null)
+                  .map((s) => s.toString()),
+            );
+          }
+        } catch (e) {
+          print('Error parsing improvementSuggestions: $e');
+        }
+        return <String>[];
+      }(),
     );
   }
 }
@@ -117,11 +219,31 @@ class SkillComparison {
 
   factory SkillComparison.fromJson(Map<String, dynamic> json) {
     return SkillComparison(
-      skillName: json['skillName'] ?? '',
-      requiredLevel: (json['requiredLevel'] ?? json['required'] ?? 0)
-          .toDouble(),
-      currentLevel: (json['currentLevel'] ?? json['current'] ?? 0).toDouble(),
-      hasSkill: json['hasSkill'] ?? false,
+      skillName: (json['skillName'] ?? '').toString(),
+      requiredLevel: () {
+        final val = json['requiredLevel'] ?? json['required'];
+        if (val is num) {
+          return val.toDouble();
+        } else if (val is String) {
+          return double.tryParse(val) ?? 0.0;
+        }
+        return 0.0;
+      }(),
+      currentLevel: () {
+        final val = json['currentLevel'] ?? json['current'];
+        if (val is num) {
+          return val.toDouble();
+        } else if (val is String) {
+          return double.tryParse(val) ?? 0.0;
+        }
+        return 0.0;
+      }(),
+      hasSkill: () {
+        final val = json['hasSkill'];
+        if (val is bool) return val;
+        if (val is String) return val.toLowerCase() == 'true';
+        return false;
+      }(),
     );
   }
 }

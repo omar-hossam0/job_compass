@@ -57,8 +57,12 @@ class Job {
 
       // Handle employmentType - backend uses jobType instead
       List<String> employmentTypes = [];
-      if (json['employmentType'] != null && json['employmentType'] is List) {
-        employmentTypes = List<String>.from(json['employmentType']);
+      if (json['employmentType'] != null) {
+        if (json['employmentType'] is List) {
+          employmentTypes = List<String>.from(json['employmentType']);
+        } else if (json['employmentType'] is String) {
+          employmentTypes = [json['employmentType'].toString()];
+        }
       } else if (json['jobType'] != null) {
         employmentTypes = [json['jobType'].toString()];
       }
@@ -109,10 +113,21 @@ class Job {
         salary: salaryValue,
         salaryPeriod: (json['salaryPeriod'] ?? '/year').toString(),
         experienceYears: () {
-          // Try experienceYears first, then parse experienceLevel
-          if (json['experienceYears'] != null &&
-              json['experienceYears'] is num) {
-            return (json['experienceYears'] as num).toInt();
+          // Try experienceYears first
+          if (json['experienceYears'] != null) {
+            if (json['experienceYears'] is num) {
+              return (json['experienceYears'] as num).toInt();
+            } else if (json['experienceYears'] is String) {
+              return int.tryParse(json['experienceYears']) ?? 0;
+            }
+          }
+          // Try experienceRequired field from backend
+          if (json['experienceRequired'] != null) {
+            if (json['experienceRequired'] is num) {
+              return (json['experienceRequired'] as num).toInt();
+            } else if (json['experienceRequired'] is String) {
+              return int.tryParse(json['experienceRequired']) ?? 0;
+            }
           }
           // Parse experienceLevel string to estimate years
           final expLevel = (json['experienceLevel'] ?? '')
@@ -124,18 +139,58 @@ class Job {
           if (expLevel.contains('executive')) return 10;
           return 0;
         }(),
-        requiredSkills: json['requiredSkills'] != null
-            ? List<String>.from(json['requiredSkills'])
-            : [],
+        requiredSkills: () {
+          if (json['requiredSkills'] != null) {
+            try {
+              if (json['requiredSkills'] is List) {
+                return List<String>.from(
+                  (json['requiredSkills'] as List)
+                      .where((s) => s != null)
+                      .map((s) => s.toString()),
+                );
+              } else if (json['requiredSkills'] is String) {
+                // Handle comma-separated string
+                return (json['requiredSkills'] as String)
+                    .split(',')
+                    .map((s) => s.trim())
+                    .where((s) => s.isNotEmpty)
+                    .toList();
+              }
+            } catch (e) {
+              print('Error parsing requiredSkills: $e');
+            }
+          }
+          return <String>[];
+        }(),
         matchScore: matchScoreValue,
-        missingSkillsCount: (json['missingSkillsCount'] ?? 0) is num
-            ? (json['missingSkillsCount'] as num).toInt()
-            : 0,
+        missingSkillsCount: () {
+          if (json['missingSkillsCount'] != null) {
+            if (json['missingSkillsCount'] is num) {
+              return (json['missingSkillsCount'] as num).toInt();
+            } else if (json['missingSkillsCount'] is String) {
+              return int.tryParse(json['missingSkillsCount']) ?? 0;
+            }
+          }
+          return 0;
+        }(),
         postedAt: postedDate,
         applicantsCount: applicantsCountValue,
-        customQuestions: json['customQuestions'] != null
-            ? List<String>.from(json['customQuestions'])
-            : [],
+        customQuestions: () {
+          if (json['customQuestions'] != null) {
+            try {
+              if (json['customQuestions'] is List) {
+                return List<String>.from(
+                  (json['customQuestions'] as List)
+                      .where((q) => q != null)
+                      .map((q) => q.toString()),
+                );
+              }
+            } catch (e) {
+              print('Error parsing customQuestions: $e');
+            }
+          }
+          return <String>[];
+        }(),
       );
     } catch (e) {
       // Fallback with default values if parsing fails

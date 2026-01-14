@@ -19,60 +19,177 @@ const calculateKeywordMatch = (cvText, job) => {
 
   // Focus ONLY on required skills for accurate matching
   let exactMatches = 0;
-  let partialMatches = 0;
 
   skills.forEach((skill) => {
-    // Normalize skill names for comparison
-    const skillVariants = [
-      skill,
-      skill.replace(/\.js$/, ''),      // node.js -> node
-      skill.replace(/\.js$/, 'js'),    // node.js -> nodejs
-      skill.replace(/js$/, '.js'),     // nodejs -> node.js
-      skill.replace(/\//g, ' '),       // MongoDB/MySQL -> MongoDB MySQL
-    ];
+    // Normalize and create all possible variants
+    const skillVariants = new Set();
 
-    const found = skillVariants.some(variant => {
-      // Check for exact word match (not just substring)
-      const regex = new RegExp(`\\b${variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-      return regex.test(cvLower);
+    // Add original skill
+    skillVariants.add(skill);
+
+    // Handle .js framework names (node.js, express.js, react.js, etc.)
+    if (skill.includes('.js')) {
+      const base = skill.replace(/\.js$/i, '');
+      skillVariants.add(base);                    // node.js -> node
+      skillVariants.add(base + 'js');             // node.js -> nodejs
+      skillVariants.add(base + ' js');            // node.js -> node js
+    } else if (skill.match(/js$/i) && skill.length > 2) {
+      const base = skill.replace(/js$/i, '');
+      skillVariants.add(base + '.js');            // nodejs -> node.js
+      skillVariants.add(base);                    // nodejs -> node
+    }
+
+    // Handle slash-separated skills (MongoDB/MySQL -> match if CV has MongoDB OR MySQL)
+    if (skill.includes('/')) {
+      const parts = skill.split('/');
+      parts.forEach(part => skillVariants.add(part.trim()));
+    }
+
+    // Handle space-separated ONLY for known technical terms and compound phrases
+    // DON'T split general phrases like "Error handling" or "Data Security"
+    const isCompoundTechnicalSkill =
+      skill.includes('api') ||              // REST API, REST APIs, REST API design
+      skill.includes('tcp') ||              // TCP/IP
+      skill.includes('lan') ||              // LAN/WAN
+      skill.includes('html') ||             // HTML, HTML5
+      skill.includes('css') ||              // CSS, CSS3
+      skill.includes('query') ||            // Query Optimization
+      skill.includes('database') ||         // Database Design
+      (skill.includes(' ') && skill.split(' ').length === 2 &&
+        skill.split(' ').every(w => w.length <= 4 && w.match(/^[a-z0-9]+$/)));  // 2D, 3D, etc.
+
+    if (skill.includes(' ') && isCompoundTechnicalSkill) {
+      skill.split(' ').forEach(word => {
+        if (word.length >= 2) skillVariants.add(word);
+      });
+      // Also add the full phrase without spaces
+      skillVariants.add(skill.replace(/\s+/g, ''));
+    }
+
+    // For very long skills (3+ words), match if CV contains at least 2 consecutive words
+    if (skill.split(' ').length >= 3) {
+      const words = skill.split(' ');
+      // Create all 2-word combinations
+      for (let i = 0; i < words.length - 1; i++) {
+        const bigram = words[i] + ' ' + words[i + 1];
+        if (bigram.length >= 6) { // Only meaningful bigrams
+          skillVariants.add(bigram);
+        }
+      }
+    }
+
+    // Check if CV contains any variant
+    const found = Array.from(skillVariants).some(variant => {
+      if (!variant || variant.length < 2) return false;
+
+      // Escape special regex characters (including +)
+      const escaped = variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      try {
+        // Try exact word boundary match
+        const exactRegex = new RegExp(`\\b${escaped}\\b`, 'i');
+        if (exactRegex.test(cvLower)) return true;
+      } catch (e) {
+        // If regex fails (e.g., C++), fall back to simple includes
+        if (cvLower.includes(variant)) return true;
+      }
+
+      // For very short skills or acronyms (2-3 chars), allow flexible matching
+      if (variant.length <= 3) {
+        return cvLower.includes(variant);
+      }
+
+      return false;
     });
 
     if (found) {
       exactMatches++;
-    } else {
-      // Check for partial match (e.g., "express" in "expressjs")
-      const baseSkill = skill.replace(/\.js|js$/i, '').replace(/[^a-z]/gi, '');
-      if (baseSkill.length >= 3 && cvLower.includes(baseSkill)) {
-        partialMatches++;
-      }
     }
   });
 
   const totalSkills = skills.length;
   if (totalSkills === 0) return 0;
 
-  // Calculate score based on exact and partial matches
-  const exactScore = (exactMatches / totalSkills) * 100;
-  const partialScore = (partialMatches / totalSkills) * 30; // Partial matches worth 30%
-  let rawScore = exactScore + partialScore;
+  // DIRECT calculation: exact matches only
+  const matchScore = Math.round((exactMatches / totalSkills) * 100);
 
-  // Apply realistic caps based on actual matches
-  const matchRatio = exactMatches / totalSkills;
+  console.log(`📊 "${job.title}": ${exactMatches}/${totalSkills} exact matches = ${matchScore}%`);
 
-  if (exactMatches === 0) {
-    rawScore = Math.min(rawScore, 15); // Only partial matches = max 15%
-  } else if (matchRatio < 0.25) {
-    rawScore = Math.min(rawScore, 30); // Less than 25% match = max 30%
-  } else if (matchRatio < 0.5) {
-    rawScore = Math.min(rawScore, 50); // Less than 50% match = max 50%
-  } else if (matchRatio < 0.75) {
-    rawScore = Math.min(rawScore, 70); // Less than 75% match = max 70%
+  return matchScore;
+};
+
+// Common tech skills to extract from job descriptions
+const KNOWN_SKILLS = [
+  // Programming Languages
+  'javascript', 'python', 'java', 'c#', 'c++', 'php', 'ruby', 'go', 'rust', 'swift', 'kotlin', 'typescript',
+  // Frontend
+  'react', 'react.js', 'reactjs', 'angular', 'vue', 'vue.js', 'vuejs', 'html', 'css', 'sass', 'less', 'bootstrap', 'tailwind',
+  // Backend
+  'node', 'node.js', 'nodejs', 'express', 'express.js', 'expressjs', 'django', 'flask', 'spring', 'laravel', 'rails',
+  // Databases
+  'mongodb', 'mysql', 'postgresql', 'postgres', 'sql', 'redis', 'firebase', 'dynamodb', 'oracle', 'sqlite',
+  // DevOps & Cloud
+  'docker', 'kubernetes', 'aws', 'azure', 'gcp', 'jenkins', 'ci/cd', 'linux', 'git', 'github', 'gitlab',
+  // APIs
+  'rest', 'restful', 'graphql', 'api', 'apis', 'websocket', 'socket.io',
+  // Other
+  'jwt', 'oauth', 'authentication', 'authorization', 'security', 'testing', 'agile', 'scrum'
+];
+
+// Extract skills from job description if requiredSkills is empty or too few
+const extractSkillsFromDescription = (job) => {
+  const requiredSkills = job.requiredSkills || [];
+
+  // If job has enough skills defined, use them
+  if (requiredSkills.length >= 3) {
+    return requiredSkills;
   }
-  // Only 75%+ actual skill match can get above 70%
 
-  console.log(`📊 Skill matching for "${job.title}": ${exactMatches}/${totalSkills} exact, ${partialMatches} partial = ${Math.round(rawScore)}%`);
+  // Extract from description
+  const description = (job.description || '').toLowerCase();
+  const title = (job.title || '').toLowerCase();
+  const combinedText = `${title} ${description}`;
 
-  return Math.round(rawScore);
+  const extractedSkills = [];
+
+  KNOWN_SKILLS.forEach(skill => {
+    const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escaped}\\b`, 'i');
+    if (regex.test(combinedText)) {
+      // Normalize skill name
+      let normalizedSkill = skill;
+      if (skill === 'node' || skill === 'nodejs') normalizedSkill = 'Node.js';
+      else if (skill === 'express' || skill === 'expressjs') normalizedSkill = 'Express.js';
+      else if (skill === 'react' || skill === 'reactjs') normalizedSkill = 'React.js';
+      else if (skill === 'vue' || skill === 'vuejs') normalizedSkill = 'Vue.js';
+      else if (skill === 'mongodb') normalizedSkill = 'MongoDB';
+      else if (skill === 'mysql') normalizedSkill = 'MySQL';
+      else if (skill === 'postgresql' || skill === 'postgres') normalizedSkill = 'PostgreSQL';
+      else if (skill === 'rest' || skill === 'restful') normalizedSkill = 'REST APIs';
+      else if (skill === 'api' || skill === 'apis') normalizedSkill = 'APIs';
+      else normalizedSkill = skill.charAt(0).toUpperCase() + skill.slice(1);
+
+      if (!extractedSkills.includes(normalizedSkill)) {
+        extractedSkills.push(normalizedSkill);
+      }
+    }
+  });
+
+  // Merge with existing skills (if any)
+  const allSkills = [...requiredSkills];
+  extractedSkills.forEach(skill => {
+    const skillLower = skill.toLowerCase();
+    const exists = allSkills.some(s => s.toLowerCase() === skillLower);
+    if (!exists) {
+      allSkills.push(skill);
+    }
+  });
+
+  if (extractedSkills.length > 0) {
+    console.log(`🔍 Auto-extracted skills for "${job.title}": ${extractedSkills.join(', ')}`);
+  }
+
+  return allSkills;
 };
 
 const __filename = fileURLToPath(import.meta.url);
@@ -415,33 +532,17 @@ router.get("/dashboard", async (req, res) => {
     // Calculate match scores if candidate has resume
     let enrichedJobs = jobs;
     if (candidate && candidate.resumeText && candidate.resumeText.trim()) {
-      try {
-        const { getPythonMatcher } = await import("../utils/pythonMatcher.js");
-        const pythonMatcher = getPythonMatcher();
+      // Use keyword matching for dashboard (faster and more accurate)
+      const cvText = candidate.resumeText;
 
-        const cvText = candidate.resumeText;
-        const jobDescriptions = jobs.map((job) => job.description || "");
+      enrichedJobs = jobs.map((job) => {
+        const jobObj = job.toObject();
+        const keywordMatch = calculateKeywordMatch(cvText, job);
+        jobObj.matchScore = keywordMatch;
+        return jobObj;
+      });
 
-        const matches = await pythonMatcher.match(
-          cvText,
-          jobDescriptions,
-          jobs.length
-        );
-
-        enrichedJobs = jobs.map((job, idx) => {
-          const matchData = matches.find((m) => m.job_index === idx);
-          const jobObj = job.toObject();
-          // Python matcher returns similarity_score as percentage (0-100)
-          jobObj.matchScore = matchData
-            ? Math.round(matchData.similarity_score)
-            : 0;
-          return jobObj;
-        });
-
-        enrichedJobs.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-      } catch (matchError) {
-        console.error("❌ Match scoring failed:", matchError.message);
-      }
+      enrichedJobs.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
     }
 
     // Format jobs for frontend
@@ -825,8 +926,13 @@ router.get("/job-matches", async (req, res) => {
     if (fastMode) {
       const cvText = candidate.resumeText;
       matchedJobs = jobs.map((job) => {
-        const keywordMatch = calculateKeywordMatch(cvText, job);
-        console.log(`🎯 Job "${job.title}": keyword match = ${keywordMatch}%`);
+        // Extract skills from description if not enough defined
+        const enhancedJob = {
+          ...job.toObject ? job.toObject() : job,
+          requiredSkills: extractSkillsFromDescription(job)
+        };
+
+        const keywordMatch = calculateKeywordMatch(cvText, enhancedJob);
         return {
           id: job._id,
           title: job.title,
@@ -838,22 +944,22 @@ router.get("/job-matches", async (req, res) => {
           salary: job.salary?.min || 0,
           salaryPeriod: "/year",
           experienceYears: job.experienceRequired || 0,
-          requiredSkills: job.requiredSkills || [],
-          matchScore: Math.round(keywordMatch),
+          requiredSkills: enhancedJob.requiredSkills,
+          matchScore: keywordMatch, // Direct score, no rounding
           missingSkillsCount: 0,
           postedAt: job.createdAt,
           applicantsCount: job.applicants?.length || 0,
         };
       });
 
-      // Filter: only show jobs with 60% or higher match
+      // Filter: show jobs with 60% match or higher
       matchedJobs = matchedJobs.filter((job) => job.matchScore >= 60);
 
       matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
       console.log(
-        "✅ Fast keyword matching complete, returning",
+        "✅ Matching complete, returning",
         matchedJobs.length,
-        "jobs (filtered: >= 60%)"
+        "jobs with matches"
       );
     } else {
       try {
@@ -905,11 +1011,11 @@ router.get("/job-matches", async (req, res) => {
             ? Math.round(matchData.similarity_score)
             : 0;
 
-          // Calculate keyword match boost
+          // Calculate keyword match (actual skills)
           const keywordMatch = calculateKeywordMatch(cvText, job);
 
-          // Combine: 75% BERT + 25% keyword matching
-          let matchScore = Math.round(bertScore * 0.75 + keywordMatch * 0.25);
+          // Use keyword match as the primary score (skills are most important)
+          let matchScore = keywordMatch;
 
           // Apply quality penalty for jobs with insufficient content
           const titleLength = (job.title || "").length;
@@ -921,24 +1027,24 @@ router.get("/job-matches", async (req, res) => {
             const contentPenalty = Math.min(
               20,
               (100 - descLength) / 8 +
-                (15 - titleLength) * 1.5 +
-                (hasSkills ? 0 : 5)
+              (15 - titleLength) * 1.5 +
+              (hasSkills ? 0 : 5)
             );
             matchScore = Math.max(0, matchScore - contentPenalty);
             if (contentPenalty > 8) {
               console.log(
-                `   ⚠️ "${job.title}": BERT=${bertScore}% Keywords=${Math.round(
+                `   ⚠️ "${job.title}": Keywords=${Math.round(
                   keywordMatch
-                )}% Penalty=-${Math.round(
+                )}% BERT=${bertScore}% Penalty=-${Math.round(
                   contentPenalty
                 )}% Final=${matchScore}%`
               );
             }
           } else {
             console.log(
-              `   ✅ "${job.title}": BERT=${bertScore}% Keywords=${Math.round(
+              `   ✅ "${job.title}": Keywords=${Math.round(
                 keywordMatch
-              )}% Final=${matchScore}%`
+              )}% BERT=${bertScore}% Final=${matchScore}%`
             );
           }
 
@@ -964,11 +1070,11 @@ router.get("/job-matches", async (req, res) => {
         // Sort by match score descending
         matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
 
-        // Filter: only show jobs with 60% or higher match
+        // Filter: show jobs with 60% match or higher
         const originalCount = matchedJobs.length;
         matchedJobs = matchedJobs.filter((job) => job.matchScore >= 60);
         console.log(
-          `🎯 Filtered jobs: ${originalCount} → ${matchedJobs.length} (showing >= 60%)`
+          `🎯 Filtered jobs: ${originalCount} → ${matchedJobs.length} (showing all matches)`
         );
 
         console.log("📊 Top 3 matches:");
@@ -1000,18 +1106,18 @@ router.get("/job-matches", async (req, res) => {
           };
         });
 
-        // Filter: only show jobs with 60% or higher match
-        matchedJobs = matchedJobs.filter((job) => job.matchScore >= 60);
+        // Filter: show jobs with ANY match
+        matchedJobs = matchedJobs.filter((job) => job.matchScore > 0);
         matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
         console.log(
-          `⚠️ Fallback mode: showing ${matchedJobs.length} jobs (>= 60%)`
+          `⚠️ Fallback mode: showing ${matchedJobs.length} jobs with matches`
         );
       }
     }
 
     res.json({
       success: true,
-      message: "Job matches retrieved",
+      message: "Job matches found",
       data: matchedJobs,
       hasCv: true,
       totalJobs: matchedJobs.length,

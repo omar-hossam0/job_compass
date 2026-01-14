@@ -15,18 +15,34 @@ class LearningPath {
 
   factory LearningPath.fromJson(Map<String, dynamic> json) {
     return LearningPath(
-      id: json['id'] ?? json['_id'] ?? '',
-      studentId: json['studentId'] ?? '',
-      modules: json['modules'] != null
-          ? (json['modules'] as List)
-                .map((m) => LearningModule.fromJson(m))
-                .toList()
-          : [],
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      studentId: (json['studentId'] ?? '').toString(),
+      modules: () {
+        try {
+          if (json['modules'] != null && json['modules'] is List) {
+            return (json['modules'] as List)
+                .map((m) {
+                  try {
+                    return LearningModule.fromJson(m);
+                  } catch (e) {
+                    print('Error parsing module: $e');
+                    return null;
+                  }
+                })
+                .where((m) => m != null)
+                .cast<LearningModule>()
+                .toList();
+          }
+        } catch (e) {
+          print('Error parsing modules: $e');
+        }
+        return <LearningModule>[];
+      }(),
       createdAt: json['createdAt'] != null
-          ? DateTime.parse(json['createdAt'])
+          ? DateTime.tryParse(json['createdAt'].toString()) ?? DateTime.now()
           : DateTime.now(),
       lastUpdated: json['lastUpdated'] != null
-          ? DateTime.parse(json['lastUpdated'])
+          ? DateTime.tryParse(json['lastUpdated'].toString())
           : null,
     );
   }
@@ -51,14 +67,37 @@ class LearningModule {
 
   factory LearningModule.fromJson(Map<String, dynamic> json) {
     return LearningModule(
-      id: json['id'] ?? json['_id'] ?? '',
-      skillName: json['skillName'] ?? '',
-      weekLabel: json['weekLabel'] ?? '',
-      level: json['level'] ?? 'Beginner',
-      courses: json['courses'] != null
-          ? (json['courses'] as List).map((c) => Course.fromJson(c)).toList()
-          : [],
-      isCompleted: json['isCompleted'] ?? false,
+      id: (json['id'] ?? json['_id'] ?? '').toString(),
+      skillName: (json['skillName'] ?? '').toString(),
+      weekLabel: (json['weekLabel'] ?? '').toString(),
+      level: (json['level'] ?? 'Beginner').toString(),
+      courses: () {
+        try {
+          if (json['courses'] != null && json['courses'] is List) {
+            return (json['courses'] as List)
+                .map((c) {
+                  try {
+                    return Course.fromJson(c);
+                  } catch (e) {
+                    print('Error parsing course: $e');
+                    return null;
+                  }
+                })
+                .where((c) => c != null)
+                .cast<Course>()
+                .toList();
+          }
+        } catch (e) {
+          print('Error parsing courses: $e');
+        }
+        return <Course>[];
+      }(),
+      isCompleted: () {
+        final val = json['isCompleted'];
+        if (val is bool) return val;
+        if (val is String) return val.toLowerCase() == 'true';
+        return false;
+      }(),
     );
   }
 }
@@ -82,12 +121,21 @@ class Course {
 
   factory Course.fromJson(Map<String, dynamic> json) {
     return Course(
-      title: json['title'] ?? '',
-      platform: json['platform'] ?? '',
-      url: json['url'] ?? '',
-      difficulty: json['difficulty'] ?? 'Beginner',
-      durationMinutes: json['durationMinutes'] ?? 0,
-      thumbnail: json['thumbnail'],
+      title: (json['title'] ?? '').toString(),
+      platform: (json['platform'] ?? '').toString(),
+      url: (json['url'] ?? '').toString(),
+      difficulty: (json['difficulty'] ?? 'Beginner').toString(),
+      durationMinutes: () {
+        if (json['durationMinutes'] != null) {
+          if (json['durationMinutes'] is num) {
+            return (json['durationMinutes'] as num).toInt();
+          } else if (json['durationMinutes'] is String) {
+            return int.tryParse(json['durationMinutes']) ?? 0;
+          }
+        }
+        return 0;
+      }(),
+      thumbnail: json['thumbnail']?.toString(),
     );
   }
 }

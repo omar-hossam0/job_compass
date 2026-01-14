@@ -645,13 +645,26 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
             await Navigator.pushNamed(context, '/hr/jobs');
             setState(() => _currentNavIndex = 0);
           }),
-          _buildNavItem(Icons.notifications_outlined, 'Alerts', 2, () async {
-            setState(() => _currentNavIndex = 2);
+          _buildNavItem(
+            Icons.chat_bubble_outline_rounded,
+            'Chats',
+            2,
+            () async {
+              setState(() => _currentNavIndex = 2);
+              await Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HRChatsScreen()),
+              );
+              setState(() => _currentNavIndex = 0);
+            },
+          ),
+          _buildNavItem(Icons.notifications_outlined, 'Alerts', 3, () async {
+            setState(() => _currentNavIndex = 3);
             await Navigator.pushNamed(context, '/hr/notifications');
             setState(() => _currentNavIndex = 0);
           }),
-          _buildNavItem(Icons.settings_outlined, 'Settings', 3, () async {
-            setState(() => _currentNavIndex = 3);
+          _buildNavItem(Icons.settings_outlined, 'Settings', 4, () async {
+            setState(() => _currentNavIndex = 4);
             await Navigator.pushNamed(context, '/hr/settings');
             setState(() => _currentNavIndex = 0);
           }),
