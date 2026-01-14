@@ -42,6 +42,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
       // Extract job data from response
       final jobData = response['data'] ?? response;
       print('📦 Job Data: $jobData');
+      print('❓ Custom Questions in raw data: ${jobData['customQuestions']}');
 
       // Check if user has applied (look for current user in applicants)
       final applicants = jobData['applicants'] as List?;
@@ -49,6 +50,12 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
 
       setState(() {
         _job = Job.fromJson(jobData);
+        print(
+          '✅ Job object created - Custom Questions: ${_job?.customQuestions}',
+        );
+        print(
+          '📊 Number of custom questions: ${_job?.customQuestions?.length ?? 0}',
+        );
         _isLoading = false;
       });
     } catch (e) {

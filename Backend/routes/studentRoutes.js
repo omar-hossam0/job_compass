@@ -13,15 +13,17 @@ const MATCH_TIMEOUT_MS = 30000; // Increase timeout for Python matcher (30 secon
 const USE_FAST_MATCH = process.env.FAST_MATCH === "true" || true; // Enable fast mode by default
 
 // Helper: Calculate keyword match percentage (shared across modes)
+// FAIR MATCHING - based only on actual skills in CV vs required skills
 const calculateKeywordMatch = (cvText, job) => {
   const cvLower = (cvText || "").toLowerCase();
   const skills = (job.requiredSkills || []).map((s) => (s || "").toLowerCase());
 
-  // Focus ONLY on required skills for accurate matching
   let exactMatches = 0;
+  const matchedSkills = [];
+  const missingSkills = [];
 
   skills.forEach((skill) => {
-    // Normalize and create all possible variants
+    // Normalize and create all possible variants for the same skill
     const skillVariants = new Set();
 
     // Add original skill
@@ -46,55 +48,34 @@ const calculateKeywordMatch = (cvText, job) => {
     }
 
     // Handle space-separated ONLY for known technical terms and compound phrases
-    // DON'T split general phrases like "Error handling" or "Data Security"
     const isCompoundTechnicalSkill =
-      skill.includes('api') ||              // REST API, REST APIs, REST API design
+      skill.includes('api') ||              // REST API, REST APIs
       skill.includes('tcp') ||              // TCP/IP
       skill.includes('lan') ||              // LAN/WAN
+      skill.includes('ci/cd') ||            // CI/CD
       skill.includes('html') ||             // HTML, HTML5
-      skill.includes('css') ||              // CSS, CSS3
-      skill.includes('query') ||            // Query Optimization
-      skill.includes('database') ||         // Database Design
-      (skill.includes(' ') && skill.split(' ').length === 2 &&
-        skill.split(' ').every(w => w.length <= 4 && w.match(/^[a-z0-9]+$/)));  // 2D, 3D, etc.
+      skill.includes('css');                // CSS, CSS3
 
     if (skill.includes(' ') && isCompoundTechnicalSkill) {
       skill.split(' ').forEach(word => {
         if (word.length >= 2) skillVariants.add(word);
       });
-      // Also add the full phrase without spaces
       skillVariants.add(skill.replace(/\s+/g, ''));
-    }
-
-    // For very long skills (3+ words), match if CV contains at least 2 consecutive words
-    if (skill.split(' ').length >= 3) {
-      const words = skill.split(' ');
-      // Create all 2-word combinations
-      for (let i = 0; i < words.length - 1; i++) {
-        const bigram = words[i] + ' ' + words[i + 1];
-        if (bigram.length >= 6) { // Only meaningful bigrams
-          skillVariants.add(bigram);
-        }
-      }
     }
 
     // Check if CV contains any variant
     const found = Array.from(skillVariants).some(variant => {
       if (!variant || variant.length < 2) return false;
 
-      // Escape special regex characters (including +)
       const escaped = variant.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
       try {
-        // Try exact word boundary match
         const exactRegex = new RegExp(`\\b${escaped}\\b`, 'i');
         if (exactRegex.test(cvLower)) return true;
       } catch (e) {
-        // If regex fails (e.g., C++), fall back to simple includes
         if (cvLower.includes(variant)) return true;
       }
 
-      // For very short skills or acronyms (2-3 chars), allow flexible matching
       if (variant.length <= 3) {
         return cvLower.includes(variant);
       }
@@ -104,16 +85,21 @@ const calculateKeywordMatch = (cvText, job) => {
 
     if (found) {
       exactMatches++;
+      matchedSkills.push(skill);
+    } else {
+      missingSkills.push(skill);
     }
   });
 
   const totalSkills = skills.length;
   if (totalSkills === 0) return 0;
 
-  // DIRECT calculation: exact matches only
+  // FAIR calculation: exact matches only, no bonuses
   const matchScore = Math.round((exactMatches / totalSkills) * 100);
 
-  console.log(`📊 "${job.title}": ${exactMatches}/${totalSkills} exact matches = ${matchScore}%`);
+  console.log(`📊 "${job.title}": ${exactMatches}/${totalSkills} = ${matchScore}%`);
+  if (matchedSkills.length > 0) console.log(`   ✓ Matched: ${matchedSkills.join(', ')}`);
+  if (missingSkills.length > 0) console.log(`   ✗ Missing: ${missingSkills.join(', ')}`);
 
   return matchScore;
 };
@@ -641,6 +627,9 @@ router.get("/profile", async (req, res) => {
         cvUrl: candidate?.cvUrl,
         cvFileName: candidate?.cvFileName,
         cvUploadedAt: candidate?.cvUploadedAt,
+        cvCategory: candidate?.cvCategory,
+        cvCategoryConfidence: candidate?.cvCategoryConfidence,
+        cvTopCategories: candidate?.cvTopCategories,
         skills: candidate?.skills || [],
         profileCompletion: candidate ? 70 : 30,
         skillMatchScore: 0,
@@ -649,7 +638,9 @@ router.get("/profile", async (req, res) => {
 
     console.log(
       "✅ Profile response sent with cvFileName:",
-      candidate?.cvFileName
+      candidate?.cvFileName,
+      "category:",
+      candidate?.cvCategory
     );
   } catch (error) {
     res.status(500).json({
@@ -775,6 +766,28 @@ router.post(
         console.log("🔧 Extracted skills:", extractedSkills);
       }
 
+      // Classify CV using ML model
+      let cvClassification = null;
+      if (resumeText && resumeText.length > 50) {
+        try {
+          console.log("🤖 Calling CV Classification service...");
+          const classifierResponse = await fetch("http://localhost:5001/classify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ cv_text: resumeText }),
+          });
+
+          if (classifierResponse.ok) {
+            cvClassification = await classifierResponse.json();
+            console.log("✅ CV Classification result:", cvClassification);
+          } else {
+            console.log("⚠️ CV Classification service returned error:", classifierResponse.status);
+          }
+        } catch (classifyError) {
+          console.log("⚠️ CV Classification service not available:", classifyError.message);
+        }
+      }
+
       // Update CV info
       candidate.cvUrl = `/uploads/cvs/${req.file.filename}`;
       candidate.cvFileName = req.file.originalname;
@@ -782,6 +795,13 @@ router.post(
       candidate.resumeText = resumeText;
       if (extractedSkills.length > 0) {
         candidate.skills = extractedSkills;
+      }
+
+      // Save classification result
+      if (cvClassification && cvClassification.success) {
+        candidate.cvCategory = cvClassification.job_category;
+        candidate.cvCategoryConfidence = cvClassification.confidence;
+        candidate.cvTopCategories = cvClassification.top_3_predictions;
       }
 
       console.log("💾 Saving candidate with CV info and text...");
@@ -793,6 +813,7 @@ router.post(
         candidateId: candidate._id,
         resumeTextLength: resumeText.length,
         skillsCount: extractedSkills.length,
+        cvCategory: candidate.cvCategory || "Not classified",
       });
 
       res.json({
@@ -803,6 +824,11 @@ router.post(
         cvUploadedAt: new Date(),
         textExtracted: resumeText.length > 0,
         skillsExtracted: extractedSkills.length,
+        classification: cvClassification ? {
+          category: cvClassification.job_category,
+          confidence: cvClassification.confidence,
+          top_3: cvClassification.top_3_predictions
+        } : null,
       });
     } catch (error) {
       console.error("❌ Error uploading CV:", error);
@@ -852,11 +878,35 @@ router.get("/job-matches", async (req, res) => {
     const candidate = await Candidate.findOne({ user: req.user._id });
 
     if (!candidate) {
-      console.log("⚠️ No candidate profile found");
+      console.log("⚠️ No candidate profile found - returning all jobs with 0% match");
+      // إرجاع كل الوظائف النشطة مع match score = 0
+      const jobs = await Job.find({ status: "Active" })
+        .sort({ createdAt: -1 })
+        .populate("postedBy", "name email");
+
+      const jobsWithZeroMatch = jobs.map((job) => ({
+        id: job._id,
+        title: job.title,
+        company: job.company || "Company",
+        companyLogo: job.companyLogo,
+        description: job.description,
+        location: job.location || "Remote",
+        employmentType: job.jobType ? [job.jobType] : ["Full-time"],
+        salary: job.salary?.min || 0,
+        salaryPeriod: "/year",
+        experienceYears: job.experienceRequired || 0,
+        requiredSkills: job.requiredSkills || [],
+        matchScore: 0,
+        missingSkillsCount: 0,
+        postedAt: job.createdAt,
+        applicantsCount: job.applicants?.length || 0,
+        customQuestions: job.customQuestions || [],
+      }));
+
       return res.json({
         success: true,
-        message: "No CV uploaded yet",
-        data: [],
+        message: "Upload CV to get better job matches",
+        data: jobsWithZeroMatch,
         hasCv: false,
       });
     }
@@ -890,11 +940,35 @@ router.get("/job-matches", async (req, res) => {
       }
 
       if (!candidate.resumeText || !candidate.resumeText.trim()) {
-        console.log("⚠️ No CV text available");
+        console.log("⚠️ No CV text available - returning all jobs with 0% match");
+        // إرجاع كل الوظائف النشطة مع match score = 0
+        const jobs = await Job.find({ status: "Active" })
+          .sort({ createdAt: -1 })
+          .populate("postedBy", "name email");
+
+        const jobsWithZeroMatch = jobs.map((job) => ({
+          id: job._id,
+          title: job.title,
+          company: job.company || "Company",
+          companyLogo: job.companyLogo,
+          description: job.description,
+          location: job.location || "Remote",
+          employmentType: job.jobType ? [job.jobType] : ["Full-time"],
+          salary: job.salary?.min || 0,
+          salaryPeriod: "/year",
+          experienceYears: job.experienceRequired || 0,
+          requiredSkills: job.requiredSkills || [],
+          matchScore: 0,
+          missingSkillsCount: 0,
+          postedAt: job.createdAt,
+          applicantsCount: job.applicants?.length || 0,
+          customQuestions: job.customQuestions || [],
+        }));
+
         return res.json({
           success: true,
           message: "Upload a CV to get job matches",
-          data: [],
+          data: jobsWithZeroMatch,
           hasCv: Boolean(candidate.cvUrl),
         });
       }
@@ -949,17 +1023,18 @@ router.get("/job-matches", async (req, res) => {
           missingSkillsCount: 0,
           postedAt: job.createdAt,
           applicantsCount: job.applicants?.length || 0,
+          customQuestions: job.customQuestions || [],
         };
       });
 
-      // Filter: show jobs with 60% match or higher
+      // Filter: عرض الوظائف التي لديها match score >= 60% فقط
+      const beforeFilter = matchedJobs.length;
       matchedJobs = matchedJobs.filter((job) => job.matchScore >= 60);
+      const afterFilter = matchedJobs.length;
 
       matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
       console.log(
-        "✅ Matching complete, returning",
-        matchedJobs.length,
-        "jobs with matches"
+        `✅ Matching complete: ${beforeFilter} total jobs, ${afterFilter} jobs with ≥60% match`
       );
     } else {
       try {
@@ -1106,11 +1181,12 @@ router.get("/job-matches", async (req, res) => {
           };
         });
 
-        // Filter: show jobs with ANY match
-        matchedJobs = matchedJobs.filter((job) => job.matchScore > 0);
+        // Filter: show jobs with 60% match or higher
+        const beforeFilter = matchedJobs.length;
+        matchedJobs = matchedJobs.filter((job) => job.matchScore >= 60);
         matchedJobs.sort((a, b) => b.matchScore - a.matchScore);
         console.log(
-          `⚠️ Fallback mode: showing ${matchedJobs.length} jobs with matches`
+          `⚠️ Fallback mode: ${beforeFilter} total jobs, ${matchedJobs.length} jobs with ≥60% match`
         );
       }
     }

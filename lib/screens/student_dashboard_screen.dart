@@ -113,7 +113,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   // جلب الوظائف من نفس endpoint صفحة Job Matches
   Future<void> _loadAllJobs() async {
     try {
-      final response = await _apiService.get('/student/job-matches');
+      // استخدم fast=1 للحصول على الوظائف بسرعة بدون انتظار Python matcher
+      final response = await _apiService.get('/student/job-matches?fast=1');
+      print(
+        '📋 Job matches response: ${response['success']}, jobs count: ${(response['data'] as List?)?.length ?? 0}',
+      );
+
       if (response['success'] == true) {
         final data = response['data'] as List;
         setState(() {
@@ -122,6 +127,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 try {
                   return Job.fromJson(j);
                 } catch (e) {
+                  print('❌ Error parsing job: $e');
                   return null;
                 }
               })
@@ -129,10 +135,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               .toList();
           // ترتيب حسب نسبة التطابق
           _allJobs.sort((a, b) => b.matchScore.compareTo(a.matchScore));
+          print('✅ Loaded ${_allJobs.length} jobs successfully');
         });
       }
     } catch (e) {
-      print('Error loading jobs: $e');
+      print('❌ Error loading jobs: $e');
     }
   }
 

@@ -92,6 +92,21 @@ const candidateSchema = new mongoose.Schema(
         default: null,
       },
     },
+    // ML CV Classification (from Python service)
+    cvCategory: {
+      type: String,
+      default: "",
+    },
+    cvCategoryConfidence: {
+      type: Number,
+      default: 0,
+    },
+    cvTopCategories: [
+      {
+        category: String,
+        confidence: Number,
+      },
+    ],
     // Extracted Skills from CV (for reference)
     extractedSkills: [
       {

@@ -31,6 +31,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _selectedCvName;
   String? _cvUrl;
   String? _cvFileName; // Store CV filename from backend
+  String? _cvCategory; // ML classification category
+  double? _cvCategoryConfidence; // Classification confidence
+  List<dynamic>? _cvTopCategories; // Top 3 predictions
 
   @override
   void initState() {
@@ -70,7 +73,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
           final profileData = profileResponse['data'];
           _cvUrl = profileData['cvUrl'];
           _cvFileName = profileData['cvFileName'];
+          _cvCategory = profileData['cvCategory'];
+          _cvCategoryConfidence = profileData['cvCategoryConfidence']
+              ?.toDouble();
+          _cvTopCategories = profileData['cvTopCategories'];
           debugPrint('📄 Profile CV -> url: $_cvUrl name: $_cvFileName');
+          debugPrint(
+            '🤖 Classification -> category: $_cvCategory confidence: $_cvCategoryConfidence',
+          );
+          debugPrint('📊 Top categories: $_cvTopCategories');
         }
       }
     } catch (e) {
@@ -241,12 +252,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _cvFileName =
               response['cvFileName'] ??
               _selectedCvName; // Store filename from response or picked name
+
+          // Get classification results
+          if (response['classification'] != null) {
+            _cvCategory = response['classification']['category'];
+            _cvCategoryConfidence = response['classification']['confidence']
+                ?.toDouble();
+            _cvTopCategories = response['classification']['top_3'];
+          }
         });
-        debugPrint('✅ CV upload -> url: $_cvUrl name: $_cvFileName');
+        debugPrint(
+          '✅ CV upload -> url: $_cvUrl name: $_cvFileName category: $_cvCategory',
+        );
+
+        // Show success message with classification
+        String message = 'CV uploaded successfully!';
+        if (_cvCategory != null) {
+          message += ' Classified as: $_cvCategory';
+          if (_cvCategoryConfidence != null) {
+            message +=
+                ' (${(_cvCategoryConfidence! * 100).toStringAsFixed(0)}%)';
+          }
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('CV uploaded successfully!'),
+          SnackBar(
+            content: Text(message),
             backgroundColor: AppColors.success,
+            duration: Duration(seconds: 4),
           ),
         );
       } else {
@@ -546,6 +579,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           () => _showEditDialog(),
         ),
         _buildMenuItem(Icons.description_outlined, 'Resume', () => _pickCV()),
+        if (_cvCategory != null) _buildCVClassificationCard(),
         _buildMenuItem(Icons.work_outline, 'Career History', () {}),
         _buildMenuItem(Icons.school_outlined, 'Education', () {}),
         _buildMenuItem(
@@ -586,6 +620,241 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildCVClassificationCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF5BA8D9), Color(0xFF4A94C7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0xFF5BA8D9).withOpacity(0.25),
+            blurRadius: 12,
+            offset: Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.25),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.psychology, color: Colors.white, size: 22),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AI Classification',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Analyzed by ML',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white.withOpacity(0.85),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16),
+
+            // Main Classification Result
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Job Category
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Color(0xFF5BA8D9).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.work_rounded,
+                          color: Color(0xFF5BA8D9),
+                          size: 20,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Job Category',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              _cvCategory ?? 'Not classified yet',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF2D3748),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (_cvCategoryConfidence != null)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _getConfidenceColor(_cvCategoryConfidence!),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.verified,
+                                color: Colors.white,
+                                size: 14,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                '${(_cvCategoryConfidence! * 100).toStringAsFixed(0)}%',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+
+                  // Alternative Matches
+                  if (_cvTopCategories != null &&
+                      _cvTopCategories!.length > 1) ...[
+                    SizedBox(height: 16),
+                    Container(height: 1, color: Colors.grey[200]),
+                    SizedBox(height: 12),
+                    Text(
+                      'Other Possible Matches',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    ...(_cvTopCategories!.skip(1).take(2).map((cat) {
+                      final category = cat['category'] ?? '';
+                      final confidence = cat['confidence']?.toDouble() ?? 0.0;
+                      return Padding(
+                        padding: EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: Color(0xFF5BA8D9).withOpacity(0.4),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                category,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF4A5568),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '${(confidence * 100).toStringAsFixed(0)}%',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList()),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _getConfidenceColor(double confidence) {
+    if (confidence >= 0.8) return Colors.green;
+    if (confidence >= 0.6) return Colors.orange;
+    return Colors.red;
   }
 
   void _showEditDialog() {

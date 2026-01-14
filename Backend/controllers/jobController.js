@@ -91,6 +91,10 @@ export const getJob = async (req, res) => {
       });
     }
 
+    console.log("🔍 getJob - Job ID:", req.params.id);
+    console.log("📋 getJob - customQuestions:", job.customQuestions);
+    console.log("📝 getJob - Full job data:", JSON.stringify(job, null, 2));
+
     res.json({
       success: true,
       data: job,
@@ -151,6 +155,11 @@ export const createJob = async (req, res) => {
         questionsArray = [];
       }
     }
+
+    console.log("📋 createJob - Received customQuestions:", customQuestions);
+    console.log("📋 createJob - Type:", typeof customQuestions);
+    console.log("📋 createJob - Parsed questionsArray:", questionsArray);
+    console.log("📋 createJob - questionsArray length:", questionsArray.length);
 
     // Parse salary if it's sent as separate fields
     let salaryObj = salary;
