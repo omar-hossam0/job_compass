@@ -555,6 +555,23 @@ class ApiService {
     return await put('/hr/profile', data);
   }
 
+  Future<Map<String, dynamic>> matchCVsToJob(String jobId) async {
+    try {
+      final headers = await _getHeaders();
+      final response = await http
+          .post(
+            Uri.parse('$baseUrl/ml/match-cvs'),
+            headers: headers,
+            body: jsonEncode({'jobId': jobId}),
+          )
+          .timeout(const Duration(seconds: 30));
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'success': false, 'message': 'Error: ${e.toString()}'};
+    }
+  }
+
   // ============================================
   // ML / ANALYSIS ENDPOINTS
   // ============================================

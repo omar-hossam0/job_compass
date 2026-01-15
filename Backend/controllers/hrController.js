@@ -6,6 +6,146 @@ import User from "../models/User.js";
 import Application from "../models/Application.js";
 import SavedCandidate from "../models/SavedCandidate.js";
 import mongoose from "mongoose";
+import path from "path";
+import { fileURLToPath } from "url";
+import { spawn } from "child_process";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const MATCH_CVS_SCRIPT = path.join(
+  __dirname,
+  "..",
+  "scripts",
+  "match_cvs_to_job.py"
+);
+
+const clampPercentage = (value) => {
+  const num = Number(value);
+  if (!Number.isFinite(num)) return 0;
+  if (num < 0) return 0;
+  if (num > 100) return 100;
+  return Math.round(num * 100) / 100;
+};
+
+const buildJobMatchingContext = (job) => {
+  if (!job) {
+    return { jobText: "", jobSkills: [] };
+  }
+
+  const jobObj = job.toObject ? job.toObject() : job;
+
+  const jobSkills = Array.isArray(jobObj.requiredSkills)
+    ? jobObj.requiredSkills.filter(Boolean)
+    : [];
+
+  const parts = [
+    jobObj.title || "",
+    jobObj.description || "",
+    jobSkills.length ? `Required skills: ${jobSkills.join(", ")}` : "",
+    jobObj.experienceLevel ? `Experience level: ${jobObj.experienceLevel}` : "",
+    jobObj.location ? `Location: ${jobObj.location}` : "",
+  ].filter((part) => part && part.toString().trim().length > 0);
+
+  return {
+    jobText: parts.join("\n\n").trim(),
+    jobSkills,
+  };
+};
+
+const runCvMatcher = async (jobText, cvTexts, topK) => {
+  if (!jobText || !Array.isArray(cvTexts) || cvTexts.length === 0) {
+    return null;
+  }
+
+  const cappedTopK = Math.max(1, Math.min(topK || cvTexts.length, cvTexts.length));
+
+  return await new Promise((resolve, reject) => {
+    const python = spawn("python", [MATCH_CVS_SCRIPT], {
+      stdio: ["pipe", "pipe", "pipe"],
+      shell: false,
+      env: { ...process.env, PYTHONIOENCODING: "utf-8" },
+    });
+
+    const inputData = {
+      job_description: jobText,
+      cv_texts: cvTexts,
+      top_k: cappedTopK,
+    };
+
+    let outputData = "";
+    let errorData = "";
+
+    python.stdin.write(JSON.stringify(inputData));
+    python.stdin.end();
+
+    python.stdout.on("data", (data) => {
+      outputData += data.toString();
+    });
+
+    python.stderr.on("data", (data) => {
+      errorData += data.toString();
+      console.log("🐍 Python matcher:", data.toString().trim());
+    });
+
+    const timeout = setTimeout(() => {
+      python.kill();
+      reject(new Error("Python matcher timeout (60s)"));
+    }, 60000);
+
+    python.on("close", (code) => {
+      clearTimeout(timeout);
+
+      if (code !== 0) {
+        reject(
+          new Error(
+            `Python matcher exited with code ${code}: ${errorData || "no stderr"}`
+          )
+        );
+        return;
+      }
+
+      try {
+        const parsed = JSON.parse(outputData || "{}");
+        if (parsed.success === false) {
+          reject(new Error(parsed.error || "Python matcher failed"));
+        } else {
+          resolve(parsed);
+        }
+      } catch (err) {
+        reject(err);
+      }
+    });
+
+    python.on("error", (error) => {
+      clearTimeout(timeout);
+      reject(new Error(`Failed to start Python matcher: ${error.message}`));
+    });
+  });
+};
+
+const generateMatchExplanation = (matchingSkills, jobSkills, score) => {
+  if (matchingSkills.length && jobSkills.length) {
+    const listedSkills = matchingSkills.slice(0, 5).join(", ");
+    let explanation = `Matches ${matchingSkills.length} of ${jobSkills.length} required skills`;
+    if (listedSkills) {
+      explanation += `: ${listedSkills}`;
+      if (matchingSkills.length > 5) {
+        explanation += " (+ more)";
+      }
+    }
+    return `${explanation}.`;
+  }
+
+  if (score >= 60) {
+    return "Strong semantic similarity between the CV and job description.";
+  }
+
+  if (score > 0) {
+    return "Partial semantic overlap detected between the CV and job description.";
+  }
+
+  return "Match score unavailable. Ensure CV and job data are provided.";
+};
 
 // Get HR Dashboard Data
 export const getHRDashboard = async (req, res) => {
@@ -349,50 +489,136 @@ export const getJobCandidates = async (req, res) => {
 
     console.log("Applications found:", applications.length);
 
-    // Calculate match percentage for each candidate
-    const candidatesWithMatch = applications.map((application) => {
-      const candidate = application.candidateId;
+    const { jobText, jobSkills } = buildJobMatchingContext(job);
 
-      if (!candidate) {
-        return null; // Skip if candidate not found
+    const candidateEntries = applications
+      .map((application) => {
+        const candidateDoc = application.candidateId;
+        if (!candidateDoc) {
+          return null;
+        }
+
+        const candidateObj = candidateDoc.toObject ? candidateDoc.toObject() : candidateDoc;
+        const candidateId =
+          candidateObj._id?.toString?.() ||
+          candidateDoc._id?.toString?.() ||
+          (typeof candidateDoc === "string" ? candidateDoc : null);
+
+        if (!candidateId) {
+          return null;
+        }
+
+        const candidateSkills = Array.isArray(candidateObj.skills)
+          ? candidateObj.skills.filter(Boolean)
+          : [];
+
+        const resumeText =
+          typeof candidateObj.resumeText === "string"
+            ? candidateObj.resumeText
+            : "";
+
+        return {
+          application,
+          candidateObj,
+          candidateId,
+          candidateSkills,
+          resumeText,
+        };
+      })
+      .filter((entry) => entry !== null);
+
+    const resumeEntries = candidateEntries
+      .filter((entry) => entry.resumeText && entry.resumeText.trim().length >= 10)
+      .map((entry) => ({
+        candidateId: entry.candidateId,
+        resumeText: entry.resumeText,
+      }));
+
+    const cvTexts = resumeEntries.map((entry) => entry.resumeText);
+    const resumeIndexToCandidateId = resumeEntries.map((entry) => entry.candidateId);
+
+    const pythonScores = new Map();
+
+    if (jobText && cvTexts.length > 0) {
+      try {
+        const pythonResult = await runCvMatcher(jobText, cvTexts, cvTexts.length);
+
+        if (pythonResult?.matches?.length) {
+          pythonResult.matches.forEach((match) => {
+            const idx =
+              match.job_index !== undefined ? match.job_index : match.cv_index;
+            const candidateId = resumeIndexToCandidateId[idx];
+
+            if (!candidateId) {
+              return;
+            }
+
+            const normalized = clampPercentage(match.similarity_score);
+            pythonScores.set(candidateId, normalized);
+          });
+        }
+      } catch (err) {
+        console.error("❌ Python matcher (candidate list) failed:", err.message);
       }
+    }
 
-      const candidateSkills = candidate.skills || [];
-      const jobSkills = job.requiredSkills || [];
+    const candidatesWithMatch = candidateEntries
+      .map((entry) => {
+        const { application, candidateObj, candidateId, candidateSkills } = entry;
 
-      const matchingSkills = candidateSkills.filter((skill) =>
-        jobSkills.some(
-          (jobSkill) =>
-            jobSkill.toLowerCase().includes(skill.toLowerCase()) ||
-            skill.toLowerCase().includes(jobSkill.toLowerCase())
-        )
-      );
+        const matchingSkills = candidateSkills.filter((skill) =>
+          jobSkills.some((jobSkill) => {
+            if (!jobSkill || !skill) return false;
+            return (
+              jobSkill.toLowerCase().includes(skill.toLowerCase()) ||
+              skill.toLowerCase().includes(jobSkill.toLowerCase())
+            );
+          })
+        );
 
-      const matchPercentage =
-        jobSkills.length > 0
+        const fallbackScore = jobSkills.length
           ? Math.round((matchingSkills.length / jobSkills.length) * 100)
           : 0;
 
-      return {
-        id: candidate._id,
-        name: application.basicInfo?.fullName || candidate.name,
-        email: candidate.email,
-        phone: application.basicInfo?.phoneNumber || "",
-        region: application.basicInfo?.region || "",
-        address: application.basicInfo?.address || "",
-        expectedSalary: application.basicInfo?.expectedSalary || null,
-        photo: candidate.photo || "",
-        extractedSkills: candidateSkills.slice(0, 5),
-        matchPercentage,
-        appliedAt: application.appliedAt,
-        applicationStatus: application.status,
-        applicationId: application._id,
-        customAnswers: application.customAnswers || [],
-      };
-    }).filter(c => c !== null); // Remove null entries
+        const pythonScore = pythonScores.has(candidateId)
+          ? pythonScores.get(candidateId)
+          : null;
 
-    // Sort by match percentage
-    candidatesWithMatch.sort((a, b) => b.matchPercentage - a.matchPercentage);
+        const finalScore = clampPercentage(
+          pythonScore !== null && pythonScore !== undefined ? pythonScore : fallbackScore
+        );
+
+        const matchExplanation = generateMatchExplanation(
+          matchingSkills,
+          jobSkills,
+          finalScore
+        );
+
+        const basicInfo = application.basicInfo || {};
+
+        return {
+          id: candidateId,
+          name: basicInfo.fullName || candidateObj.name || "",
+          email: candidateObj.email || "",
+          phone: basicInfo.phoneNumber || "",
+          region: basicInfo.region || "",
+          address: basicInfo.address || "",
+          expectedSalary: basicInfo.expectedSalary || null,
+          photo: candidateObj.photo || "",
+          extractedSkills: candidateSkills.slice(0, 5),
+          matchPercentage: finalScore,
+          matchExplanation,
+          appliedAt: application.appliedAt,
+          applicationStatus: application.status,
+          applicationId: application._id,
+          customAnswers: application.customAnswers || [],
+        };
+      })
+      .filter((candidate) => candidate !== null);
+
+    candidatesWithMatch.sort(
+      (a, b) => (b.matchPercentage || 0) - (a.matchPercentage || 0)
+    );
 
     res.json({
       success: true,
@@ -448,6 +674,72 @@ export const getCandidateDetails = async (req, res) => {
       }).sort({ appliedAt: -1 });
     }
 
+    let effectiveJobId = jobId || null;
+    if (!effectiveJobId && applicationData?.jobId) {
+      try {
+        effectiveJobId = applicationData.jobId.toString();
+      } catch (e) {
+        effectiveJobId = applicationData.jobId;
+      }
+    }
+
+    let job = null;
+    if (effectiveJobId) {
+      job = await Job.findById(effectiveJobId).catch(() => null);
+    }
+
+    const { jobText, jobSkills } = buildJobMatchingContext(job);
+
+    const candidateObj = candidate.toObject ? candidate.toObject() : candidate;
+    const candidateSkills = Array.isArray(candidateObj.skills)
+      ? candidateObj.skills.filter(Boolean)
+      : [];
+
+    const matchingSkills = candidateSkills.filter((skill) =>
+      jobSkills.some((jobSkill) => {
+        if (!jobSkill || !skill) return false;
+        return (
+          jobSkill.toLowerCase().includes(skill.toLowerCase()) ||
+          skill.toLowerCase().includes(jobSkill.toLowerCase())
+        );
+      })
+    );
+
+    const skillOverlapPercentage = jobSkills.length
+      ? Math.round((matchingSkills.length / jobSkills.length) * 100)
+      : 0;
+
+    let pythonScore = null;
+    const resumeText =
+      typeof candidateObj.resumeText === "string" ? candidateObj.resumeText : "";
+
+    if (jobText && resumeText.trim().length > 0) {
+      try {
+        const pythonResult = await runCvMatcher(jobText, [resumeText], 1);
+
+        if (
+          pythonResult?.matches?.length &&
+          pythonResult.matches[0]?.similarity_score !== undefined
+        ) {
+          pythonScore = clampPercentage(pythonResult.matches[0].similarity_score);
+        }
+      } catch (err) {
+        console.error("❌ Semantic match calculation failed:", err.message);
+      }
+    }
+
+    const finalScore = clampPercentage(
+      pythonScore !== null && pythonScore !== undefined
+        ? pythonScore
+        : skillOverlapPercentage
+    );
+
+    const matchExplanation = generateMatchExplanation(
+      matchingSkills,
+      jobSkills,
+      finalScore
+    );
+
     // Check if this candidate is saved by the HR
     const hrId = req.user.id;
     const savedCandidate = await SavedCandidate.findOne({
@@ -479,8 +771,8 @@ export const getCandidateDetails = async (req, res) => {
         screeningAnswers: applicationData?.customAnswers || [],
         hrNotes: applicationData?.hrNotes || '',
         // Match info
-        matchPercentage: 75, // Will be calculated dynamically later
-        matchExplanation: "Good match based on skills and experience",
+        matchPercentage: finalScore,
+        matchExplanation,
       },
     });
   } catch (error) {

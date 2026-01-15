@@ -234,8 +234,6 @@ class _CandidateDetailsScreenState extends State<CandidateDetailsScreen> {
           const SizedBox(height: 20),
           _buildContactInfo(),
           const SizedBox(height: 20),
-          _buildMatchInfo(),
-          const SizedBox(height: 20),
           _buildExtractedSkills(),
           if (_candidate!.screeningAnswers.isNotEmpty) ...[
             const SizedBox(height: 20),
@@ -585,61 +583,6 @@ class _CandidateDetailsScreenState extends State<CandidateDetailsScreen> {
       default:
         return AppColors.warning;
     }
-  }
-
-  Widget _buildMatchInfo() {
-    return GlassCard(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('Match Score', style: AppStyles.heading3),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _getMatchColor(
-                      _candidate!.matchPercentage,
-                    ).withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    '${_candidate!.matchPercentage.toInt()}%',
-                    style: AppStyles.heading2.copyWith(
-                      color: _getMatchColor(_candidate!.matchPercentage),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (_candidate!.matchExplanation != null) ...[
-              const SizedBox(height: 16),
-              Text(
-                'Match Explanation',
-                style: AppStyles.bodyMedium.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _candidate!.matchExplanation!,
-                style: AppStyles.bodyMedium.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.6,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
   }
 
   Widget _buildExtractedSkills() {

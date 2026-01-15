@@ -92,7 +92,14 @@ class _HRChatsScreenState extends State<HRChatsScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          Text('Candidate Interviews', style: AppStyles.heading1),
+          Expanded(
+            child: Text(
+              'Candidate Interviews',
+              style: AppStyles.heading1,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );

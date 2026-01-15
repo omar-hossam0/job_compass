@@ -46,6 +46,8 @@ model = None
 vectorizer = None
 label_encoder = None
 job_classes = []
+MODEL_READY = False
+MODEL_LOAD_ERROR = None
 
 # Paths
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -81,11 +83,14 @@ def clean_text(text: str) -> str:
 
 def load_models():
     """Load all ML models and encoders"""
-    global model, vectorizer, label_encoder, job_classes
-    
+    global model, vectorizer, label_encoder, job_classes, MODEL_READY, MODEL_LOAD_ERROR
+
     print("🔄 Loading CV Classification models...")
-    
-    # Load job classes
+
+    MODEL_READY = False
+    MODEL_LOAD_ERROR = None
+
+    # Load job classes metadata (optional but useful for UI)
     if os.path.exists(JOB_CLASSES_PATH):
         with open(JOB_CLASSES_PATH, 'r', encoding='utf-8') as f:
             data = json.load(f)
@@ -96,53 +101,62 @@ def load_models():
         print(f"✅ Loaded {len(job_classes)} job categories")
     else:
         print(f"⚠️ Job classes file not found: {JOB_CLASSES_PATH}")
-    
-    # Only try to load ML models if sklearn is available
+
+    # All ML artefacts are required for a verified classification run
     if not HAS_SKLEARN:
-        print("⚠️ Scikit-learn not available, will use keyword classification only")
-        return True  # Return success since we have fallback
-    
-    # Load vectorizer
-    if os.path.exists(VECTORIZER_PATH):
-        try:
-            with open(VECTORIZER_PATH, 'rb') as f:
-                vectorizer = pickle.load(f)
-            print(f"✅ Vectorizer loaded")
-        except Exception as e:
-            print(f"⚠️ Could not load vectorizer: {e}")
-            return True  # Continue with fallback
-    else:
-        print(f"⚠️ Vectorizer not found: {VECTORIZER_PATH}")
-        return True  # Continue with fallback
-    
-    # Load label encoder
-    if os.path.exists(LABEL_ENCODER_PATH):
-        try:
-            with open(LABEL_ENCODER_PATH, 'rb') as f:
-                label_encoder = pickle.load(f)
-            print(f"✅ Label encoder loaded with {len(label_encoder.classes_)} classes")
-            print(f"   Classes: {list(label_encoder.classes_)[:10]}...")
-        except Exception as e:
-            print(f"⚠️ Could not load label encoder: {e}")
-            return True  # Continue with fallback
-    else:
-        print(f"⚠️ Label encoder not found: {LABEL_ENCODER_PATH}")
-        return True  # Continue with fallback
-    
-    # Load Keras model
-    if HAS_TENSORFLOW and os.path.exists(MODEL_PATH):
-        try:
-            model = keras.models.load_model(MODEL_PATH)
-            print(f"✅ Keras model loaded")
-            print(f"   Input shape: {model.input_shape}")
-            print(f"   Output shape: {model.output_shape}")
-        except Exception as e:
-            print(f"⚠️ Error loading Keras model: {e}")
-            return True  # Continue with fallback
-    else:
-        print(f"⚠️ Model not found or TensorFlow not available")
-        return True  # Continue with fallback
-    
+        MODEL_LOAD_ERROR = "Scikit-learn not installed"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        return False
+
+    if not os.path.exists(VECTORIZER_PATH):
+        MODEL_LOAD_ERROR = f"Vectorizer not found at {VECTORIZER_PATH}"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        return False
+
+    if not os.path.exists(LABEL_ENCODER_PATH):
+        MODEL_LOAD_ERROR = f"Label encoder not found at {LABEL_ENCODER_PATH}"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        return False
+
+    if not HAS_TENSORFLOW:
+        MODEL_LOAD_ERROR = "TensorFlow not installed"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        return False
+
+    if not os.path.exists(MODEL_PATH):
+        MODEL_LOAD_ERROR = f"Model file not found at {MODEL_PATH}"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        return False
+
+    try:
+        with open(VECTORIZER_PATH, 'rb') as f:
+            vectorizer = pickle.load(f)
+        print("✅ Vectorizer loaded")
+    except Exception as exc:
+        MODEL_LOAD_ERROR = f"Could not load vectorizer: {exc}"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        return False
+
+    try:
+        with open(LABEL_ENCODER_PATH, 'rb') as f:
+            label_encoder = pickle.load(f)
+        print(f"✅ Label encoder loaded with {len(label_encoder.classes_)} classes")
+    except Exception as exc:
+        MODEL_LOAD_ERROR = f"Could not load label encoder: {exc}"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        return False
+
+    try:
+        model = keras.models.load_model(MODEL_PATH)
+        print("✅ Keras model loaded")
+        print(f"   Input shape: {model.input_shape}")
+        print(f"   Output shape: {model.output_shape}")
+    except Exception as exc:
+        MODEL_LOAD_ERROR = f"Error loading Keras model: {exc}"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        return False
+
+    MODEL_READY = True
     print("✅ All models loaded successfully!")
     return True
 
@@ -160,10 +174,12 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
+        "model_ready": MODEL_READY,
         "model_loaded": model is not None,
         "vectorizer_loaded": vectorizer is not None,
         "label_encoder_loaded": label_encoder is not None,
-        "num_classes": len(job_classes) if job_classes else 0
+        "num_classes": len(job_classes) if job_classes else 0,
+        "load_error": MODEL_LOAD_ERROR,
     }
 
 
@@ -207,6 +223,14 @@ async def classify_cv(request: CVClassificationRequest):
         print(f"   Preview: {cleaned_text[:100]}...")
         
         # Check if ML model is available
+        if not MODEL_READY:
+            message = MODEL_LOAD_ERROR or "Classification model not loaded"
+            print(f"❌ Classification aborted: {message}")
+            return CVClassificationResponse(
+                success=False,
+                error=message
+            )
+
         if model is not None and vectorizer is not None and label_encoder is not None:
             # Use ML model
             # Vectorize
@@ -246,11 +270,13 @@ async def classify_cv(request: CVClassificationRequest):
                 top_3_predictions=top_3
             )
         else:
-            # Fallback: Use keyword-based classification
-            print("⚠️ Using fallback keyword classification (ML model not loaded)")
-            result = keyword_classify(cleaned_text)
-            return result
-        
+            # Should not reach here, but guard just in case
+            print("❌ Incomplete model components despite MODEL_READY flag")
+            return CVClassificationResponse(
+                success=False,
+                error="Classification model components missing"
+            )
+
     except HTTPException:
         raise
     except Exception as e:
@@ -360,7 +386,9 @@ async def reload_models():
     success = load_models()
     return {
         "success": success,
-        "message": "Models reloaded" if success else "Failed to reload models"
+        "message": "Models reloaded" if success else "Failed to reload models",
+        "model_ready": MODEL_READY,
+        "load_error": MODEL_LOAD_ERROR,
     }
 
 

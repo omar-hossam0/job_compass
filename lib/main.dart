@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'dart:typed_data';
 import 'dart:async';
 import 'dart:ui' as ui;
-import 'screens/welcome_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/student_dashboard_screen.dart';
 import 'screens/profile_cv_screen.dart';
@@ -50,7 +49,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const WelcomeScreen(),
+      home: const AuthScreen(),
       routes: {
         '/auth': (_) => const AuthScreen(),
         '/dashboard': (_) => const StudentDashboardScreen(),
