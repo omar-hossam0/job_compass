@@ -34,7 +34,12 @@ router.get("/analyze-job/:jobId", protect, analyzeJobForUser);
 router.post("/match-cvs", protect, authorizeRoles("hr"), matchCVsToJob);
 
 // HR only: Get saved match results for a job
-router.get("/match-results/:jobId", protect, authorizeRoles("hr"), getSavedMatchResults);
+router.get(
+  "/match-results/:jobId",
+  protect,
+  authorizeRoles("hr"),
+  getSavedMatchResults,
+);
 
 // Public endpoint: view matcher inputs without authentication
 router.get("/match-inputs", getMatchInputs);

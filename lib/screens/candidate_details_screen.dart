@@ -666,7 +666,9 @@ class _CandidateDetailsScreenState extends State<CandidateDetailsScreen> {
     return Column(
       children: [
         // Approve for Interview (Start Chat) button
-        if (widget.jobId != null && _candidate!.applicationStatus != 'Accepted' && _candidate!.applicationStatus != 'Rejected') ...[
+        if (widget.jobId != null &&
+            _candidate!.applicationStatus != 'Accepted' &&
+            _candidate!.applicationStatus != 'Rejected') ...[
           PrimaryButton(
             text: 'Approve for Interview',
             onPressed: () => _startChatWithCandidate(),
@@ -821,7 +823,9 @@ class _CandidateDetailsScreenState extends State<CandidateDetailsScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context, true),
             style: TextButton.styleFrom(
-              foregroundColor: status == 'Accepted' ? AppColors.success : AppColors.error,
+              foregroundColor: status == 'Accepted'
+                  ? AppColors.success
+                  : AppColors.error,
             ),
             child: Text(status == 'Accepted' ? 'Accept' : 'Reject'),
           ),
@@ -843,7 +847,9 @@ class _CandidateDetailsScreenState extends State<CandidateDetailsScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Candidate ${status.toLowerCase()} successfully!'),
-              backgroundColor: status == 'Accepted' ? AppColors.success : AppColors.error,
+              backgroundColor: status == 'Accepted'
+                  ? AppColors.success
+                  : AppColors.error,
             ),
           );
           // Reload to update status

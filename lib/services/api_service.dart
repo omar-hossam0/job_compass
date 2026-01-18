@@ -620,9 +620,7 @@ class ApiService {
     required String chatId,
     required String content,
   }) async {
-    return await post('/chat/$chatId/message', {
-      'content': content,
-    });
+    return await post('/chat/$chatId/message', {'content': content});
   }
 
   /// Update application status (approve/reject)

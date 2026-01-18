@@ -10,18 +10,21 @@ cd Backend/scripts
 ```
 
 **أو**:
+
 ```powershell
 cd Backend/scripts
 .\test_matcher.bat
 ```
 
 **ماذا يفعل هذا؟**
+
 - يختبر النموذج مباشرة بـ 5 CVs نموذجية
 - يتحقق من أن جميع النسب بين 0-100%
 - يعرض تفاصيل التحليل (Semantic + Keywords)
 - يوضح توزيع النتائج المتوقع
 
 **النتائج المتوقعة**:
+
 ```
 🎯 Found 13 critical skills in job description
    CV #1: Semantic=55.2% + Keywords=38.5% = 93.7%
@@ -35,13 +38,16 @@ cd Backend/scripts
 ---
 
 ### 2️⃣ تشغيل Backend
+
 ```powershell
 cd Backend
 npm start
 ```
 
 ### 3️⃣ اختبار النظام الكامل
+
 في terminal جديد:
+
 ```powershell
 cd Backend/scripts
 node testCVMatching.js
@@ -50,6 +56,7 @@ node testCVMatching.js
 ### 4️⃣ النتائج المتوقعة
 
 يجب أن تشاهد:
+
 - ✅ تسجيل دخول ناجح
 - ✅ جلب وظيفة للاختبار
 - ✅ المهارات التقنية المحددة (Critical Skills)
@@ -66,6 +73,7 @@ flutter run
 ```
 
 ثم:
+
 1. سجل دخول كـ HR
 2. اذهب لـ HR Dashboard
 3. اضغط "Find Matches" على أي وظيفة
@@ -84,11 +92,11 @@ flutter run
    1. 🟢 Ahmed Hassan - 87.5% (Excellent)
       📊 Breakdown: Semantic=52.5% + Keywords=35.0%
       🎯 Skills Matched: 9/10
-      
+
    2. 🟡 Sarah Mohamed - 68.2% (Good)
       📊 Breakdown: Semantic=44.2% + Keywords=24.0%
       🎯 Skills Matched: 6/10
-      
+
    3. 🟠 Omar Ali - 52.8% (Fair)
       📊 Breakdown: Semantic=36.8% + Keywords=16.0%
       🎯 Skills Matched: 4/10
@@ -106,6 +114,7 @@ flutter run
 ## 🔧 إذا واجهت مشاكل
 
 ### "Scores above 100%"
+
 ```powershell
 # تأكد من تحديث الملف
 cd Backend/scripts
@@ -114,18 +123,21 @@ cd Backend/scripts
 ```
 
 ### "No jobs found"
+
 ```powershell
 # أنشئ وظيفة جديدة من التطبيق أو:
 node Backend/scripts/seedData.js
 ```
 
 ### "No CVs found"
+
 ```powershell
 # تحقق من المستخدمين:
 node Backend/scripts/listAllUsers.js
 ```
 
 ### "Python error"
+
 ```powershell
 # تحقق من Python:
 python --version
@@ -140,12 +152,14 @@ cd Backend/scripts
 ## ✅ التحديثات الأخيرة
 
 ### تم إصلاح:
+
 - ✅ **النسب لا تتجاوز 100% أبداً**
 - ✅ عرض تفاصيل Semantic + Keywords
 - ✅ عرض عدد المهارات المطابقة
 - ✅ نظام تصنيف واضح
 
 ### الصيغة الجديدة:
+
 ```
 Final Score = (Semantic × 60%) + (Keywords × 40%)
             = Max 60% + Max 40% = Max 100% ✅

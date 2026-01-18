@@ -14,6 +14,7 @@ node verify_real_analysis.js
 ```
 
 **هذا الاختبار سيثبت**:
+
 1. ✅ النموذج يعمل فعلاً ويستخدم Python
 2. ✅ نتائج مختلفة لوظائف مختلفة (ليست fake data)
 3. ✅ الحسابات الرياضية صحيحة
@@ -30,7 +31,7 @@ TEST 1/3: Backend Developer Job
 🟢 CV #1: 85.3% (Semantic=48.5% + Keywords=36.8%)
    ✅ Math verified: 48.5 + 36.8 = 85.3
 
-TEST 2/3: Frontend Developer Job  
+TEST 2/3: Frontend Developer Job
 🎯 Found 6 critical skills: react, vue, html, css...
 🟡 CV #1: 52.7% (Semantic=35.2% + Keywords=17.5%)
    ✅ Math verified: 35.2 + 17.5 = 52.7
@@ -52,6 +53,7 @@ TEST 3/3: Data Scientist Job
 ```
 
 **إذا كانت النتائج**:
+
 - ✅ **مختلفة لكل وظيفة** → النموذج يعمل بشكل صحيح
 - ❌ **متطابقة لكل الوظائف** → هناك مشكلة (fake data)
 
@@ -84,7 +86,7 @@ node testCVMatching.js
 
 ```
 🎯 HR: Finding matching CVs for job: 507f1f77bcf86cd799439011
-💼 Job: "Senior Backend Developer" 
+💼 Job: "Senior Backend Developer"
 📄 Found 15 candidates with CVs
 📋 Job Description Preview: We are looking for a Senior Backend Developer...
 📄 Sample CV #1 Preview: Experienced Backend Developer with 6 years...
@@ -109,6 +111,7 @@ node testCVMatching.js
 ```
 
 **علامات النموذج يعمل فعلاً**:
+
 - ✅ ترى رسائل `🐍 Python:` → البرنامج يستدعي Python
 - ✅ ترى `Found X critical skills` → يحلل الوظيفة فعلاً
 - ✅ ترى `CV #1: Semantic=X% + Keywords=Y%` → يحسب كل CV
@@ -116,6 +119,7 @@ node testCVMatching.js
 - ✅ `exited with code 0` → Python نجح
 
 **علامات المشاكل**:
+
 - ❌ لا ترى رسائل `🐍 Python:` → Python لا يعمل
 - ❌ `exited with code 1` → خطأ في Python
 - ❌ كل النسب متطابقة → ربما fake data
@@ -134,14 +138,16 @@ findstr /s /i "matchScore.*=" controllers\mlController.js
 ```
 
 **يجب ألا ترى**:
+
 ```javascript
-matchScore: 75  // ❌ رقم ثابت
-matchScore: Math.random() * 100  // ❌ عشوائي
+matchScore: 75; // ❌ رقم ثابت
+matchScore: Math.random() * 100; // ❌ عشوائي
 ```
 
 **يجب أن ترى**:
+
 ```javascript
-matchScore: Math.round(match.similarity_score * 100) / 100  // ✅ من Python
+matchScore: Math.round(match.similarity_score * 100) / 100; // ✅ من Python
 ```
 
 ### 2. تأكد من استدعاء Python Script
@@ -153,6 +159,7 @@ findstr /i "spawn.*python" mlController.js
 ```
 
 يجب أن ترى:
+
 ```javascript
 const python = spawn("python", [scriptPath], {...});
 ```
@@ -160,14 +167,15 @@ const python = spawn("python", [scriptPath], {...});
 ### 3. تأكد من إرسال بيانات حقيقية
 
 في `mlController.js` يجب أن ترى:
+
 ```javascript
-const cvTexts = candidates.map((c) => c.resumeText || "");  // من قاعدة البيانات
+const cvTexts = candidates.map((c) => c.resumeText || ""); // من قاعدة البيانات
 const inputData = {
-  job_description: jobDescription,  // من قاعدة البيانات
-  cv_texts: cvTexts,  // من قاعدة البيانات
+  job_description: jobDescription, // من قاعدة البيانات
+  cv_texts: cvTexts, // من قاعدة البيانات
   top_k: 10,
 };
-python.stdin.write(JSON.stringify(inputData));  // إرسال للـ Python
+python.stdin.write(JSON.stringify(inputData)); // إرسال للـ Python
 ```
 
 ---
@@ -185,6 +193,7 @@ python.stdin.write(JSON.stringify(inputData));  // إرسال للـ Python
 ```
 
 **نتائج متوقعة**:
+
 - CV بـ Node.js, Express, MongoDB → **70-90%** 🟢
 - CV بـ React, Vue, Frontend → **20-40%** 🔴
 
@@ -192,12 +201,13 @@ python.stdin.write(JSON.stringify(inputData));  // إرسال للـ Python
 
 ```javascript
 {
-  title: "Frontend Developer", 
+  title: "Frontend Developer",
   description: "Need React, Vue, HTML, CSS expert"
 }
 ```
 
 **نتائج متوقعة**:
+
 - CV بـ React, Vue, HTML, CSS → **70-90%** 🟢
 - CV بـ Node.js, Express, Backend → **20-40%** 🔴
 
@@ -235,7 +245,7 @@ node verify_real_analysis.js
 
 # شاهد النتائج وتأكد من:
 # - كل وظيفة أعطت نسب مختلفة ✅
-# - الحسابات صحيحة ✅  
+# - الحسابات صحيحة ✅
 # - المهارات محددة صح ✅
 ```
 

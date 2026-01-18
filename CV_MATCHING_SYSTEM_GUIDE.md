@@ -14,6 +14,7 @@
 **الموقع**: `Backend/scripts/match_cvs_to_job.py`
 
 **المزايا الجديدة**:
+
 - ✅ استخراج تلقائي للمهارات التقنية من وصف الوظيفة
 - ✅ قاعدة بيانات شاملة للمهارات (150+ مهارة تقنية)
 - ✅ نظام نقاط هجين موزون:
@@ -24,6 +25,7 @@
 #### 2. Backend API (`mlController.js`)
 
 **التحسينات**:
+
 - ✅ إرجاع المهارات التقنية المحددة في النتائج
 - ✅ عرض معلومات إحصائية عن المطابقة
 - ✅ معالجة أخطاء محسنة
@@ -31,6 +33,7 @@
 #### 3. HR Dashboard UI
 
 **التحديثات**:
+
 - ✅ عرض محسن لنسب المطابقة مع أيقونات ملونة
 - ✅ تصنيف واضح: Excellent (75%+) / Good (60-74%) / Fair (45-59%) / Low (<45%)
 - ✅ ألوان تعبيرية للنتائج
@@ -56,6 +59,7 @@ node testCVMatching.js
 ```
 
 **ماذا سيفعل هذا الـ Script؟**
+
 - يسجل دخول كـ HR
 - يجلب أول وظيفة متاحة
 - يطلب مطابقة CVs
@@ -82,15 +86,19 @@ node testCVMatching.js
 النظام يبحث عن **150+ مهارة تقنية** في وصف الوظيفة، مثل:
 
 **Programming Languages**:
+
 - Python, JavaScript, Java, C++, C#, PHP, Ruby, Swift, Kotlin, Go, Rust, TypeScript, Dart, Flutter
 
 **Web Technologies**:
+
 - React, Angular, Vue, Node.js, Express, Django, Flask, Next.js, Bootstrap, Tailwind
 
 **Databases**:
+
 - MySQL, PostgreSQL, MongoDB, Redis, Oracle, Firebase, Elasticsearch
 
 **Cloud & DevOps**:
+
 - AWS, Azure, Docker, Kubernetes, Jenkins, Git, Linux
 
 **وغيرها الكثير...**
@@ -102,6 +110,7 @@ Final Score = (Semantic Score × 0.6) + (Keyword Boost × 8.0)
 ```
 
 **مثال**:
+
 - وصف وظيفة: "Backend Developer with Node.js, MongoDB, Express, REST APIs"
 - المهارات المحددة: node.js, mongodb, express, rest, api, backend, developer
 - CV مرشح: يذكر 5 من هذه المهارات
@@ -111,12 +120,12 @@ Final Score = (Semantic Score × 0.6) + (Keyword Boost × 8.0)
 
 ### 3. تصنيف المرشحين
 
-| النسبة | التصنيف | اللون | الأيقونة |
-|--------|---------|-------|----------|
-| 75%+ | Excellent Match | 🟢 أخضر غامق | ✓ Verified |
-| 60-74% | Good Match | 🟢 أخضر فاتح | ✓ Check Circle |
-| 45-59% | Fair Match | 🟡 أصفر | ⓘ Info |
-| <45% | Low Match | 🔴 أحمر | ⚠ Warning |
+| النسبة | التصنيف         | اللون        | الأيقونة       |
+| ------ | --------------- | ------------ | -------------- |
+| 75%+   | Excellent Match | 🟢 أخضر غامق | ✓ Verified     |
+| 60-74% | Good Match      | 🟢 أخضر فاتح | ✓ Check Circle |
+| 45-59% | Fair Match      | 🟡 أصفر      | ⓘ Info         |
+| <45%   | Low Match       | 🔴 أحمر      | ⚠ Warning      |
 
 ---
 
@@ -143,6 +152,7 @@ Final Score = (Semantic Score × 0.6) + (Keyword Boost × 8.0)
 ### مشكلة: "Python script exited with code 1"
 
 **الحل**:
+
 ```powershell
 # تأكد من تثبيت Python
 python --version
@@ -155,9 +165,11 @@ python match_cvs_to_job.py
 ### مشكلة: "No CVs found"
 
 **الحل**:
+
 1. تأكد من وجود مرشحين في قاعدة البيانات
 2. تأكد من أن المرشحين رفعوا CVs
 3. اختبر من Script:
+
 ```powershell
 node Backend/scripts/listAllUsers.js
 ```
@@ -165,12 +177,14 @@ node Backend/scripts/listAllUsers.js
 ### مشكلة: "Job description is empty"
 
 **الحل**:
+
 - تأكد من أن الوظيفة تحتوي على description مكتوب
 - الـ description يجب أن يحتوي على مهارات تقنية
 
 ### مشكلة: "كل النتائج نفس النسبة"
 
 **الحل**:
+
 - تحقق من أن CVs المرشحين مختلفة
 - تحقق من أن وصف الوظيفة يحتوي على كلمات مفتاحية واضحة
 
@@ -215,7 +229,7 @@ lib/
    CVs Matched: 15
 
 🎯 Critical Skills Identified:
-   nodejs, node.js, express, expressjs, mongodb, rest, restful, api, 
+   nodejs, node.js, express, expressjs, mongodb, rest, restful, api,
    backend, back-end, javascript, git, docker, aws, linux
 
 👥 Top Matching Candidates (10):
@@ -249,6 +263,7 @@ lib/
 ### مثال عملي كامل:
 
 **وصف الوظيفة**:
+
 ```
 We are looking for a Senior Backend Developer with strong experience in:
 - Node.js and Express.js
@@ -262,6 +277,7 @@ We are looking for a Senior Backend Developer with strong experience in:
 (13 مهارة)
 
 **CV المرشح رقم 1**:
+
 ```
 5+ years experience in Backend Development
 Strong skills: Node.js, Express.js, MongoDB, Redis, Docker, REST APIs
@@ -269,12 +285,13 @@ Projects: Built 10+ microservices, E-commerce platform, Real-time chat
 ```
 
 **الحساب**:
+
 1. **Semantic Similarity**: 62% (تشابه عالي في المحتوى)
 2. **Matched Skills**: 8 من 13 مهارة
 3. **Keyword Boost**: 8 × 8.0 = 64 نقطة
 4. **Final Score**: (62 × 0.6) + 64 = 37.2 + 64 = **101.2%** 🟢
 
-*(Note: النسبة يمكن أن تتجاوز 100% في حالات الـ perfect match)*
+_(Note: النسبة يمكن أن تتجاوز 100% في حالات الـ perfect match)_
 
 ---
 

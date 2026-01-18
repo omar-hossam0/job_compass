@@ -25,7 +25,7 @@ const testEndpoints = async () => {
       `http://192.168.56.1:5000/api/ml/analyze-job/${jobId}`,
       {
         headers: { Authorization: `Bearer ${token}` },
-      }
+      },
     );
     const analysisData = await analysisRes.json();
     console.log("   Status:", analysisRes.status);
@@ -34,11 +34,11 @@ const testEndpoints = async () => {
       console.log("   Match Score:", analysisData.data.matchScore);
       console.log(
         "   Matched Skills:",
-        analysisData.data.matchedSkills?.length || 0
+        analysisData.data.matchedSkills?.length || 0,
       );
       console.log(
         "   Missing Skills:",
-        analysisData.data.missingSkills?.length || 0
+        analysisData.data.missingSkills?.length || 0,
       );
     }
     console.log("");
@@ -53,7 +53,7 @@ const testEndpoints = async () => {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
     const applyData = await applyRes.json();
     console.log("   Status:", applyRes.status);
@@ -66,6 +66,6 @@ const testEndpoints = async () => {
 };
 
 console.log(
-  "⚠️  Note: Update the token and jobId variables in this file first!\n"
+  "⚠️  Note: Update the token and jobId variables in this file first!\n",
 );
 // testEndpoints();
