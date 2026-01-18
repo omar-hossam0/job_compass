@@ -1030,11 +1030,14 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
   }
 
   Widget _buildMatchCard(HRCandidateMatch candidate, int index) {
-    final matchColor = candidate.matchScore >= 70
-        ? const Color(0xFF2E7D32)
-        : candidate.matchScore >= 45
-            ? const Color(0xFFF9A825)
-            : const Color(0xFFC62828);
+    // Enhanced color coding based on match score
+    final matchColor = candidate.matchScore >= 75
+        ? const Color(0xFF2E7D32) // Excellent match - dark green
+        : candidate.matchScore >= 60
+            ? const Color(0xFF43A047) // Good match - green
+            : candidate.matchScore >= 45
+                ? const Color(0xFFF9A825) // Fair match - amber
+                : const Color(0xFFE53935); // Poor match - red
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -1102,20 +1105,57 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: matchColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${candidate.matchScore.toStringAsFixed(1)}% match',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: matchColor,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: matchColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          candidate.matchScore >= 75
+                              ? Icons.verified_rounded
+                              : candidate.matchScore >= 60
+                                  ? Icons.check_circle_outline_rounded
+                                  : candidate.matchScore >= 45
+                                      ? Icons.info_outline_rounded
+                                      : Icons.warning_amber_rounded,
+                          size: 16,
+                          color: matchColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${candidate.matchScore.toStringAsFixed(1)}%',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: matchColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Text(
+                    candidate.matchScore >= 75
+                        ? 'Excellent Match'
+                        : candidate.matchScore >= 60
+                            ? 'Good Match'
+                            : candidate.matchScore >= 45
+                                ? 'Fair Match'
+                                : 'Low Match',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: matchColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

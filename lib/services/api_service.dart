@@ -14,7 +14,7 @@ class ApiService {
 
   // Backend Base URLs (primary LAN IP, fallback localhost for local testing)
   static const List<String> baseUrls = [
-    'http://localhost:5000/api', // Localhost (for web & desktop dev)
+    'http://192.168.56.1:5000/api', // Localhost (for web & desktop dev)
     'http://192.168.1.7:5000/api', // LAN IP (for physical devices)
   ];
 

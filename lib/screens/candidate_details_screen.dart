@@ -521,7 +521,7 @@ class _CandidateDetailsScreenState extends State<CandidateDetailsScreen> {
   Future<void> _downloadCV() async {
     if (_candidate?.cvUrl == null) return;
 
-    final baseUrl = 'http://localhost:5000';
+    final baseUrl = 'http://192.168.56.1:5000';
     final cvUrl = _candidate!.cvUrl!.startsWith('http')
         ? _candidate!.cvUrl!
         : '$baseUrl${_candidate!.cvUrl}';

@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "npx nodemon server.js"
+    "dev": "npx nodemon server.js",
+    "test:matcher": "node scripts/testCVMatching.js",
+    "verify:model": "node scripts/verify_real_analysis.js"
   },
   "keywords": [],
   "author": "",
