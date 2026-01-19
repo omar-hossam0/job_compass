@@ -5,6 +5,7 @@
 تم ربط نظام المطابقة الهجين (Hybrid Weighted Scoring) من مجلد `job_hr` مع نظام HR Dashboard.
 
 ### المميزات:
+
 - ✅ مقارنة Job Description مع CVs
 - ✅ Hybrid Scoring (Keyword Matching + Semantic Similarity)
 - ✅ نفس نسب التقييم كما في تقييم CV الموظفين
@@ -63,6 +64,7 @@ tech_keywords = [
 ```
 
 ### ملاحظات:
+
 - النظام يستخدم `cvText` من User model
 - النسب من 0-100%
 - يمكن استخدام BERT لتحسين Semantic Matching لاحقاً

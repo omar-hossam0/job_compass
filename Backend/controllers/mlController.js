@@ -517,7 +517,7 @@ export const matchCVsToJob = async (req, res) => {
     const result = JSON.parse(outputData);
 
     console.log(`✅ Python returned: ${result.success ? "SUCCESS" : "FAILED"}`);
-    console.log(`   Job Title: ${result.jobTitle || 'N/A'}`);
+    console.log(`   Job Title: ${result.jobTitle || "N/A"}`);
     console.log(`   Total Candidates: ${result.totalCandidates || 0}`);
     console.log(`   Total Matches: ${result.totalMatches || 0}`);
 
