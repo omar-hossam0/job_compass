@@ -13,22 +13,26 @@ import os
 import sys
 import re
 
-# Try to import tensorflow/keras
-try:
-    import tensorflow as tf
-    from tensorflow import keras
-    HAS_TENSORFLOW = True
-except ImportError:
-    HAS_TENSORFLOW = False
-    print("⚠️ TensorFlow not available")
-
-# Try to import sklearn
+# Try to import sklearn first
 try:
     from sklearn.feature_extraction.text import TfidfVectorizer
     HAS_SKLEARN = True
-except ImportError:
+except Exception as e:
     HAS_SKLEARN = False
-    print("⚠️ Scikit-learn not available")
+    print(f"⚠️ Scikit-learn not available: {e}")
+
+# Try to import tensorflow/keras (only if sklearn is available)
+if HAS_SKLEARN:
+    try:
+        import tensorflow as tf
+        from tensorflow import keras
+        HAS_TENSORFLOW = True
+    except Exception as e:
+        HAS_TENSORFLOW = False
+        print(f"⚠️ TensorFlow not available: {e}")
+else:
+    HAS_TENSORFLOW = False
+    print("⚠️ Skipping TensorFlow import (sklearn not available)")
 
 app = FastAPI(title="CV Classification Service", version="1.0.0")
 
@@ -106,26 +110,31 @@ def load_models():
     if not HAS_SKLEARN:
         MODEL_LOAD_ERROR = "Scikit-learn not installed"
         print(f"❌ {MODEL_LOAD_ERROR}")
-        return False
-
-    if not os.path.exists(VECTORIZER_PATH):
-        MODEL_LOAD_ERROR = f"Vectorizer not found at {VECTORIZER_PATH}"
-        print(f"❌ {MODEL_LOAD_ERROR}")
-        return False
-
-    if not os.path.exists(LABEL_ENCODER_PATH):
-        MODEL_LOAD_ERROR = f"Label encoder not found at {LABEL_ENCODER_PATH}"
-        print(f"❌ {MODEL_LOAD_ERROR}")
+        print(f"✅ Will use keyword-based fallback classification")
         return False
 
     if not HAS_TENSORFLOW:
         MODEL_LOAD_ERROR = "TensorFlow not installed"
         print(f"❌ {MODEL_LOAD_ERROR}")
+        print(f"✅ Will use keyword-based fallback classification")
+        return False
+
+    if not os.path.exists(VECTORIZER_PATH):
+        MODEL_LOAD_ERROR = f"Vectorizer not found at {VECTORIZER_PATH}"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        print(f"✅ Will use keyword-based fallback classification")
+        return False
+
+    if not os.path.exists(LABEL_ENCODER_PATH):
+        MODEL_LOAD_ERROR = f"Label encoder not found at {LABEL_ENCODER_PATH}"
+        print(f"❌ {MODEL_LOAD_ERROR}")
+        print(f"✅ Will use keyword-based fallback classification")
         return False
 
     if not os.path.exists(MODEL_PATH):
         MODEL_LOAD_ERROR = f"Model file not found at {MODEL_PATH}"
         print(f"❌ {MODEL_LOAD_ERROR}")
+        print(f"✅ Will use keyword-based fallback classification")
         return False
 
     try:
@@ -151,6 +160,20 @@ def load_models():
         print("✅ Keras model loaded")
         print(f"   Input shape: {model.input_shape}")
         print(f"   Output shape: {model.output_shape}")
+        
+        # Validate model and vectorizer compatibility
+        expected_features = model.input_shape[1]
+        vectorizer_features = len(vectorizer.vocabulary_) if hasattr(vectorizer, 'vocabulary_') else vectorizer.max_features
+        
+        if expected_features != vectorizer_features:
+            MODEL_LOAD_ERROR = f"Model/Vectorizer mismatch: model expects {expected_features} features, vectorizer has {vectorizer_features}"
+            print(f"❌ {MODEL_LOAD_ERROR}")
+            print(f"✅ Will use keyword-based fallback classification")
+            model = None
+            vectorizer = None
+            label_encoder = None
+            return False
+            
     except Exception as exc:
         MODEL_LOAD_ERROR = f"Error loading Keras model: {exc}"
         print(f"❌ {MODEL_LOAD_ERROR}")
@@ -225,11 +248,9 @@ async def classify_cv(request: CVClassificationRequest):
         # Check if ML model is available
         if not MODEL_READY:
             message = MODEL_LOAD_ERROR or "Classification model not loaded"
-            print(f"❌ Classification aborted: {message}")
-            return CVClassificationResponse(
-                success=False,
-                error=message
-            )
+            print(f"⚠️ ML model not ready: {message}")
+            print(f"🔄 Using keyword-based fallback classification...")
+            return keyword_classify(cleaned_text)
 
         if model is not None and vectorizer is not None and label_encoder is not None:
             # Use ML model
