@@ -12,8 +12,8 @@ import mammoth from "mammoth";
 const MATCH_TIMEOUT_MS = 30000; // Increase timeout for Python matcher (30 seconds)
 const USE_FAST_MATCH = process.env.FAST_MATCH === "true" || true; // Enable fast mode by default
 
-// Helper: Calculate keyword match percentage (shared across modes)
-// FAIR MATCHING - based only on actual skills in CV vs required skills
+// Helper: Calculate keyword match percentage using Hybrid Weighted Scoring
+// Same scoring system as Find CV / employ system
 const calculateKeywordMatch = (cvText, job) => {
   const cvLower = (cvText || "").toLowerCase();
   const skills = (job.requiredSkills || []).map((s) => (s || "").toLowerCase());
@@ -94,10 +94,16 @@ const calculateKeywordMatch = (cvText, job) => {
   const totalSkills = skills.length;
   if (totalSkills === 0) return 0;
 
-  // FAIR calculation: exact matches only, no bonuses
-  const matchScore = Math.round((exactMatches / totalSkills) * 100);
+  // HYBRID WEIGHTED SCORING - Same as Find CV / employ system:
+  // Final Score = (BERT Score × 0.5) + (Keyword Boost)
+  // BERT Score = fixed at 55 for consistency across all systems
+  // Keyword Boost = matched_skills × 10 points each
+  const bertBaseScore = 55; // Fixed BERT score (same as Python matcher)
+  const keywordBoost = exactMatches * 10;
+  const hybridScore = (bertBaseScore * 0.5) + keywordBoost;
+  const matchScore = Math.min(Math.round(hybridScore), 100);
 
-  console.log(`📊 "${job.title}": ${exactMatches}/${totalSkills} = ${matchScore}%`);
+  console.log(`📊 "${job.title}": ${exactMatches}/${totalSkills} skills → BERT=${bertBaseScore.toFixed(1)} Boost=${keywordBoost} Final=${matchScore}%`);
   if (matchedSkills.length > 0) console.log(`   ✓ Matched: ${matchedSkills.join(', ')}`);
   if (missingSkills.length > 0) console.log(`   ✗ Missing: ${missingSkills.join(', ')}`);
 
@@ -126,12 +132,8 @@ const KNOWN_SKILLS = [
 const extractSkillsFromDescription = (job) => {
   const requiredSkills = job.requiredSkills || [];
 
-  // If job has enough skills defined, use them
-  if (requiredSkills.length >= 3) {
-    return requiredSkills;
-  }
-
-  // Extract from description
+  // Always extract from description and merge with required skills
+  // This ensures consistency with Python matcher
   const description = (job.description || '').toLowerCase();
   const title = (job.title || '').toLowerCase();
   const combinedText = `${title} ${description}`;
@@ -142,27 +144,15 @@ const extractSkillsFromDescription = (job) => {
     const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(`\\b${escaped}\\b`, 'i');
     if (regex.test(combinedText)) {
-      // Normalize skill name
-      let normalizedSkill = skill;
-      if (skill === 'node' || skill === 'nodejs') normalizedSkill = 'Node.js';
-      else if (skill === 'express' || skill === 'expressjs') normalizedSkill = 'Express.js';
-      else if (skill === 'react' || skill === 'reactjs') normalizedSkill = 'React.js';
-      else if (skill === 'vue' || skill === 'vuejs') normalizedSkill = 'Vue.js';
-      else if (skill === 'mongodb') normalizedSkill = 'MongoDB';
-      else if (skill === 'mysql') normalizedSkill = 'MySQL';
-      else if (skill === 'postgresql' || skill === 'postgres') normalizedSkill = 'PostgreSQL';
-      else if (skill === 'rest' || skill === 'restful') normalizedSkill = 'REST APIs';
-      else if (skill === 'api' || skill === 'apis') normalizedSkill = 'APIs';
-      else normalizedSkill = skill.charAt(0).toUpperCase() + skill.slice(1);
-
-      if (!extractedSkills.includes(normalizedSkill)) {
-        extractedSkills.push(normalizedSkill);
+      // Keep lowercase for consistency with Python matcher
+      if (!extractedSkills.includes(skill)) {
+        extractedSkills.push(skill);
       }
     }
   });
 
   // Merge with existing skills (if any)
-  const allSkills = [...requiredSkills];
+  const allSkills = [...requiredSkills.map(s => s.toLowerCase())];
   extractedSkills.forEach(skill => {
     const skillLower = skill.toLowerCase();
     const exists = allSkills.some(s => s.toLowerCase() === skillLower);
@@ -172,8 +162,10 @@ const extractSkillsFromDescription = (job) => {
   });
 
   if (extractedSkills.length > 0) {
-    console.log(`🔍 Auto-extracted skills for "${job.title}": ${extractedSkills.join(', ')}`);
+    console.log(`🔍 Auto-extracted ${extractedSkills.length} skills for "${job.title}": ${extractedSkills.slice(0,10).join(', ')}${extractedSkills.length > 10 ? '...' : ''}`);
   }
+  
+  console.log(`📋 Total skills for matching "${job.title}": ${allSkills.length}`);
 
   return allSkills;
 };
@@ -523,8 +515,14 @@ router.get("/dashboard", async (req, res) => {
 
       enrichedJobs = jobs.map((job) => {
         const jobObj = job.toObject();
-        const keywordMatch = calculateKeywordMatch(cvText, job);
+        // Extract skills from description if not enough defined (same as matchJobsToCV)
+        const enhancedJob = {
+          ...jobObj,
+          requiredSkills: extractSkillsFromDescription(job)
+        };
+        const keywordMatch = calculateKeywordMatch(cvText, enhancedJob);
         jobObj.matchScore = keywordMatch;
+        jobObj.requiredSkills = enhancedJob.requiredSkills; // Update with extracted skills
         return jobObj;
       });
 

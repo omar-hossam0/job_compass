@@ -12,10 +12,10 @@ class ApiService {
   factory ApiService() => _instance;
   ApiService._internal();
 
-  // Backend Base URLs (primary LAN IP, fallback localhost for local testing)
+  // Backend Base URLs (primary localhost, fallback to LAN IP)
   static const List<String> baseUrls = [
-    'http://192.168.56.1:5000/api', // Localhost (for web & desktop dev)
-    'http://192.168.1.7:5000/api', // LAN IP (for physical devices)
+    'http://localhost:5000/api', // Localhost (for web & desktop dev)
+    'http://192.168.1.39:5000/api', // LAN IP (for physical devices)
   ];
 
   // Backwards-compatible single baseUrl getter used by existing methods

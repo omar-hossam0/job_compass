@@ -456,36 +456,24 @@ export const matchCVsToJob = async (req, res) => {
     console.log(`📄 Sample CV #1 Preview: ${cvTexts[0]?.substring(0, 100)}...`);
     console.log(`🐍 Calling Python matcher script...`);
 
-    // Call Python script to match CVs to job
+    // Call NEW Python job_cv_matcher script
     const { spawn } = await import("child_process");
     const scriptPath = path.join(
       __dirname,
       "..",
-      "scripts",
-      "match_cvs_to_job.py",
+      "ml-classifier",
+      "job_cv_matcher.py",
     );
 
     console.log(`📂 Script path: ${scriptPath}`);
 
-    const python = spawn("python", [scriptPath], {
+    const python = spawn("python", [scriptPath, jobId], {
       stdio: ["pipe", "pipe", "pipe"],
       shell: false,
       env: { ...process.env, PYTHONIOENCODING: "utf-8" },
     });
 
-    const inputData = {
-      job_description: jobDescription,
-      cv_texts: cvTexts,
-      top_k: 10,
-    };
-
-    const inputSize = JSON.stringify(inputData).length;
-    console.log(
-      `📦 Sending ${inputSize} bytes to Python (${cvTexts.length} CVs)`,
-    );
-
-    // Send input to Python
-    python.stdin.write(JSON.stringify(inputData));
+    // No need to send JSON input - jobId is passed as argument
     python.stdin.end();
 
     let outputData = "";
@@ -529,55 +517,30 @@ export const matchCVsToJob = async (req, res) => {
     const result = JSON.parse(outputData);
 
     console.log(`✅ Python returned: ${result.success ? "SUCCESS" : "FAILED"}`);
-    if (result.method) {
-      console.log(`   Method: ${result.method}`);
-    }
-    if (result.critical_skills) {
-      console.log(`   Critical Skills Found: ${result.critical_skills.length}`);
-    }
+    console.log(`   Job Title: ${result.jobTitle || 'N/A'}`);
+    console.log(`   Total Candidates: ${result.totalCandidates || 0}`);
+    console.log(`   Total Matches: ${result.totalMatches || 0}`);
 
     if (!result.success) {
-      throw new Error(result.error || "Python matcher failed");
+      throw new Error(result.message || "Python matcher failed");
     }
 
-    // Map results back to full candidate objects
-    // Note: Python returns 'job_index' but we're matching CVs, so it's actually cv_index
-    const matchedCandidates = result.matches
-      .map((match) => {
-        const cvIndex =
-          match.job_index !== undefined ? match.job_index : match.cv_index;
-        const candidate = candidates[cvIndex];
-
-        if (!candidate) {
-          console.error(`⚠️ No candidate found at index ${cvIndex}`);
-          return null;
-        }
-
-        return {
-          _id: candidate._id,
-          name: candidate.name,
-          email: candidate.email,
-          phone: candidate.phone,
-          skills: candidate.skills,
-          experience: candidate.experience,
-          education: candidate.education,
-          matchScore: Math.round(match.similarity_score * 100) / 100,
-          semanticScore: match.semantic_score || null,
-          keywordScore: match.keyword_score || null,
-          matchedSkills: match.matched_skills || null,
-          totalSkills: match.total_skills || null,
-          resumeText: candidate.resumeText.substring(0, 300) + "...", // Preview only
-        };
-      })
-      .filter((c) => c !== null);
+    // Use matches directly from Python script
+    const matchedCandidates = result.data.map((match) => ({
+      _id: match.candidateId,
+      name: match.candidateName,
+      email: match.email,
+      phone: match.phone,
+      skills: match.extractedSkills || [],
+      matchScore: match.matchScore,
+      cvUrl: match.cvUrl,
+      appliedAt: match.appliedAt,
+      resumeText: null, // Not needed in response
+    }));
 
     console.log(`✅ Matched ${matchedCandidates.length} candidates to job`);
     matchedCandidates.slice(0, 5).forEach((c, idx) => {
-      const breakdown =
-        c.semanticScore && c.keywordScore
-          ? ` (Semantic: ${c.semanticScore}% + Keywords: ${c.keywordScore}%)`
-          : "";
-      console.log(`   ${idx + 1}. ${c.name}: ${c.matchScore}%${breakdown}`);
+      console.log(`   ${idx + 1}. ${c.name}: ${c.matchScore}%`);
     });
 
     // Save match results to database
@@ -590,12 +553,8 @@ export const matchCVsToJob = async (req, res) => {
           jobId: job._id,
           candidateId: candidate._id,
           matchScore: candidate.matchScore,
-          semanticScore: candidate.semanticScore || null,
-          keywordScore: candidate.keywordScore || null,
-          matchedSkills: candidate.matchedSkills || 0,
-          totalSkills: candidate.totalSkills || 0,
-          criticalSkills: result.critical_skills || [],
-          matchMethod: result.method || "hybrid_weighted_scoring",
+          matchedSkills: candidate.skills?.length || 0,
+          matchMethod: "hybrid_weighted_scoring",
         }),
       );
 
