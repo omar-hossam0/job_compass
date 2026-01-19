@@ -1,0 +1,25 @@
+{
+  "name": "job_compass",
+  "version": "1.0.0",
+  "description": "Job Compass - AI-powered CV matching and job recommendation system",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "cd Backend && npm run dev",
+    "start": "cd Backend && npm start",
+    "test:matcher": "cd Backend && npm run test:matcher",
+    "verify:model": "cd Backend && npm run verify:model",
+    "install:all": "npm install && cd Backend && npm install",
+    "test:quick": "cd Backend/scripts && node testCVMatching.js",
+    "verify:real": "cd Backend/scripts && node verify_real_analysis.js"
+  },
+  "keywords": [
+    "cv",
+    "matching",
+    "job",
+    "ai",
+    "classification"
+  ],
+  "author": "",
+  "license": "ISC"
+}

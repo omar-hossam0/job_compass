@@ -80,10 +80,7 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
         final message = response['message'] ?? 'Failed to fetch matches';
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: AppColors.error,
-          ),
+          SnackBar(content: Text(message), backgroundColor: AppColors.error),
         );
       }
     } catch (e) {
@@ -499,8 +496,7 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed:
-                  _isMatching ? null : () => _handleQuickFindMatches(),
+              onPressed: _isMatching ? null : () => _handleQuickFindMatches(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white.withOpacity(0.12),
                 foregroundColor: Colors.white,
@@ -750,23 +746,31 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton.icon(
-                      onPressed: _isMatching && _matchingJobId == (job['_id'] ?? job['id']).toString()
+                      onPressed:
+                          _isMatching &&
+                              _matchingJobId ==
+                                  (job['_id'] ?? job['id']).toString()
                           ? null
                           : () => _findMatchesForJob(job),
-                      icon: _isMatching &&
-                              _matchingJobId == (job['_id'] ?? job['id']).toString()
+                      icon:
+                          _isMatching &&
+                              _matchingJobId ==
+                                  (job['_id'] ?? job['id']).toString()
                           ? const SizedBox(
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation(Colors.white),
+                                valueColor: AlwaysStoppedAnimation(
+                                  Colors.white,
+                                ),
                               ),
                             )
                           : const Icon(Icons.manage_search_rounded),
                       label: Text(
                         _isMatching &&
-                                _matchingJobId == (job['_id'] ?? job['id']).toString()
+                                _matchingJobId ==
+                                    (job['_id'] ?? job['id']).toString()
                             ? 'Finding...'
                             : 'Find Matches',
                       ),
@@ -912,7 +916,9 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: 12,
-                color: isActive ? const Color(0xFF5B9FED) : const Color(0xFF5B6770),
+                color: isActive
+                    ? const Color(0xFF5B9FED)
+                    : const Color(0xFF5B6770),
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
@@ -1030,11 +1036,14 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
   }
 
   Widget _buildMatchCard(HRCandidateMatch candidate, int index) {
-    final matchColor = candidate.matchScore >= 70
-        ? const Color(0xFF2E7D32)
+    // Enhanced color coding based on match score
+    final matchColor = candidate.matchScore >= 75
+        ? const Color(0xFF2E7D32) // Excellent match - dark green
+        : candidate.matchScore >= 60
+        ? const Color(0xFF43A047) // Good match - green
         : candidate.matchScore >= 45
-            ? const Color(0xFFF9A825)
-            : const Color(0xFFC62828);
+        ? const Color(0xFFF9A825) // Fair match - amber
+        : const Color(0xFFE53935); // Poor match - red
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -1095,27 +1104,69 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
                         padding: const EdgeInsets.only(top: 4),
                         child: Text(
                           candidate.phone!,
-                          style:
-                              TextStyle(fontSize: 13, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ),
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: matchColor.withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${candidate.matchScore.toStringAsFixed(1)}% match',
-                  style: TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    color: matchColor,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: matchColor.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          candidate.matchScore >= 75
+                              ? Icons.verified_rounded
+                              : candidate.matchScore >= 60
+                              ? Icons.check_circle_outline_rounded
+                              : candidate.matchScore >= 45
+                              ? Icons.info_outline_rounded
+                              : Icons.warning_amber_rounded,
+                          size: 16,
+                          color: matchColor,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${candidate.matchScore.toStringAsFixed(1)}%',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: matchColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 6),
+                  Text(
+                    candidate.matchScore >= 75
+                        ? 'Excellent Match'
+                        : candidate.matchScore >= 60
+                        ? 'Good Match'
+                        : candidate.matchScore >= 45
+                        ? 'Fair Match'
+                        : 'Low Match',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: matchColor,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1126,8 +1177,10 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
               runSpacing: 8,
               children: candidate.skills.take(6).map((skill) {
                 return Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF1976D2).withOpacity(0.12),
                     borderRadius: BorderRadius.circular(10),
@@ -1194,8 +1247,10 @@ class _HRDashboardScreenState extends State<HRDashboardScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1976D2),
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 14,
+                    horizontal: 20,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

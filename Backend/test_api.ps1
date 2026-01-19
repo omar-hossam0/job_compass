@@ -3,7 +3,7 @@ Write-Host "Testing backend API..." -ForegroundColor Cyan
 
 # Test root endpoint
 try {
-    $root = Invoke-RestMethod -Uri "http://localhost:5000/" -Method GET
+    $root = Invoke-RestMethod -Uri "http://192.168.56.1:5000/" -Method GET
     Write-Host "[OK] Root endpoint works" -ForegroundColor Green
     Write-Host "  Message: $($root.message)" -ForegroundColor Gray
 } catch {
@@ -18,7 +18,7 @@ try {
         password = "test123"
     } | ConvertTo-Json
     
-    $loginResult = Invoke-RestMethod -Uri "http://localhost:5000/api/auth/login" -Method POST -Body $loginBody -ContentType "application/json"
+    $loginResult = Invoke-RestMethod -Uri "http://192.168.56.1:5000/api/auth/login" -Method POST -Body $loginBody -ContentType "application/json"
     Write-Host "[OK] Login endpoint works" -ForegroundColor Green
     Write-Host "  Success: $($loginResult.success)" -ForegroundColor Gray
     Write-Host "  Message: $($loginResult.message)" -ForegroundColor Gray

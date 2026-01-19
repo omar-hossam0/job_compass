@@ -1,5 +1,6 @@
 import Candidate from "../models/Candidate.js";
 import Job from "../models/Job.js";
+import MatchResult from "../models/MatchResult.js";
 import axios from "axios";
 import { hybridMatch } from "../utils/hybridMatcher.js";
 import { getPythonMatcher } from "../utils/pythonMatcher.js";
@@ -19,7 +20,7 @@ const LOCAL_SKILL_MATCHER = path.join(
   "..",
   "..",
   "last-one",
-  "skill_matcher_local.py"
+  "skill_matcher_local.py",
 );
 const PYTHON_BIN = process.env.PYTHON_BIN || "python";
 
@@ -48,13 +49,13 @@ async function runLocalSkillMatcher(cvText, jobDescription) {
         } catch (parseError) {
           console.error(
             "❌ Failed to parse skill matcher output:",
-            parseError.message
+            parseError.message,
           );
           console.error("stdout:", stdout);
           console.error("stderr:", stderr);
           return reject(parseError);
         }
-      }
+      },
     );
 
     child.stdin.write(payload);
@@ -132,7 +133,7 @@ export const matchJobs = async (req, res) => {
     if (USE_PYTHON_MATCHER && pythonServiceReady) {
       try {
         console.log(
-          "🐍 Using Persistent Python BERT Matcher (70% Semantic BERT + 30% Keywords)"
+          "🐍 Using Persistent Python BERT Matcher (70% Semantic BERT + 30% Keywords)",
         );
 
         // Prepare job descriptions (description field only!)
@@ -148,7 +149,7 @@ export const matchJobs = async (req, res) => {
         }));
 
         console.log(
-          `✅ Python BERT Matcher returned ${jobsWithScores.length} matches`
+          `✅ Python BERT Matcher returned ${jobsWithScores.length} matches`,
         );
         jobsWithScores.slice(0, 5).forEach((job, idx) => {
           console.log(`   ${idx + 1}. "${job.title}": ${job.matchScore}%`);
@@ -171,7 +172,7 @@ export const matchJobs = async (req, res) => {
 
     // Fallback: Use JavaScript Hybrid Matcher
     console.log(
-      "🚀 Using JavaScript Hybrid Matcher (token-based semantic + keywords)"
+      "🚀 Using JavaScript Hybrid Matcher (token-based semantic + keywords)",
     );
     const matches = hybridMatch(cvText, jobs, 10);
 
@@ -378,7 +379,7 @@ export const chatModel = async (req, res) => {
     const resp = await axios.post(
       `${ML_SERVICE_URL}/chat`,
       { question, context },
-      { timeout: 60000 }
+      { timeout: 60000 },
     );
     return res.status(resp.status).json(resp.data);
   } catch (err) {
@@ -387,7 +388,7 @@ export const chatModel = async (req, res) => {
       console.error("📋 Response status:", err.response.status);
       console.error(
         "📋 Response data:",
-        JSON.stringify(err.response.data, null, 2)
+        JSON.stringify(err.response.data, null, 2),
       );
     }
     const status = err.response?.status || 500;
@@ -448,29 +449,31 @@ export const matchCVsToJob = async (req, res) => {
     // Prepare CV texts
     const cvTexts = candidates.map((c) => c.resumeText || "");
 
-    // Call Python script to match CVs to job
+    // Log sample data to prove we're using real data
+    console.log(
+      `📋 Job Description Preview: ${jobDescription.substring(0, 100)}...`,
+    );
+    console.log(`📄 Sample CV #1 Preview: ${cvTexts[0]?.substring(0, 100)}...`);
+    console.log(`🐍 Calling Python matcher script...`);
+
+    // Call NEW Python job_cv_matcher script
     const { spawn } = await import("child_process");
     const scriptPath = path.join(
       __dirname,
       "..",
-      "scripts",
-      "match_cvs_to_job.py"
+      "ml-classifier",
+      "job_cv_matcher.py",
     );
 
-    const python = spawn("python", [scriptPath], {
+    console.log(`📂 Script path: ${scriptPath}`);
+
+    const python = spawn("python", [scriptPath, jobId], {
       stdio: ["pipe", "pipe", "pipe"],
       shell: false,
       env: { ...process.env, PYTHONIOENCODING: "utf-8" },
     });
 
-    const inputData = {
-      job_description: jobDescription,
-      cv_texts: cvTexts,
-      top_k: 10,
-    };
-
-    // Send input to Python
-    python.stdin.write(JSON.stringify(inputData));
+    // No need to send JSON input - jobId is passed as argument
     python.stdin.end();
 
     let outputData = "";
@@ -488,9 +491,10 @@ export const matchCVsToJob = async (req, res) => {
     // Wait for Python to complete
     await new Promise((resolve, reject) => {
       python.on("close", (code) => {
+        console.log(`🐍 Python process exited with code ${code}`);
         if (code !== 0) {
           reject(
-            new Error(`Python script exited with code ${code}: ${errorData}`)
+            new Error(`Python script exited with code ${code}: ${errorData}`),
           );
         } else {
           resolve();
@@ -509,52 +513,140 @@ export const matchCVsToJob = async (req, res) => {
     });
 
     // Parse Python output
+    console.log(`📥 Received ${outputData.length} bytes from Python`);
     const result = JSON.parse(outputData);
 
+    console.log(`✅ Python returned: ${result.success ? "SUCCESS" : "FAILED"}`);
+    console.log(`   Job Title: ${result.jobTitle || "N/A"}`);
+    console.log(`   Total Candidates: ${result.totalCandidates || 0}`);
+    console.log(`   Total Matches: ${result.totalMatches || 0}`);
+
     if (!result.success) {
-      throw new Error(result.error || "Python matcher failed");
+      throw new Error(result.message || "Python matcher failed");
     }
 
-    // Map results back to full candidate objects
-    // Note: Python returns 'job_index' but we're matching CVs, so it's actually cv_index
-    const matchedCandidates = result.matches
-      .map((match) => {
-        const cvIndex =
-          match.job_index !== undefined ? match.job_index : match.cv_index;
-        const candidate = candidates[cvIndex];
-
-        if (!candidate) {
-          console.error(`⚠️ No candidate found at index ${cvIndex}`);
-          return null;
-        }
-
-        return {
-          _id: candidate._id,
-          name: candidate.name,
-          email: candidate.email,
-          phone: candidate.phone,
-          skills: candidate.skills,
-          experience: candidate.experience,
-          education: candidate.education,
-          matchScore: Math.round(match.similarity_score * 100) / 100,
-          resumeText: candidate.resumeText.substring(0, 300) + "...", // Preview only
-        };
-      })
-      .filter((c) => c !== null);
+    // Use matches directly from Python script
+    const matchedCandidates = result.data.map((match) => ({
+      _id: match.candidateId,
+      name: match.candidateName,
+      email: match.email,
+      phone: match.phone,
+      skills: match.extractedSkills || [],
+      matchScore: match.matchScore,
+      cvUrl: match.cvUrl,
+      appliedAt: match.appliedAt,
+      resumeText: null, // Not needed in response
+    }));
 
     console.log(`✅ Matched ${matchedCandidates.length} candidates to job`);
     matchedCandidates.slice(0, 5).forEach((c, idx) => {
       console.log(`   ${idx + 1}. ${c.name}: ${c.matchScore}%`);
     });
 
+    // Save match results to database
+    console.log(
+      `💾 Saving ${matchedCandidates.length} match results to database...`,
+    );
+    try {
+      const savePromises = matchedCandidates.map((candidate) =>
+        MatchResult.saveMatchResult({
+          jobId: job._id,
+          candidateId: candidate._id,
+          matchScore: candidate.matchScore,
+          matchedSkills: candidate.skills?.length || 0,
+          matchMethod: "hybrid_weighted_scoring",
+        }),
+      );
+
+      await Promise.all(savePromises);
+      console.log(
+        `✅ Saved ${matchedCandidates.length} match results to database`,
+      );
+    } catch (saveError) {
+      console.error(`⚠️  Error saving match results: ${saveError.message}`);
+      // Continue even if save fails - don't fail the whole request
+    }
+
     return res.status(200).json({
       success: true,
       data: matchedCandidates,
       jobTitle: job.title,
-      method: "python_bert_hybrid_cv_matching",
+      method: result.method || "python_bert_hybrid_cv_matching",
+      criticalSkills: result.critical_skills || [],
+      totalCVs: result.total_cvs || candidates.length,
+      matchedCVs: result.matched_cvs || matchedCandidates.length,
+      savedToDatabase: true,
     });
   } catch (error) {
     console.error("❌ Error matching CVs to job:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Get saved match results for a job from database
+ * Returns previously calculated CV matches
+ */
+export const getSavedMatchResults = async (req, res) => {
+  try {
+    const { jobId } = req.params;
+
+    console.log(`🗄️  Fetching saved match results for job: ${jobId}`);
+
+    // Verify job exists
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({
+        success: false,
+        message: "Job not found",
+      });
+    }
+
+    // Get saved match results from database
+    const matchResults = await MatchResult.getTopMatchesForJob(jobId, 20);
+
+    if (matchResults.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: "No saved match results found. Run CV matching first.",
+        jobTitle: job.title,
+      });
+    }
+
+    // Format results
+    const formattedResults = matchResults.map((match) => ({
+      _id: match.candidateId._id,
+      name: match.candidateId.name,
+      email: match.candidateId.email,
+      phone: match.candidateId.phone,
+      skills: match.candidateId.skills,
+      experience: match.candidateId.experience,
+      education: match.candidateId.education,
+      matchScore: match.matchScore,
+      semanticScore: match.semanticScore,
+      keywordScore: match.keywordScore,
+      matchedSkills: match.matchedSkills,
+      totalSkills: match.totalSkills,
+      matchedAt: match.matchedAt,
+    }));
+
+    console.log(`✅ Retrieved ${formattedResults.length} saved match results`);
+
+    return res.status(200).json({
+      success: true,
+      data: formattedResults,
+      jobTitle: job.title,
+      criticalSkills: matchResults[0]?.criticalSkills || [],
+      method: matchResults[0]?.matchMethod || "hybrid_weighted_scoring",
+      totalResults: matchResults.length,
+      fromDatabase: true,
+    });
+  } catch (error) {
+    console.error("❌ Error fetching saved match results:", error.message);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -597,7 +689,7 @@ export const classifyCV = async (req, res) => {
       },
       {
         timeout: 30000, // 30 seconds timeout
-      }
+      },
     );
 
     if (response.data.success) {
@@ -707,7 +799,7 @@ export const analyzeJobForUser = async (req, res) => {
     console.log("💼 Job Description Length:", jobDescription.length);
     console.log(
       "🧠 Required skills appended:",
-      requiredSkillsText ? requiredSkillsText.length : 0
+      requiredSkillsText ? requiredSkillsText.length : 0,
     );
 
     // Call TensorFlow Skill Matcher Service (last-one model)
@@ -716,7 +808,7 @@ export const analyzeJobForUser = async (req, res) => {
       if (SKILL_MATCHER_URL) {
         console.log(
           "🤖 Calling TensorFlow Skill Matcher Service...",
-          SKILL_MATCHER_URL
+          SKILL_MATCHER_URL,
         );
         const analyzerResponse = await axios.post(
           `${SKILL_MATCHER_URL.replace(/\/$/, "")}/analyze`,
@@ -726,7 +818,7 @@ export const analyzeJobForUser = async (req, res) => {
           },
           {
             timeout: 30000, // 30 seconds timeout
-          }
+          },
         );
 
         if (analyzerResponse.data.success) {
@@ -735,10 +827,10 @@ export const analyzeJobForUser = async (req, res) => {
           console.log("✅ TensorFlow Analysis Complete:");
           console.log(`   - Match: ${analysisData.match_percentage}%`);
           console.log(
-            `   - Matched Skills: ${analysisData.matched_skills.length}`
+            `   - Matched Skills: ${analysisData.matched_skills.length}`,
           );
           console.log(
-            `   - Missing Skills: ${analysisData.missing_skills.length}`
+            `   - Missing Skills: ${analysisData.missing_skills.length}`,
           );
 
           return res.status(200).json({
@@ -892,7 +984,7 @@ export const analyzeJobForUser = async (req, res) => {
       const cvTextLower = cvText.toLowerCase();
 
       const foundJobSkills = skillPatterns.filter((skill) =>
-        jobDescLower.includes(skill.toLowerCase())
+        jobDescLower.includes(skill.toLowerCase()),
       );
 
       // Also include requiredSkills if available
@@ -946,13 +1038,13 @@ export const analyzeJobForUser = async (req, res) => {
         confidence: 0.6,
         priority: "MEDIUM",
         youtube: `https://www.youtube.com/results?search_query=${encodeURIComponent(
-          skill + " tutorial"
+          skill + " tutorial",
         )}`,
       }));
 
       console.log(`✅ Fallback Analysis Complete:`);
       console.log(
-        `   - Skills extracted from job description: ${foundJobSkills.length}`
+        `   - Skills extracted from job description: ${foundJobSkills.length}`,
       );
       console.log(`   - Total job skills: ${allJobSkills.length}`);
       console.log(`   - Matched: ${matchedSkills.length}`);

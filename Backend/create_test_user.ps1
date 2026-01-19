@@ -9,7 +9,7 @@ $registerBody = @{
 } | ConvertTo-Json
 
 try {
-    $registerResult = Invoke-RestMethod -Uri "http://localhost:5000/api/auth/register" -Method POST -Body $registerBody -ContentType "application/json"
+    $registerResult = Invoke-RestMethod -Uri "http://192.168.56.1:5000/api/auth/register" -Method POST -Body $registerBody -ContentType "application/json"
     Write-Host "[OK] User created successfully!" -ForegroundColor Green
     Write-Host "  Email: test@example.com" -ForegroundColor Gray
     Write-Host "  Password: test123" -ForegroundColor Gray
@@ -31,7 +31,7 @@ $loginBody = @{
 } | ConvertTo-Json
 
 try {
-    $loginResult = Invoke-RestMethod -Uri "http://localhost:5000/api/auth/login" -Method POST -Body $loginBody -ContentType "application/json"
+    $loginResult = Invoke-RestMethod -Uri "http://192.168.56.1:5000/api/auth/login" -Method POST -Body $loginBody -ContentType "application/json"
     Write-Host "[OK] Login successful!" -ForegroundColor Green
     Write-Host "  User: $($loginResult.user.name)" -ForegroundColor Gray
     Write-Host "  Email: $($loginResult.user.email)" -ForegroundColor Gray
@@ -44,7 +44,7 @@ try {
 Write-Host "`n================================================" -ForegroundColor Cyan
 Write-Host "Backend is ready for Flutter app!" -ForegroundColor Green
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "Server URL: http://localhost:5000" -ForegroundColor White
+Write-Host "Server URL: http://192.168.56.1:5000" -ForegroundColor White
 Write-Host "Test credentials:" -ForegroundColor White
 Write-Host "  Email: test@example.com" -ForegroundColor White
 Write-Host "  Password: test123" -ForegroundColor White

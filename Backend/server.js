@@ -134,15 +134,15 @@ app.use(notFound);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-// Use localhost for development (avoids firewall issues)
-const HOST = process.env.HOST || "localhost";
+// Listen on all network interfaces to allow access from other devices
+const HOST = process.env.HOST || "0.0.0.0";
 const server = app.listen(PORT, HOST, () => {
   console.log(`✅ Server running on ${HOST}:${PORT}`);
   console.log(`✅ Local access: http://localhost:${PORT}`);
   if (HOST === "0.0.0.0") {
-    console.log(`✅ Network access: http://192.168.1.7:${PORT}`);
+    console.log(`✅ Network access: http://192.168.1.38:${PORT}`);
   }
-  console.log('💡 Python BERT matcher will start on first job-matches request');
+  console.log("💡 Python BERT matcher will start on first job-matches request");
 });
 
 // Handle server errors
