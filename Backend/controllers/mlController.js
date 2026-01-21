@@ -445,100 +445,40 @@ export const matchCVsToJob = async (req, res) => {
     }
 
     console.log(`📄 Found ${candidates.length} candidates with CVs`);
+    console.log(`📋 Job: "${job.title}" - Matching with keyword algorithm`);
 
-    // Prepare CV texts
-    const cvTexts = candidates.map((c) => c.resumeText || "");
+    // Use the SAME matching algorithm as employee job matches
+    // This ensures HR sees identical percentages as employees
+    const { calculateKeywordMatch } = await import("../utils/matchingUtils.js");
 
-    // Log sample data to prove we're using real data
-    console.log(
-      `📋 Job Description Preview: ${jobDescription.substring(0, 100)}...`,
-    );
-    console.log(`📄 Sample CV #1 Preview: ${cvTexts[0]?.substring(0, 100)}...`);
-    console.log(`🐍 Calling Python matcher script...`);
+    const matchedCandidates = [];
 
-    // Call NEW Python job_cv_matcher script
-    const { spawn } = await import("child_process");
-    const scriptPath = path.join(
-      __dirname,
-      "..",
-      "ml-classifier",
-      "job_cv_matcher.py",
-    );
+    for (const candidate of candidates) {
+      const cvText = candidate.resumeText || "";
 
-    console.log(`📂 Script path: ${scriptPath}`);
+      // Calculate match score using the same algorithm as employee matching
+      const matchScore = calculateKeywordMatch(cvText, job);
 
-    const python = spawn("python", [scriptPath, jobId], {
-      stdio: ["pipe", "pipe", "pipe"],
-      shell: false,
-      env: { ...process.env, PYTHONIOENCODING: "utf-8" },
-    });
-
-    // No need to send JSON input - jobId is passed as argument
-    python.stdin.end();
-
-    let outputData = "";
-    let errorData = "";
-
-    python.stdout.on("data", (data) => {
-      outputData += data.toString();
-    });
-
-    python.stderr.on("data", (data) => {
-      errorData += data.toString();
-      console.log("🐍 Python:", data.toString().trim());
-    });
-
-    // Wait for Python to complete
-    await new Promise((resolve, reject) => {
-      python.on("close", (code) => {
-        console.log(`🐍 Python process exited with code ${code}`);
-        if (code !== 0) {
-          reject(
-            new Error(`Python script exited with code ${code}: ${errorData}`),
-          );
-        } else {
-          resolve();
-        }
-      });
-
-      python.on("error", (error) => {
-        reject(new Error(`Failed to start Python: ${error.message}`));
-      });
-
-      // Timeout after 60 seconds
-      setTimeout(() => {
-        python.kill();
-        reject(new Error("Python script timeout (60s)"));
-      }, 60000);
-    });
-
-    // Parse Python output
-    console.log(`📥 Received ${outputData.length} bytes from Python`);
-    const result = JSON.parse(outputData);
-
-    console.log(`✅ Python returned: ${result.success ? "SUCCESS" : "FAILED"}`);
-    console.log(`   Job Title: ${result.jobTitle || "N/A"}`);
-    console.log(`   Total Candidates: ${result.totalCandidates || 0}`);
-    console.log(`   Total Matches: ${result.totalMatches || 0}`);
-
-    if (!result.success) {
-      throw new Error(result.message || "Python matcher failed");
+      // Only include candidates with >= 60% match
+      if (matchScore >= 60) {
+        matchedCandidates.push({
+          _id: candidate._id,
+          name: candidate.name,
+          email: candidate.email,
+          phone: candidate.phone,
+          skills: candidate.skills || [],
+          matchScore: matchScore,
+          cvUrl: candidate.cvUrl,
+          appliedAt: candidate.createdAt,
+          resumeText: null, // Not needed in response
+        });
+      }
     }
 
-    // Use matches directly from Python script
-    const matchedCandidates = result.data.map((match) => ({
-      _id: match.candidateId,
-      name: match.candidateName,
-      email: match.email,
-      phone: match.phone,
-      skills: match.extractedSkills || [],
-      matchScore: match.matchScore,
-      cvUrl: match.cvUrl,
-      appliedAt: match.appliedAt,
-      resumeText: null, // Not needed in response
-    }));
+    // Sort by match score (highest first)
+    matchedCandidates.sort((a, b) => b.matchScore - a.matchScore);
 
-    console.log(`✅ Matched ${matchedCandidates.length} candidates to job`);
+    console.log(`✅ Matched ${matchedCandidates.length} candidates to job (>= 60%)`);
     matchedCandidates.slice(0, 5).forEach((c, idx) => {
       console.log(`   ${idx + 1}. ${c.name}: ${c.matchScore}%`);
     });
@@ -554,7 +494,7 @@ export const matchCVsToJob = async (req, res) => {
           candidateId: candidate._id,
           matchScore: candidate.matchScore,
           matchedSkills: candidate.skills?.length || 0,
-          matchMethod: "hybrid_weighted_scoring",
+          matchMethod: "keyword_matching",
         }),
       );
 
@@ -571,11 +511,11 @@ export const matchCVsToJob = async (req, res) => {
       success: true,
       data: matchedCandidates,
       jobTitle: job.title,
-      method: result.method || "python_bert_hybrid_cv_matching",
-      criticalSkills: result.critical_skills || [],
-      totalCVs: result.total_cvs || candidates.length,
-      matchedCVs: result.matched_cvs || matchedCandidates.length,
+      method: "keyword_matching",
+      totalCVs: candidates.length,
+      matchedCVs: matchedCandidates.length,
       savedToDatabase: true,
+      threshold: "60%",
     });
   } catch (error) {
     console.error("❌ Error matching CVs to job:", error.message);
